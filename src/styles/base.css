@@ -1,0 +1,126 @@
+@font-face {
+  font-family: "BBCS Stencil";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("../assets/fonts/stardos-stencil-700.ttf") format("truetype");
+}
+
+:root {
+  --charcoal: #1e1e1e;
+  --black: #10100f;
+  --surface: #191918;
+  --surface-2: #22201d;
+  --dusty-beige: #c7bfae;
+  --muted-gold: #b08d57;
+  --off-white: #f3eee6;
+  --deep-brick: #8e3b2e;
+  --paper: #e5dccb;
+  --ink-soft: #9b9180;
+  --line: rgba(176, 141, 87, 0.32);
+  --line-dark: rgba(243, 238, 230, 0.09);
+  --shadow: 0 22px 55px rgba(0, 0, 0, 0.34);
+  --font-headline: "BBCS Stencil", "Stardos Stencil", "Stencil Std", "Stencil", "Oswald", Impact, sans-serif;
+  --font-display: "Bebas Neue", "Oswald", Impact, sans-serif;
+  --font-body: "Inter", Arial, sans-serif;
+  --font-condensed: "Oswald", Arial, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  background: var(--off-white);
+  color: var(--charcoal);
+  font-family: var(--font-body);
+  overflow-x: hidden;
+}
+
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1000;
+}
+
+body::before {
+  opacity: 0.44;
+  mix-blend-mode: multiply;
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='220' height='220' filter='url(%23n)' opacity='0.16'/%3E%3C/svg%3E");
+}
+
+body::after {
+  background:
+    linear-gradient(90deg, rgba(30, 30, 30, 0.025) 1px, transparent 1px) 0 0 / 64px 64px,
+    linear-gradient(0deg, rgba(30, 30, 30, 0.018) 1px, transparent 1px) 0 0 / 64px 64px;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  color: inherit;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+main {
+  position: relative;
+  z-index: 1;
+}
+
+.page-bg-deco,
+.vinyl-bg {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.page-bg-deco {
+  background:
+    radial-gradient(circle at 15% 8%, rgba(176, 141, 87, 0.18), transparent 25rem),
+    radial-gradient(circle at 90% 18%, rgba(142, 59, 46, 0.13), transparent 28rem),
+    linear-gradient(135deg, rgba(199, 191, 174, 0.55), rgba(243, 238, 230, 0.94) 42%, rgba(229, 220, 203, 0.85));
+}
+
+.vinyl-bg {
+  inset: auto -190px -230px auto;
+  width: 620px;
+  height: 620px;
+  border-radius: 50%;
+  opacity: 0.09;
+  background:
+    radial-gradient(circle, transparent 0 12%, rgba(30, 30, 30, 0.55) 12% 13%, transparent 13%),
+    repeating-radial-gradient(circle, rgba(30, 30, 30, 0.1) 0 5px, transparent 5px 10px);
+  animation: spin 70s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spin-paused {
+  animation-play-state: paused !important;
+}

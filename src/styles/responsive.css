@@ -1,0 +1,251 @@
+@media (max-width: 1040px) {
+  .site-nav {
+    grid-template-columns: auto auto;
+  }
+
+  .nav-links {
+    grid-column: 1 / -1;
+    order: 3;
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-bottom: 0.2rem;
+  }
+
+  .nav-right {
+    justify-content: flex-end;
+  }
+
+  .featured-inner,
+  .featured-track-head,
+  .licensing-section,
+  .blog-featured {
+    grid-template-columns: 1fr;
+  }
+
+  .featured-track-head {
+    display: grid;
+  }
+
+  .hero-benefits {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .beat-row {
+    grid-template-columns: 34px minmax(170px, 190px) minmax(0, 1fr) 94px 96px;
+  }
+
+  .beat-meta-stack {
+    display: none;
+  }
+
+  .sp1200-graphic {
+    grid-template-columns: 1fr auto;
+  }
+
+  .vertical-tag {
+    display: none;
+  }
+
+  .blog-grid,
+  .upsell-cards,
+  .thanks-steps,
+  .shop-info-section {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 720px) {
+  .site-nav {
+    gap: 0.75rem;
+    min-height: 66px;
+    padding-block: 0.65rem;
+  }
+
+  .logo-mark {
+    width: 46px;
+    height: 46px;
+  }
+
+  .logo-text {
+    font-size: 1.18rem;
+  }
+
+  .icon-btn {
+    display: none;
+  }
+
+  .cart-btn {
+    min-width: auto;
+    padding-inline: 0.72rem;
+  }
+
+  .cart-btn span:nth-child(2) {
+    font-size: 0;
+  }
+
+  .cart-btn span:nth-child(2)::after {
+    content: "Cart";
+    font-size: 1rem;
+  }
+
+  .featured-section {
+    padding-top: 2.1rem;
+  }
+
+  .sp-deco,
+  .crate-sep {
+    display: none;
+  }
+
+  .featured-label::after,
+  .section-line,
+  .section-subtitle {
+    display: none;
+  }
+
+  .section-header {
+    align-items: flex-start;
+  }
+
+  .beat-title-main {
+    font-size: clamp(3.35rem, 14.8vw, 4.75rem);
+  }
+
+  .hero-actions,
+  .player-controls,
+  .buy-row,
+  .mini-player {
+    flex-wrap: wrap;
+  }
+
+  .btn-hero,
+  .license-btn {
+    flex: 1 1 100%;
+  }
+
+  .hero-benefits,
+  .catalogue-toolbar,
+  .blog-grid,
+  .upsell-cards,
+  .thanks-steps,
+  .shop-info-section,
+  .contact-info,
+  .cgrid {
+    grid-template-columns: 1fr;
+  }
+
+  .volume-wrap {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .sp1200-graphic {
+    grid-template-columns: 1fr;
+  }
+
+  .sp-pads {
+    grid-template-columns: repeat(4, 32px);
+  }
+
+  .sp-pad {
+    width: 32px;
+    height: 32px;
+  }
+
+  .beat-row {
+    grid-template-columns: 28px 88px minmax(0, 1fr);
+    gap: 0.7rem;
+    min-height: 132px;
+    padding: 0.75rem;
+  }
+
+  .beat-art {
+    width: 112px;
+  }
+
+  .beat-info h3 {
+    white-space: normal;
+  }
+
+  .beat-wave,
+  .beat-price {
+    display: none;
+  }
+
+  .beat-buy {
+    grid-column: 3;
+    width: fit-content;
+    padding-inline: 0.72rem;
+  }
+
+  .cgrid .full {
+    grid-column: auto;
+  }
+
+  .blog-meta {
+    display: grid;
+  }
+
+  .mini-player {
+    gap: 0.75rem;
+  }
+
+  .mini-progress-wrap {
+    flex-basis: 100%;
+  }
+
+  .toast {
+    right: 1rem;
+    bottom: 118px;
+  }
+}
+
+@media (max-width: 440px) {
+  .nav-logo {
+    gap: 0.45rem;
+  }
+
+  .logo-mark {
+    width: 40px;
+    height: 40px;
+  }
+
+  .logo-text {
+    max-width: 122px;
+  }
+
+  .footer-logo {
+    display: grid;
+    gap: 0.55rem;
+  }
+
+  .footer-logo img {
+    width: 58px;
+    height: 58px;
+    margin-inline: auto;
+  }
+
+  .nav-links {
+    gap: 0.9rem;
+  }
+
+  .nav-links button {
+    font-size: 0.94rem;
+  }
+
+  .beat-row {
+    grid-template-columns: 1fr;
+  }
+
+  .beat-num {
+    display: none;
+  }
+
+  .beat-art {
+    width: min(194px, 100%);
+  }
+
+  .beat-buy {
+    grid-column: auto;
+  }
+}

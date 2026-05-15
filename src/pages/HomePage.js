@@ -1,0 +1,152 @@
+import { beats, featuredBeat, filters } from "../data/beats.js";
+import { SectionHeader } from "../components/common/SectionHeader.js";
+import { Vinyl } from "../components/common/Vinyl.js";
+import { Waveform } from "../components/player/Waveform.js";
+import { LicenseButtons } from "../components/shop/LicenseButtons.js";
+import { BeatRow } from "../components/shop/BeatRow.js";
+import { Sp1200Panel } from "../components/studio/Sp1200Panel.js";
+import { time } from "../utils/format.js";
+
+export function HomePage(state) {
+  const visibleBeats = state.filter === "all" ? beats : beats.filter((beat) => beat.tags.includes(state.filter));
+  const currentSeconds = Math.floor(featuredBeat.durationSeconds * state.featuredProgress);
+
+  return `
+    <section class="featured-section">
+      <div class="sp-deco">
+        BOOM BAP CHOP SHOP<br>
+        READY<br>
+        CHOPS: ████████░░<br>
+        BPM: ${featuredBeat.bpm}
+      </div>
+      <div class="featured-label">Dusty Beats. Heavy Drums. Sharp Chops.</div>
+      <div class="featured-inner">
+        <div class="hero-copy">
+          <div class="cat-number">CAT# ${featuredBeat.catalog} · ${featuredBeat.year} · PREMIUM SAMPLE-BASED INSTRUMENTALS</div>
+          <h1 class="beat-title-main">REAL SAMPLES.<span>RAW SOUL.</span><span>TIMELESS BANGERS.</span></h1>
+          <p class="hero-sub">Authentic Boom Bap instrumentals built from rare samples, heavy drums, and classic sounds.</p>
+          <div class="hero-actions">
+            <button class="btn-hero primary" data-catalogue type="button">BROWSE BEATS</button>
+            <button class="btn-hero outline" data-scroll="#licensing" type="button">LICENSING INFO</button>
+          </div>
+          <div class="hero-benefits">
+            <span>Premium quality</span>
+            <span>Instant delivery</span>
+            <span>Licensing options</span>
+            <span>Built for artists</span>
+          </div>
+        </div>
+        <div class="cover-img hero-product">
+          <div class="cover-art">
+            ${Vinyl({ size: "lg", paused: !state.featuredPlaying })}
+            <div class="cover-beatname">${featuredBeat.name}</div>
+            <div class="cover-label-sticker">${featuredBeat.catalog} · PROMO COPY</div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="featured-player">
+      <div class="featured-info">
+        <div class="featured-track-head">
+          <div>
+            <span class="featured-kicker">Featured drop</span>
+            <h2>${featuredBeat.name}</h2>
+          </div>
+          <div class="beat-meta">
+            <span class="meta-tag bpm">${featuredBeat.bpm} BPM</span>
+            <span class="meta-tag key">${featuredBeat.key}</span>
+            <span class="meta-tag mood">${featuredBeat.mood}</span>
+            <span class="meta-tag type">${featuredBeat.type}</span>
+          </div>
+        </div>
+        <p class="beat-desc">${featuredBeat.description}</p>
+        <div class="player-wrap">
+          ${Waveform(state.featuredProgress, "data-featured-wave")}
+          <div class="player-controls">
+            <button class="btn-play" data-featured-toggle type="button">${state.featuredPlaying ? "Pause" : "Play"}</button>
+            <span class="time-display">${time(currentSeconds)} / ${featuredBeat.duration}</span>
+            <label class="volume-wrap">VOL <input type="range" min="0" max="100" value="80" /></label>
+          </div>
+        </div>
+        ${LicenseButtons(featuredBeat)}
+        <div class="price-note">Instant delivery after checkout · License included</div>
+        ${MpcPads()}
+      </div>
+    </section>
+    ${Sp1200Panel(state)}
+    ${CrateSeparator()}
+    <section class="playlist-section" id="catalogue">
+      ${SectionHeader("Browse", "Beats", `${visibleBeats.length} tracks`)}
+      <div class="catalogue-toolbar">
+        <label class="search-box">
+          <span aria-hidden="true">⌕</span>
+          <input type="search" placeholder="Search beats, tags, moods..." />
+        </label>
+        <select aria-label="Sort catalogue">
+          <option>Most Recent</option>
+          <option>Highest BPM</option>
+          <option>Lowest Price</option>
+        </select>
+      </div>
+      <div class="filter-row">
+        <span>Tags</span>
+        ${filters.map((filter) => `
+          <button class="filter-tag ${state.filter === filter ? "active" : ""}" data-filter="${filter}" type="button">
+            ${filter === "all" ? "All" : filter}
+          </button>
+        `).join("")}
+      </div>
+      <div class="playlist-container">
+        ${visibleBeats.map((beat, index) => BeatRow(beat, index, state)).join("")}
+      </div>
+    </section>
+    <section class="shop-info-section" id="packs">
+      ${InfoCard("PACKS", "Curated bundles for artists who need more than one sound for a project.", "MP3 packs · WAV + stems · bulk licenses")}
+      ${InfoCard("SERVICES", "Custom chops, exclusive beats, and production support for releases that need a signature.", "Custom beats · exclusives · mix-ready stems", "services")}
+      ${InfoCard("ABOUT", "BOOM BAP CHOP SHOP is built around sample culture, vinyl texture, heavy drums, and clean licensing.", "Rare samples · classic gear · premium delivery", "about")}
+    </section>
+    <section class="licensing-section" id="licensing">
+      <div>
+        <span class="featured-kicker">Licensing info</span>
+        <h2>Clear options for every release.</h2>
+      </div>
+      <p>Start with MP3 Basic, upgrade to WAV + stems when you need more control, or lock an exclusive for your campaign. Every purchase keeps the checkout simple and delivery immediate.</p>
+    </section>
+  `;
+}
+
+function MpcPads() {
+  return `
+    <div class="mpc-machine-deco" aria-hidden="true">
+      ${[0, 1, 2].map((row) => `
+        <div class="mpc-row">
+          ${[0, 1, 2, 3].map((col) => {
+            const lit = ["lit-red", "", "", "lit-yel", "", "lit-ora", "", "", "", "", "lit-red", ""][row * 4 + col];
+            return `<button class="mpc-pad ${lit}" data-pad-hit type="button"></button>`;
+          }).join("")}
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
+
+function CrateSeparator() {
+  return `
+    <div class="crate-sep" aria-hidden="true">
+      <div class="crate-records">
+        ${Array.from({ length: 10 }, () => `<span></span>`).join("")}
+      </div>
+      <div class="crate-text">Authentic sounds. Classic vibes. Built to last.</div>
+    </div>
+  `;
+}
+
+function InfoCard(title, copy, meta, id = "") {
+  return `
+    <article class="shop-info-card" ${id ? `id="${id}"` : ""}>
+      <span>${title}</span>
+      <p>${copy}</p>
+      <small>${meta}</small>
+    </article>
+  `;
+}
