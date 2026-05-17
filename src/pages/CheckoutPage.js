@@ -2,6 +2,7 @@ import { money } from "../utils/format.js";
 
 export function CheckoutPage(state) {
   const total = state.cart.reduce((sum, item) => sum + item.price, 0);
+  const hasService = state.cart.some((item) => item.type === "service");
 
   return `
     <section class="checkout-wrap">
@@ -10,9 +11,24 @@ export function CheckoutPage(state) {
       <div class="order-summary">
         <h2>Order summary</h2>
         ${state.cart.map((item) => `
-          <div class="os-line"><span>${item.name} · ${item.license}</span><span>${money(item.price)}</span></div>
+          <div class="os-line">
+            <span>
+              ${item.name} · ${item.license}
+              <small>${(item.includes || []).slice(0, 2).join(" · ")}</small>
+            </span>
+            <span>${money(item.price)}</span>
+          </div>
         `).join("")}
         <div class="os-total"><span>Total</span><strong>${money(total)}</strong></div>
+      </div>
+      <div class="checkout-license-note">
+        <h2>You will receive</h2>
+        <ul>
+          <li>${hasService ? "Mix + mastering order details and file preparation instructions" : "Audio files matching each selected license"}</li>
+          <li>${hasService ? "A clear follow-up to send vocal stems, references, and release notes" : "License agreement summary and final contract document"}</li>
+          <li>${hasService ? "Final WAV + MP3 exports after the session is completed" : "Instant download link after payment"}</li>
+          <li>Receipt sent to your email</li>
+        </ul>
       </div>
       <div class="cgrid">
         <label class="fg"><span class="fl">First name</span><input class="fi" type="text" placeholder="Jay" /></label>

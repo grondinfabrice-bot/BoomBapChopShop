@@ -1,20 +1,8 @@
-import { money } from "../../utils/format.js";
-
 export function LicenseButtons(beat) {
   return `
     <div class="buy-row">
-      ${beat.licenses.map((license) => `
-        <button
-          class="license-btn ${license.tone}"
-          data-add-cart
-          data-name="${beat.name}"
-          data-license="${license.name}"
-          data-price="${license.price}"
-          type="button"
-        >
-          ${license.label} · ${money(license.price)}
-        </button>
-      `).join("")}
+      <button class="license-btn wav" data-license-open="${beat.storeBeatId || beat.id}" type="button">Choose License</button>
+      <button class="license-btn basic" data-route="licensing" type="button">Read licensing info</button>
     </div>
   `;
 }

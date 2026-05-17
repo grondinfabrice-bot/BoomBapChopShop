@@ -20,7 +20,7 @@ export function CartDrawer(state) {
             <strong>${money(total)}</strong>
           </div>
           <button class="btn-checkout" data-checkout type="button">Checkout</button>
-          <div class="cart-secure">Secure checkout · Instant delivery</div>
+          <div class="cart-secure">Order summary · Delivery details · Final files included</div>
         </footer>
       </aside>
     </div>
@@ -34,7 +34,8 @@ function CartItem(item) {
       <div>
         <h3>${item.name}</h3>
         <p>${item.license}</p>
-        <button data-remove-cart="${item.id}" type="button">Remove</button>
+        <small>${item.licenseSummary || "License details included at checkout"}</small>
+        <button class="cart-remove-btn" data-remove-cart="${item.id}" type="button">Remove item</button>
       </div>
       <strong>${money(item.price)}</strong>
     </article>

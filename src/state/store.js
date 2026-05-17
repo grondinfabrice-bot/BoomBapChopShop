@@ -1,4 +1,5 @@
-import { beats } from "../data/beats.js";
+import { beats } from "../data/beats.js?v=3";
+import { getLicenseById, licenseOptions } from "../data/licenses.js?v=1";
 import { uid } from "../utils/format.js";
 
 const state = {
@@ -13,6 +14,10 @@ const state = {
   toast: "",
   checkoutEmail: "",
   upsellSeconds: 599,
+  activePostId: "",
+  blogCategory: "all",
+  blogTag: "",
+  licensePickerBeatId: null,
 };
 
 const listeners = new Set();
@@ -36,10 +41,25 @@ export function navigate(page) {
   window.scrollTo({ top: 0, behavior: "instant" });
 }
 
-export function addCartItem({ name, license, price }) {
-  const exists = state.cart.some((item) => item.name === name && item.license === license);
+export function addCartItem({ beatId = "", name, license, licenseId = "", price, type = "beat", licenseSummary = "", includes = [] }) {
+  const selectedLicense = licenseOptions.some((option) => option.id === licenseId) ? getLicenseById(licenseId) : null;
+  const licenseName = license || selectedLicense?.name || "Upgrade";
+  const itemLicenseId = selectedLicense?.id || licenseId || uid("upgrade");
+  const licensePrice = Number.isFinite(price) ? price : selectedLicense?.price || 0;
+  const exists = state.cart.some((item) => item.name === name && item.licenseId === itemLicenseId);
   if (exists) return false;
-  state.cart.push({ id: uid("cart"), name, license, price });
+  state.cart.push({
+    id: uid("cart"),
+    beatId,
+    name,
+    license: licenseName,
+    licenseId: itemLicenseId,
+    type,
+    price: licensePrice,
+    includes: selectedLicense?.includes || includes || ["Upgrade added to order"],
+    usage: selectedLicense?.allowed || [],
+    licenseSummary: selectedLicense?.short || licenseSummary || "Optional cart upgrade",
+  });
   setState({ cart: state.cart });
   return true;
 }

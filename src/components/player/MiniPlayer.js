@@ -1,4 +1,4 @@
-import { beats } from "../../data/beats.js";
+import { beats } from "../../data/beats.js?v=3";
 import { time } from "../../utils/format.js";
 import { Vinyl } from "../common/Vinyl.js";
 
@@ -17,6 +17,7 @@ export function MiniPlayer(state) {
       </div>
       <div class="mini-controls">
         <button class="mini-btn" data-prev type="button" aria-label="Titre precedent">◀◀</button>
+        <button class="mini-btn" data-restart type="button" aria-label="Rejouer le titre depuis le debut">Replay</button>
         <button class="mini-btn active" data-mini-toggle type="button" aria-label="Lecture pause">${state.isPlaying ? "Pause" : "Play"}</button>
         <button class="mini-btn" data-next type="button" aria-label="Titre suivant">▶▶</button>
       </div>

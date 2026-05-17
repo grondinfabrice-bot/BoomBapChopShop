@@ -1,20 +1,29 @@
 import { money } from "../../utils/format.js";
+import { licenseOptions } from "../../data/licenses.js?v=1";
 import { Waveform } from "../player/Waveform.js";
 
 export function BeatRow(beat, index, state) {
   const playing = state.currentTrackId === beat.id;
-  const tags = beat.tags.slice(0, 4).map((tag) => `<span>${tag}</span>`).join("");
+  const entryPrice = licenseOptions[0].price;
+  const tags = beat.tags.map((tag) => `<span>${tag}</span>`).join("");
   const titleLines = beat.name.split(" ");
+  const coverImage = beat.coverUrl
+    ? `<img class="beat-cover-image" src="${beat.coverUrl}" alt="Cover ${beat.name}" loading="lazy" decoding="async" />`
+    : "";
+  const fallbackLogo = beat.coverUrl
+    ? ""
+    : `<img class="beat-cover-logo" src="./src/assets/boom-bap-chop-shop-logo.png" alt="" aria-hidden="true" loading="lazy" decoding="async" />`;
 
   return `
     <article class="beat-row ${playing ? "playing" : ""}" data-play-track="${beat.id}">
       <div class="beat-num">${playing ? "PLAY" : String(index + 1).padStart(2, "0")}</div>
       <div class="beat-art">
-        <div class="beat-cover">
+        <div class="beat-cover ${beat.coverUrl ? "has-cover" : ""}">
+          ${coverImage}
           <span class="beat-cover-title">
             ${titleLines.filter(Boolean).map((line) => `<span>${line}</span>`).join("")}
           </span>
-          <img src="./src/assets/boom-bap-chop-shop-logo.png" alt="" aria-hidden="true" loading="lazy" decoding="async" />
+          ${fallbackLogo}
         </div>
         <div class="beat-vinyl" aria-hidden="true"></div>
       </div>
@@ -29,16 +38,13 @@ export function BeatRow(beat, index, state) {
         <span>KEY ${beat.key}</span>
         <span>${beat.duration}</span>
       </div>
-      <div class="beat-price">${money(beat.price)}</div>
+      <div class="beat-price"><span>from</span>${money(entryPrice)}</div>
       <button
         class="beat-buy"
-        data-add-cart
-        data-name="${beat.name}"
-        data-license="MP3 Basic"
-        data-price="${beat.price}"
+        data-license-open="${beat.id}"
         type="button"
       >
-        ADD TO CART
+        CHOOSE LICENSE
       </button>
     </article>
   `;

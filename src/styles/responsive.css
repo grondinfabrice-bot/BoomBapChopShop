@@ -18,6 +18,11 @@
   .featured-inner,
   .featured-track-head,
   .licensing-section,
+  .license-table > div,
+  .about-hero,
+  .about-process,
+  .blog-bottom-nav,
+  .footer-grid,
   .blog-featured {
     grid-template-columns: 1fr;
   }
@@ -30,12 +35,57 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .beat-row {
-    grid-template-columns: 34px minmax(170px, 190px) minmax(0, 1fr) 94px 96px;
+  .hero-product {
+    justify-self: center;
+    width: min(430px, 100%);
   }
 
-  .beat-meta-stack {
+  .cover-art {
+    gap: 0.55rem;
+  }
+
+  .cover-art .vinyl {
+    align-self: center;
+  }
+
+  .beat-row {
+    grid-template-columns: 40px minmax(148px, 176px) minmax(0, 1fr);
+    gap: 0.9rem;
+    min-height: 210px;
+  }
+
+  .beat-art {
+    justify-self: center;
+    width: clamp(142px, 20vw, 172px);
+  }
+
+  .beat-cover {
+    width: min(82%, 142px);
+  }
+
+  .beat-vinyl {
+    right: -0.2rem;
+    width: 76%;
+    height: 76%;
+  }
+
+  .beat-info h3 {
+    white-space: normal;
+  }
+
+  .beat-wave,
+  .beat-meta-stack,
+  .beat-price {
     display: none;
+  }
+
+  .beat-buy {
+    grid-column: 3;
+    justify-self: start;
+    width: fit-content;
+    min-width: 204px;
+    margin-top: 0.65rem;
+    padding: 1rem 1.2rem;
   }
 
   .sp1200-graphic {
@@ -47,18 +97,42 @@
   }
 
   .blog-grid,
+  .about-grid,
+  .license-detail-grid,
   .upsell-cards,
   .thanks-steps,
-  .shop-info-section {
+  .service-pricing {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .shop-info-section {
+    grid-template-columns: 1fr;
   }
 }
 
 @media (max-width: 720px) {
+  .demo-banner {
+    position: relative;
+    top: auto;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.55rem;
+    padding-block: 0.42rem;
+    font-size: 0.82rem;
+  }
+
   .site-nav {
+    top: 0;
     gap: 0.75rem;
     min-height: 66px;
     padding-block: 0.65rem;
+  }
+
+  .shop-info-section {
+    scroll-margin-top: 24px;
+  }
+
+  .playlist-section {
+    scroll-margin-top: 24px;
   }
 
   .logo-mark {
@@ -128,10 +202,19 @@
   .blog-grid,
   .upsell-cards,
   .thanks-steps,
+  .service-pricing,
   .shop-info-section,
   .contact-info,
   .cgrid {
     grid-template-columns: 1fr;
+  }
+
+  .license-picker-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .blog-bottom-links {
+    justify-content: flex-start;
   }
 
   .volume-wrap {
@@ -152,15 +235,30 @@
     height: 32px;
   }
 
+  .license-picker-grid {
+    grid-template-columns: 1fr;
+  }
+
   .beat-row {
-    grid-template-columns: 28px 88px minmax(0, 1fr);
+    grid-template-columns: 28px minmax(96px, 112px) minmax(0, 1fr);
     gap: 0.7rem;
     min-height: 132px;
     padding: 0.75rem;
   }
 
   .beat-art {
-    width: 112px;
+    width: 100%;
+    max-width: 112px;
+  }
+
+  .beat-cover {
+    width: 82%;
+  }
+
+  .beat-vinyl {
+    right: -0.15rem;
+    width: 74%;
+    height: 74%;
   }
 
   .beat-info h3 {
@@ -175,6 +273,7 @@
   .beat-buy {
     grid-column: 3;
     width: fit-content;
+    min-width: 0;
     padding-inline: 0.72rem;
   }
 
@@ -196,6 +295,7 @@
 
   .toast {
     right: 1rem;
+    top: auto;
     bottom: 118px;
   }
 }
@@ -215,14 +315,17 @@
   }
 
   .footer-logo {
-    display: grid;
+    display: flex;
     gap: 0.55rem;
   }
 
   .footer-logo img {
     width: 58px;
     height: 58px;
-    margin-inline: auto;
+  }
+
+  .footer-newsletter div {
+    grid-template-columns: 1fr;
   }
 
   .nav-links {

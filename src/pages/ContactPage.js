@@ -29,10 +29,22 @@ export function ContactPage() {
         <button class="form-submit" data-contact-send type="button">Send Message</button>
       </div>
       <div class="contact-info">
-        <div><span>Email</span><a href="mailto:contact@boombapchopshop.com">contact@boombapchopshop.com</a></div>
-        <div><span>Instagram</span><a href="#">@boombapchopshop</a></div>
-        <div><span>Reply</span><strong>24-48h business days</strong></div>
-        <div><span>YouTube</span><a href="#">youtube.com/@boombapchopshop</a></div>
+        <div class="contact-card">
+          <span class="contact-icon">@</span>
+          <div><span>Email</span><a href="mailto:contact@boombapchopshop.com">contact@boombapchopshop.com</a></div>
+        </div>
+        <div class="contact-card">
+          <span class="contact-icon">IG</span>
+          <div><span>Instagram</span><a href="#">@boombapchopshop</a></div>
+        </div>
+        <div class="contact-card">
+          <span class="contact-icon">24</span>
+          <div><span>Reply</span><strong>24-48h business days</strong></div>
+        </div>
+        <div class="contact-card">
+          <span class="contact-icon">YT</span>
+          <div><span>YouTube</span><a href="#">youtube.com/@boombapchopshop</a></div>
+        </div>
       </div>
     </section>
   `;

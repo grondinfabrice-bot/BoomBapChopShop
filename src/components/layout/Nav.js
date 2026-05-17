@@ -10,10 +10,10 @@ export function Nav(state) {
       </button>
       <div class="nav-links">
         <button data-catalogue type="button">BEATS</button>
-        <button data-scroll="#packs" type="button">PACKS</button>
-        <button data-scroll="#services" type="button">SERVICES</button>
-        <button data-scroll="#about" type="button">ABOUT</button>
-        <button data-route="blog" type="button">Blog</button>
+        <button data-scroll="#services" type="button">MIX / MASTERING</button>
+        <button data-route="licensing" type="button">LICENSING</button>
+        <button data-route="about" type="button">ABOUT</button>
+        <button data-route="blog" type="button">CRATE NOTES</button>
       </div>
       <div class="nav-right">
         <button class="icon-btn" data-catalogue type="button" aria-label="Search beats">⌕</button>

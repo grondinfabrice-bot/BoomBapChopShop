@@ -1,4 +1,4 @@
-import { beats } from "../../data/beats.js";
+import { beats } from "../../data/beats.js?v=3";
 
 export function Sp1200Panel(state) {
   const current = beats.find((beat) => beat.id === state.currentTrackId);

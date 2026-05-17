@@ -1,9 +1,10 @@
-import { beats, featuredBeat, filters } from "../data/beats.js";
+import { beats, featuredBeat, filters } from "../data/beats.js?v=3";
+import { serviceOffers } from "../data/content.js?v=5";
 import { SectionHeader } from "../components/common/SectionHeader.js";
 import { Vinyl } from "../components/common/Vinyl.js";
 import { Waveform } from "../components/player/Waveform.js";
-import { LicenseButtons } from "../components/shop/LicenseButtons.js";
-import { BeatRow } from "../components/shop/BeatRow.js";
+import { LicenseButtons } from "../components/shop/LicenseButtons.js?v=4";
+import { BeatRow } from "../components/shop/BeatRow.js?v=4";
 import { Sp1200Panel } from "../components/studio/Sp1200Panel.js";
 import { time } from "../utils/format.js";
 
@@ -27,7 +28,7 @@ export function HomePage(state) {
           <p class="hero-sub">Authentic Boom Bap instrumentals built from rare samples, heavy drums, and classic sounds.</p>
           <div class="hero-actions">
             <button class="btn-hero primary" data-catalogue type="button">BROWSE BEATS</button>
-            <button class="btn-hero outline" data-scroll="#licensing" type="button">LICENSING INFO</button>
+            <button class="btn-hero outline" data-route="licensing" type="button">LICENSING INFO</button>
           </div>
           <div class="hero-benefits">
             <span>Premium quality</span>
@@ -100,10 +101,27 @@ export function HomePage(state) {
         ${visibleBeats.map((beat, index) => BeatRow(beat, index, state)).join("")}
       </div>
     </section>
-    <section class="shop-info-section" id="packs">
-      ${InfoCard("PACKS", "Curated bundles for artists who need more than one sound for a project.", "MP3 packs · WAV + stems · bulk licenses")}
-      ${InfoCard("SERVICES", "Custom chops, exclusive beats, and production support for releases that need a signature.", "Custom beats · exclusives · mix-ready stems", "services")}
-      ${InfoCard("ABOUT", "BOOM BAP CHOP SHOP is built around sample culture, vinyl texture, heavy drums, and clean licensing.", "Rare samples · classic gear · premium delivery", "about")}
+    <section class="shop-info-section" id="services">
+      <div class="service-intro">
+        <span class="featured-kicker">Mix / Mastering</span>
+        <h2>One service: mix plus mastering, ready for release.</h2>
+        <p>
+          For artists who already recorded their vocals and want the song to translate with weight,
+          clarity, and the same raw character as the beat. I do not split mix and master for now:
+          the finish is handled as one complete process.
+        </p>
+      </div>
+      <div class="service-workflow">
+        <span>How it works</span>
+        <ol>
+          <li>Send the instrumental, vocal stems, BPM, key if known, and 1 or 2 reference tracks.</li>
+          <li>I check the files before starting, then build the vocal balance, low-end control, space, and punch.</li>
+          <li>You receive a first version, revisions if included, then final WAV + MP3 exports.</li>
+        </ol>
+      </div>
+      <div class="service-pricing">
+        ${serviceOffers.map(ServiceCard).join("")}
+      </div>
     </section>
     <section class="licensing-section" id="licensing">
       <div>
@@ -138,6 +156,31 @@ function CrateSeparator() {
       </div>
       <div class="crate-text">Authentic sounds. Classic vibes. Built to last.</div>
     </div>
+  `;
+}
+
+function ServiceCard(offer) {
+  return `
+    <article class="service-card ${offer.highlighted ? "featured" : ""}">
+      <span>${offer.tag}</span>
+      <h3>${offer.name}</h3>
+      <strong>${offer.price.toFixed(2)}€</strong>
+      <p>${offer.description}</p>
+      <ul>
+        ${offer.includes.map((item) => `<li>${item}</li>`).join("")}
+      </ul>
+      <button
+        class="service-add"
+        data-service-cart
+        data-name="${offer.name}"
+        data-price="${offer.price}"
+        data-summary="${offer.summary}"
+        data-includes="${offer.includes.join("|")}"
+        type="button"
+      >
+        Add service
+      </button>
+    </article>
   `;
 }
 
