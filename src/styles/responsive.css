@@ -200,6 +200,7 @@
   .hero-benefits,
   .catalogue-toolbar,
   .blog-grid,
+  .admin-grid,
   .upsell-cards,
   .thanks-steps,
   .service-pricing,
@@ -282,6 +283,15 @@
   }
 
   .blog-meta {
+    display: grid;
+  }
+
+  .admin-head,
+  .admin-list article {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-head {
     display: grid;
   }
 

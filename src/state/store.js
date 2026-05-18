@@ -1,9 +1,17 @@
 import { beats } from "../data/beats.js?v=3";
+import { posts } from "../data/content.js?v=3";
 import { getLicenseById, licenseOptions } from "../data/licenses.js?v=1";
 import { uid } from "../utils/format.js";
 
 const state = {
   page: "home",
+  beats,
+  posts,
+  cmsReady: false,
+  cmsMessage: "",
+  adminSession: null,
+  adminBeats: [],
+  adminPosts: [],
   cart: [],
   filter: "all",
   currentTrackId: null,
@@ -34,6 +42,14 @@ export function subscribe(listener) {
 export function setState(patch) {
   Object.assign(state, patch);
   listeners.forEach((listener) => listener(state));
+}
+
+export function setContent({ beats: nextBeats, posts: nextPosts }) {
+  setState({
+    beats: nextBeats?.length ? nextBeats : state.beats,
+    posts: nextPosts?.length ? nextPosts : state.posts,
+    cmsReady: Boolean(nextBeats?.length || nextPosts?.length),
+  });
 }
 
 export function navigate(page) {
@@ -77,7 +93,7 @@ export function getCartTotal() {
 }
 
 export function getCurrentTrack() {
-  return beats.find((beat) => beat.id === state.currentTrackId) || null;
+  return state.beats.find((beat) => beat.id === state.currentTrackId) || null;
 }
 
 export function playTrack(trackId) {
@@ -94,7 +110,7 @@ export function pauseTrack() {
 }
 
 export function nextTrack(direction = 1) {
-  const index = beats.findIndex((beat) => beat.id === state.currentTrackId);
-  const nextIndex = index < 0 ? 0 : (index + direction + beats.length) % beats.length;
-  playTrack(beats[nextIndex].id);
+  const index = state.beats.findIndex((beat) => beat.id === state.currentTrackId);
+  const nextIndex = index < 0 ? 0 : (index + direction + state.beats.length) % state.beats.length;
+  playTrack(state.beats[nextIndex].id);
 }

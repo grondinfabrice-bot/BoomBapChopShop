@@ -1,7 +1,7 @@
-import { posts } from "../data/content.js?v=3";
 import { SectionHeader } from "../components/common/SectionHeader.js";
 
 export function BlogPage(state) {
+  const posts = state.posts;
   const categories = ["all", ...new Set(posts.map((post) => post.category))];
   const visiblePosts = posts.filter((post) => {
     const categoryMatches = state.blogCategory === "all" || post.category === state.blogCategory;

@@ -1,9 +1,8 @@
-import { beats } from "../../data/beats.js?v=3";
 import { time } from "../../utils/format.js";
 import { Vinyl } from "../common/Vinyl.js";
 
 export function MiniPlayer(state) {
-  const track = beats.find((beat) => beat.id === state.currentTrackId);
+  const track = state.beats.find((beat) => beat.id === state.currentTrackId);
   if (!track) return "";
 
   return `

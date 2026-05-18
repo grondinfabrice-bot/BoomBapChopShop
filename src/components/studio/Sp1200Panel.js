@@ -1,6 +1,5 @@
-import { beats } from "../../data/beats.js?v=3";
-
 export function Sp1200Panel(state) {
+  const beats = state.beats;
   const current = beats.find((beat) => beat.id === state.currentTrackId);
   const display = current
     ? [`NOW PLAYING`, current.name, `${current.bpm} BPM · ${current.key}`]

@@ -2,6 +2,7 @@ import {
   addCartItem,
   getState,
   removeCartItem,
+  setContent,
   setState,
   subscribe,
 } from "./state/store.js?v=3";
@@ -14,8 +15,18 @@ import { ContactPage } from "./pages/ContactPage.js?v=1";
 import { UpsellPage } from "./pages/UpsellPage.js?v=4";
 import { CheckoutPage } from "./pages/CheckoutPage.js?v=3";
 import { ThanksPage } from "./pages/ThanksPage.js";
-import { beats, featuredBeat } from "./data/beats.js?v=3";
+import { AdminPage } from "./pages/AdminPage.js";
+import { featuredBeat } from "./data/beats.js?v=3";
 import { getCurrentTrack } from "./state/store.js";
+import {
+  getAdminSession,
+  loadAdminContent,
+  loadPublishedContent,
+  saveBeat,
+  savePost,
+  signInAdmin,
+  signOutAdmin,
+} from "./services/cms.js";
 
 let rootNode;
 let featuredTimer;
@@ -33,13 +44,19 @@ const pages = {
   upsell: UpsellPage,
   checkout: CheckoutPage,
   thanks: ThanksPage,
+  admin: AdminPage,
 };
 
 export function App(root) {
   rootNode = root;
+  if (window.location.hash === "#admin") setState({ page: "admin" });
+  window.addEventListener("hashchange", () => {
+    if (window.location.hash === "#admin") route("admin");
+  });
   subscribe(render);
   render();
   startClock();
+  hydrateCms();
 }
 
 function render() {
@@ -281,9 +298,53 @@ function bindPageActions() {
     button.addEventListener("click", () => toast(button.dataset.toast));
   });
 
+  rootNode.querySelector("[data-admin-login]")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    try {
+      const session = await signInAdmin(form.get("email"), form.get("password"));
+      setState({ adminSession: session, cmsMessage: "Signed in." });
+      await refreshAdminContent();
+    } catch (error) {
+      setState({ cmsMessage: error.message || "Sign in failed." });
+    }
+  });
+
+  rootNode.querySelector("[data-admin-logout]")?.addEventListener("click", async () => {
+    await signOutAdmin();
+    setState({ adminSession: null, cmsMessage: "Signed out." });
+  });
+
+  rootNode.querySelector("[data-admin-beat-form]")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    try {
+      await saveBeat(new FormData(event.currentTarget));
+      event.currentTarget.reset();
+      setState({ cmsMessage: "Beat saved." });
+      await refreshAdminContent();
+      await hydrateCms();
+    } catch (error) {
+      setState({ cmsMessage: error.message || "Beat save failed." });
+    }
+  });
+
+  rootNode.querySelector("[data-admin-post-form]")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    try {
+      await savePost(new FormData(event.currentTarget));
+      event.currentTarget.reset();
+      setState({ cmsMessage: "Note saved." });
+      await refreshAdminContent();
+      await hydrateCms();
+    } catch (error) {
+      setState({ cmsMessage: error.message || "Note save failed." });
+    }
+  });
 }
 
 function route(page) {
+  if (page === "admin") window.location.hash = "admin";
+  if (page !== "admin" && window.location.hash === "#admin") history.replaceState(null, "", window.location.pathname);
   setState({
     page,
     activePostId: "",
@@ -335,7 +396,8 @@ audioPlayer.addEventListener("error", () => {
 });
 
 function requestTrack(trackId) {
-  const track = beats.find((beat) => beat.id === trackId);
+  const state = getState();
+  const track = state.beats.find((beat) => beat.id === trackId);
   if (!track) return;
 
   if (!track.previewUrl) {
@@ -343,7 +405,6 @@ function requestTrack(trackId) {
     return;
   }
 
-  const state = getState();
   const sameTrack = state.currentTrackId === trackId;
 
   if (sameTrack && state.isPlaying) {
@@ -395,9 +456,28 @@ function restartCurrentTrack() {
 
 function requestNextTrack(direction = 1) {
   const state = getState();
-  const index = beats.findIndex((beat) => beat.id === state.currentTrackId);
-  const nextIndex = index < 0 ? 0 : (index + direction + beats.length) % beats.length;
-  requestTrack(beats[nextIndex].id);
+  const index = state.beats.findIndex((beat) => beat.id === state.currentTrackId);
+  const nextIndex = index < 0 ? 0 : (index + direction + state.beats.length) % state.beats.length;
+  requestTrack(state.beats[nextIndex].id);
+}
+
+async function hydrateCms() {
+  try {
+    const content = await loadPublishedContent();
+    setContent(content);
+    const session = await getAdminSession();
+    if (session) {
+      setState({ adminSession: session });
+      if (getState().page === "admin") await refreshAdminContent();
+    }
+  } catch (error) {
+    setState({ cmsMessage: error.message || "CMS unavailable. Local content is still loaded." });
+  }
+}
+
+async function refreshAdminContent() {
+  const content = await loadAdminContent();
+  setState({ adminBeats: content.beats, adminPosts: content.posts });
 }
 
 function toast(message) {

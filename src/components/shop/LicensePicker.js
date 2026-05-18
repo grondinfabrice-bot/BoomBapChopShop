@@ -1,8 +1,8 @@
-import { beats } from "../../data/beats.js";
 import { licenseOptions } from "../../data/licenses.js";
 import { money } from "../../utils/format.js";
 
 export function LicensePicker(state) {
+  const beats = state.beats;
   const beat = beats.find((item) => String(item.id) === String(state.licensePickerBeatId));
   if (!beat) return "";
 

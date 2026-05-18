@@ -1,4 +1,4 @@
-import { beats, featuredBeat, filters } from "../data/beats.js?v=3";
+import { featuredBeat } from "../data/beats.js?v=3";
 import { serviceOffers } from "../data/content.js?v=5";
 import { SectionHeader } from "../components/common/SectionHeader.js";
 import { Vinyl } from "../components/common/Vinyl.js";
@@ -9,7 +9,9 @@ import { Sp1200Panel } from "../components/studio/Sp1200Panel.js";
 import { time } from "../utils/format.js";
 
 export function HomePage(state) {
-  const visibleBeats = state.filter === "all" ? beats : beats.filter((beat) => beat.tags.includes(state.filter));
+  const beats = state.beats;
+  const filters = ["all", ...new Set(beats.flatMap((beat) => beat.tags || []))];
+  const visibleBeats = state.filter === "all" ? beats : beats.filter((beat) => (beat.tags || []).includes(state.filter));
   const currentSeconds = Math.floor(featuredBeat.durationSeconds * state.featuredProgress);
 
   return `
