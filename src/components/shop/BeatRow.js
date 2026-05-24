@@ -8,7 +8,7 @@ export function BeatRow(beat, index, state) {
   const tags = beat.tags.map((tag) => `<span>${tag}</span>`).join("");
   const titleLines = beat.name.split(" ");
   const coverImage = beat.coverUrl
-    ? `<img class="beat-cover-image" src="${beat.coverUrl}" alt="Cover ${beat.name}" loading="lazy" decoding="async" />`
+    ? `<img class="beat-cover-image" src="${beat.coverUrl}" alt="Cover ${beat.name}" loading="lazy" decoding="async" onerror="this.closest('.beat-cover').classList.remove('has-cover'); this.remove();" />`
     : "";
   const fallbackLogo = beat.coverUrl
     ? ""
