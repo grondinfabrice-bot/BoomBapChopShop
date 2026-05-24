@@ -1,5 +1,5 @@
 export function Footer() {
-  const logoSrc = "./src/assets/boom-bap-chop-shop-logo.png";
+  const logoSrc = "./src/assets/boom-bap-chop-shop-logo.png?v=2";
 
   return `
     <footer class="site-footer">

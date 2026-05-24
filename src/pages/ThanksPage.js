@@ -1,9 +1,7 @@
-import { Vinyl } from "../components/common/Vinyl.js";
-
 export function ThanksPage(state) {
   return `
     <section class="thanks-wrap">
-      ${Vinyl({ size: "xl" })}
+      <img class="thanks-logo-mark" src="./src/assets/boom-bap-chop-shop-logo.png?v=2" alt="BOOM BAP CHOP SHOP" />
       <p class="thanks-eyebrow">Payment confirmed</p>
       <h1 class="thanks-title">Respect<span>For the support</span></h1>
       <p class="thanks-sub">Your purchase is confirmed. Your download link is on the way to your inbox.</p>

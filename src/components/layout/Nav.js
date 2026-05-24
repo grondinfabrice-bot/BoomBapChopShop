@@ -1,6 +1,6 @@
 export function Nav(state) {
   const count = state.cart.length;
-  const logoSrc = "./src/assets/boom-bap-chop-shop-logo.png";
+  const logoSrc = "./src/assets/boom-bap-chop-shop-logo.png?v=2";
 
   return `
     <nav class="site-nav" aria-label="Navigation principale">

@@ -6,15 +6,15 @@ import {
   setState,
   subscribe,
 } from "./state/store.js?v=3";
-import { Shell } from "./components/Shell.js?v=11";
-import { HomePage } from "./pages/HomePage.js?v=15";
+import { Shell } from "./components/Shell.js?v=12";
+import { HomePage } from "./pages/HomePage.js?v=17";
 import { BlogPage } from "./pages/BlogPage.js?v=6";
 import { AboutPage } from "./pages/AboutPage.js?v=2";
 import { LicensingPage } from "./pages/LicensingPage.js?v=1";
 import { ContactPage } from "./pages/ContactPage.js?v=1";
 import { UpsellPage } from "./pages/UpsellPage.js?v=4";
 import { CheckoutPage } from "./pages/CheckoutPage.js?v=3";
-import { ThanksPage } from "./pages/ThanksPage.js";
+import { ThanksPage } from "./pages/ThanksPage.js?v=3";
 import { AdminPage } from "./pages/AdminPage.js";
 import { featuredBeat } from "./data/beats.js?v=3";
 import { getCurrentTrack } from "./state/store.js";
@@ -91,6 +91,8 @@ function setupPageMotion(page, pageChanged) {
     ".featured-info",
     ".sp1200-graphic",
     ".crate-sep",
+    ".testimonials-section > *",
+    ".testimonial-grid > *",
     ".section-header",
     ".catalogue-toolbar",
     ".filter-row",

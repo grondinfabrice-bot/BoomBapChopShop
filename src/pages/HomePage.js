@@ -3,7 +3,7 @@ import { serviceOffers } from "../data/content.js?v=5";
 import { SectionHeader } from "../components/common/SectionHeader.js";
 import { Waveform } from "../components/player/Waveform.js";
 import { LicenseButtons } from "../components/shop/LicenseButtons.js?v=4";
-import { BeatRow } from "../components/shop/BeatRow.js?v=4";
+import { BeatRow } from "../components/shop/BeatRow.js?v=5";
 import { Sp1200Panel } from "../components/studio/Sp1200Panel.js?v=2";
 import { time } from "../utils/format.js";
 
@@ -78,6 +78,7 @@ export function HomePage(state) {
     </section>
     ${Sp1200Panel(state)}
     ${CrateSeparator()}
+    ${TestimonialsSection()}
     <section class="playlist-section" id="catalogue">
       ${SectionHeader("Browse", "Beats", `${visibleBeats.length} tracks`)}
       <div class="catalogue-toolbar">
@@ -143,6 +144,58 @@ function CrateSeparator() {
       </div>
       <div class="crate-text">Authentic sounds. Classic vibes. Built to last.</div>
     </div>
+  `;
+}
+
+function TestimonialsSection() {
+  const testimonials = [
+    {
+      name: "Malo K.",
+      role: "Independent artist",
+      rating: 5,
+      quote: "The beat had that dusty knock without fighting my vocal. I wrote fast, recorded clean, and the final track kept its grit.",
+    },
+    {
+      name: "Nina V.",
+      role: "Singer / songwriter",
+      rating: 5,
+      quote: "Everything felt intentional: warm samples, drums with weight, and enough space to build a real song around the hook.",
+    },
+    {
+      name: "R. Camden",
+      role: "Producer",
+      rating: 4,
+      quote: "Licensing was clear, delivery was quick, and the stems gave me room to shape the record without losing the original feel.",
+    },
+  ];
+
+  return `
+    <section class="testimonials-section" aria-labelledby="testimonials-title">
+      <div class="testimonials-head">
+        <span class="featured-kicker">Artist feedback</span>
+        <h2 id="testimonials-title">Trusted when the verse needs weight.</h2>
+      </div>
+      <div class="testimonial-grid">
+        ${testimonials.map(TestimonialCard).join("")}
+      </div>
+    </section>
+  `;
+}
+
+function TestimonialCard(item) {
+  const stars = Array.from({ length: 5 }, (_, index) => `
+    <span class="${index < item.rating ? "filled" : ""}" aria-hidden="true">★</span>
+  `).join("");
+
+  return `
+    <article class="testimonial-card">
+      <div class="testimonial-rating" aria-label="${item.rating} out of 5 stars">${stars}</div>
+      <p>“${item.quote}”</p>
+      <footer>
+        <strong>${item.name}</strong>
+        <span>${item.role}</span>
+      </footer>
+    </article>
   `;
 }
 

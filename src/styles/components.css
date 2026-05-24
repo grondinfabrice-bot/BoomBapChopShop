@@ -67,11 +67,9 @@
   flex: 0 0 auto;
   width: 54px;
   height: 54px;
-  border: 1px solid rgba(176, 141, 87, 0.74);
-  border-radius: 50%;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
-  box-shadow: 0 0 0 2px rgba(16, 16, 15, 0.72), 0 8px 18px rgba(0, 0, 0, 0.32);
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.22));
 }
 
 .logo-text {
@@ -911,10 +909,8 @@ input[type="range"] {
 .footer-logo img {
   width: 72px;
   height: 72px;
-  border: 1px solid rgba(176, 141, 87, 0.55);
-  border-radius: 50%;
-  object-fit: cover;
-  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+  object-fit: contain;
+  filter: drop-shadow(0 8px 16px rgba(0, 0, 0, 0.16));
 }
 
 .site-footer span {

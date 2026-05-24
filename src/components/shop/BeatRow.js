@@ -12,7 +12,7 @@ export function BeatRow(beat, index, state) {
     : "";
   const fallbackLogo = beat.coverUrl
     ? ""
-    : `<img class="beat-cover-logo" src="./src/assets/boom-bap-chop-shop-logo.png" alt="" aria-hidden="true" loading="lazy" decoding="async" />`;
+    : `<img class="beat-cover-logo" src="./src/assets/boom-bap-chop-shop-logo.png?v=2" alt="" aria-hidden="true" loading="lazy" decoding="async" />`;
 
   return `
     <article class="beat-row ${playing ? "playing" : ""}" data-play-track="${beat.id}">

@@ -252,6 +252,7 @@
 }
 
 .featured-player,
+.testimonials-section,
 .playlist-section,
 .shop-info-section,
 .licensing-section,
@@ -571,6 +572,87 @@
   color: var(--deep-brick);
   font-family: var(--font-display);
   text-transform: uppercase;
+}
+
+.testimonials-section {
+  scroll-margin-top: 112px;
+  padding: clamp(2.4rem, 5vw, 3.4rem) 0;
+}
+
+.testimonials-head {
+  display: grid;
+  grid-template-columns: minmax(220px, 0.7fr) minmax(280px, 1fr);
+  gap: 1rem;
+  align-items: end;
+  margin-bottom: 1rem;
+}
+
+.testimonials-head h2 {
+  margin: 0;
+  color: var(--charcoal);
+  font-family: var(--font-hero);
+  font-size: clamp(2.35rem, 5vw, 4rem);
+  font-weight: 400;
+  line-height: 0.96;
+  text-transform: uppercase;
+}
+
+.testimonial-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+.testimonial-card {
+  display: grid;
+  gap: 1rem;
+  padding: clamp(1.1rem, 3vw, 1.35rem);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background:
+    linear-gradient(180deg, rgba(243, 238, 230, 0.78), rgba(229, 220, 203, 0.58)),
+    repeating-linear-gradient(90deg, rgba(30, 30, 30, 0.026) 0 1px, transparent 1px 28px);
+  box-shadow: inset 0 1px 0 rgba(243, 238, 230, 0.46);
+}
+
+.testimonial-rating {
+  display: flex;
+  gap: 0.22rem;
+  color: rgba(30, 30, 30, 0.28);
+  font-size: 1.05rem;
+}
+
+.testimonial-rating .filled {
+  color: var(--muted-gold);
+  text-shadow: 0 1px 0 rgba(30, 30, 30, 0.16);
+}
+
+.testimonial-card p {
+  margin: 0;
+  color: var(--charcoal);
+  font-size: 0.98rem;
+  line-height: 1.7;
+}
+
+.testimonial-card footer {
+  display: grid;
+  gap: 0.12rem;
+  margin-top: auto;
+  padding-top: 0.8rem;
+  border-top: 1px solid rgba(30, 30, 30, 0.12);
+}
+
+.testimonial-card strong {
+  color: var(--deep-brick);
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 400;
+  text-transform: uppercase;
+}
+
+.testimonial-card footer span {
+  color: rgba(30, 30, 30, 0.62);
+  font-size: 0.82rem;
 }
 
 .playlist-section,
@@ -2028,6 +2110,15 @@
 .thanks-wrap {
   max-width: 760px;
   text-align: center;
+}
+
+.thanks-logo-mark {
+  display: block;
+  width: clamp(145px, 24vw, 190px);
+  height: clamp(145px, 24vw, 190px);
+  margin: 0 auto;
+  object-fit: contain;
+  filter: drop-shadow(0 18px 30px rgba(30, 30, 30, 0.22));
 }
 
 .thanks-eyebrow {

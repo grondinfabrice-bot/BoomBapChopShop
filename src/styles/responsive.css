@@ -106,11 +106,13 @@
   .license-detail-grid,
   .upsell-cards,
   .thanks-steps,
+  .testimonial-grid,
   .service-pricing {
     grid-template-columns: repeat(2, 1fr);
   }
 
-  .shop-info-section {
+  .shop-info-section,
+  .testimonials-head {
     grid-template-columns: 1fr;
   }
 }
@@ -208,6 +210,7 @@
   .admin-grid,
   .upsell-cards,
   .thanks-steps,
+  .testimonial-grid,
   .service-pricing,
   .shop-info-section,
   .contact-info,
