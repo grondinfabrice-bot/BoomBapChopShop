@@ -11,7 +11,12 @@ export function Sp1200Panel(state) {
         ${display.map((line) => `&gt; ${line}`).join("<br>")}_ 
       </div>
       <div class="sp-pads">
-        ${beats.map((beat) => `<button class="sp-pad" data-sp-pad="${beat.id}" type="button" aria-label="${beat.name}"></button>`).join("")}
+        ${beats.map((beat) => {
+          const active = beat.id === state.currentTrackId;
+          const pulseClass = active && state.isPlaying ? "is-playing" : active ? "is-active" : "";
+          const pulseSpeed = `${(60 / beat.bpm).toFixed(3)}s`;
+          return `<button class="sp-pad ${pulseClass}" data-sp-pad="${beat.id}" style="--pad-bpm: ${pulseSpeed}" type="button" aria-label="${beat.name}"></button>`;
+        }).join("")}
       </div>
       <div class="sp-label-row">
         <span>Pitch</span>

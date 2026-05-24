@@ -1,11 +1,10 @@
 import { featuredBeat } from "../data/beats.js?v=3";
 import { serviceOffers } from "../data/content.js?v=5";
 import { SectionHeader } from "../components/common/SectionHeader.js";
-import { Vinyl } from "../components/common/Vinyl.js";
 import { Waveform } from "../components/player/Waveform.js";
 import { LicenseButtons } from "../components/shop/LicenseButtons.js?v=4";
 import { BeatRow } from "../components/shop/BeatRow.js?v=4";
-import { Sp1200Panel } from "../components/studio/Sp1200Panel.js";
+import { Sp1200Panel } from "../components/studio/Sp1200Panel.js?v=2";
 import { time } from "../utils/format.js";
 
 export function HomePage(state) {
@@ -13,6 +12,7 @@ export function HomePage(state) {
   const filters = ["all", ...new Set(beats.flatMap((beat) => beat.tags || []))];
   const visibleBeats = state.filter === "all" ? beats : beats.filter((beat) => (beat.tags || []).includes(state.filter));
   const currentSeconds = Math.floor(featuredBeat.durationSeconds * state.featuredProgress);
+  const featuredCover = featuredBeat.coverUrl || beats.find((beat) => beat.id === featuredBeat.storeBeatId)?.coverUrl;
 
   return `
     <section class="featured-section">
@@ -39,41 +39,41 @@ export function HomePage(state) {
             <span>Built for artists</span>
           </div>
         </div>
-        <div class="cover-img hero-product">
-          <div class="cover-art">
-            ${Vinyl({ size: "lg", paused: !state.featuredPlaying })}
-            <div class="cover-beatname">${featuredBeat.name}</div>
-            <div class="cover-label-sticker">${featuredBeat.catalog} · PROMO COPY</div>
-          </div>
-        </div>
       </div>
     </section>
     <section class="featured-player">
       <div class="featured-info">
-        <div class="featured-track-head">
-          <div>
-            <span class="featured-kicker">Featured drop</span>
-            <h2>${featuredBeat.name}</h2>
+        ${featuredCover ? `
+          <div class="featured-cover-thumb">
+            <img src="${featuredCover}" alt="${featuredBeat.name} cover" />
+            <span>${featuredBeat.catalog}</span>
           </div>
-          <div class="beat-meta">
-            <span class="meta-tag bpm">${featuredBeat.bpm} BPM</span>
-            <span class="meta-tag key">${featuredBeat.key}</span>
-            <span class="meta-tag mood">${featuredBeat.mood}</span>
-            <span class="meta-tag type">${featuredBeat.type}</span>
+        ` : ""}
+        <div class="featured-player-body">
+          <div class="featured-track-head">
+            <div>
+              <span class="featured-kicker">Featured drop</span>
+              <h2>${featuredBeat.name}</h2>
+            </div>
+            <div class="beat-meta">
+              <span class="meta-tag bpm">${featuredBeat.bpm} BPM</span>
+              <span class="meta-tag key">${featuredBeat.key}</span>
+              <span class="meta-tag mood">${featuredBeat.mood}</span>
+              <span class="meta-tag type">${featuredBeat.type}</span>
+            </div>
           </div>
+          <p class="beat-desc">${featuredBeat.description}</p>
+          <div class="player-wrap">
+            ${Waveform(state.featuredProgress, "data-featured-wave")}
+            <div class="player-controls">
+              <button class="btn-play" data-featured-toggle type="button">${state.featuredPlaying ? "Pause" : "Play"}</button>
+              <span class="time-display">${time(currentSeconds)} / ${featuredBeat.duration}</span>
+              <label class="volume-wrap">VOL <input type="range" min="0" max="100" value="80" /></label>
+            </div>
+          </div>
+          ${LicenseButtons(featuredBeat)}
+          <div class="price-note">Instant delivery after checkout · License included</div>
         </div>
-        <p class="beat-desc">${featuredBeat.description}</p>
-        <div class="player-wrap">
-          ${Waveform(state.featuredProgress, "data-featured-wave")}
-          <div class="player-controls">
-            <button class="btn-play" data-featured-toggle type="button">${state.featuredPlaying ? "Pause" : "Play"}</button>
-            <span class="time-display">${time(currentSeconds)} / ${featuredBeat.duration}</span>
-            <label class="volume-wrap">VOL <input type="range" min="0" max="100" value="80" /></label>
-          </div>
-        </div>
-        ${LicenseButtons(featuredBeat)}
-        <div class="price-note">Instant delivery after checkout · License included</div>
-        ${MpcPads()}
       </div>
     </section>
     ${Sp1200Panel(state)}
@@ -132,21 +132,6 @@ export function HomePage(state) {
       </div>
       <p>Start with MP3 Basic, upgrade to WAV + stems when you need more control, or lock an exclusive for your campaign. Every purchase keeps the checkout simple and delivery immediate.</p>
     </section>
-  `;
-}
-
-function MpcPads() {
-  return `
-    <div class="mpc-machine-deco" aria-hidden="true">
-      ${[0, 1, 2].map((row) => `
-        <div class="mpc-row">
-          ${[0, 1, 2, 3].map((col) => {
-            const lit = ["lit-red", "", "", "lit-yel", "", "lit-ora", "", "", "", "", "lit-red", ""][row * 4 + col];
-            return `<button class="mpc-pad ${lit}" data-pad-hit type="button"></button>`;
-          }).join("")}
-        </div>
-      `).join("")}
-    </div>
   `;
 }
 

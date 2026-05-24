@@ -7,7 +7,7 @@ import {
   subscribe,
 } from "./state/store.js?v=3";
 import { Shell } from "./components/Shell.js?v=11";
-import { HomePage } from "./pages/HomePage.js?v=9";
+import { HomePage } from "./pages/HomePage.js?v=15";
 import { BlogPage } from "./pages/BlogPage.js?v=6";
 import { AboutPage } from "./pages/AboutPage.js?v=2";
 import { LicensingPage } from "./pages/LicensingPage.js?v=1";
@@ -32,6 +32,9 @@ let rootNode;
 let featuredTimer;
 let upsellTimer;
 let previousPage;
+let motionObserver;
+let motionPage = "";
+const revealedMotionKeys = new Set();
 const audioPlayer = new Audio();
 audioPlayer.preload = "metadata";
 
@@ -66,8 +69,71 @@ function render() {
   rootNode.innerHTML = Shell(Page(state), state);
   bindGlobalActions();
   bindPageActions();
-  if (pageChanged) resetPageScroll();
+  if (pageChanged) {
+    resetPageScroll();
+  }
+  setupPageMotion(state.page, pageChanged);
   previousPage = state.page;
+}
+
+function setupPageMotion(page, pageChanged) {
+  if (pageChanged && motionPage !== page) {
+    revealedMotionKeys.clear();
+    motionPage = page;
+  }
+
+  if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+  motionObserver?.disconnect();
+
+  const selectors = [
+    ".featured-label",
+    ".hero-copy > *",
+    ".featured-info",
+    ".sp1200-graphic",
+    ".crate-sep",
+    ".section-header",
+    ".catalogue-toolbar",
+    ".filter-row",
+    ".playlist-container > *",
+    ".shop-info-section > *",
+    ".licensing-section > *",
+    ".licensing-page-wrap > *",
+    ".license-detail-grid > *",
+    ".license-compare > *",
+    ".license-table > *",
+    ".blog-wrap > *",
+    ".about-wrap > *",
+    ".contact-wrap > *",
+    ".admin-wrap > *",
+    ".checkout-wrap > *",
+    ".thanks-wrap > *",
+    ".upsell-wrap > *",
+  ];
+
+  const items = [...rootNode.querySelectorAll(selectors.join(","))]
+    .filter((item) => item.offsetParent !== null);
+
+  motionObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (!entry.isIntersecting) return;
+      entry.target.classList.add("is-visible");
+      if (entry.target.dataset.motionKey) revealedMotionKeys.add(entry.target.dataset.motionKey);
+      motionObserver.unobserve(entry.target);
+    });
+  }, { rootMargin: "0px 0px -10% 0px", threshold: 0.08 });
+
+  items.forEach((item, index) => {
+    const key = `${page}:${index}:${item.tagName}:${item.className}`;
+    item.dataset.motionKey = key;
+    item.style.setProperty("--motion-delay", `${Math.min((index % 5) * 55, 220)}ms`);
+    item.classList.add("motion-reveal");
+
+    if (revealedMotionKeys.has(key)) {
+      item.classList.add("is-visible");
+    } else {
+      motionObserver.observe(item);
+    }
+  });
 }
 
 function bindGlobalActions() {
@@ -212,13 +278,6 @@ function bindPageActions() {
       pad.classList.add("hit");
       setTimeout(() => pad.classList.remove("hit"), 250);
       window.BBCS.playTrack(id);
-    });
-  });
-
-  rootNode.querySelectorAll("[data-pad-hit]").forEach((pad) => {
-    pad.addEventListener("click", () => {
-      pad.classList.add("pad-flash");
-      setTimeout(() => pad.classList.remove("pad-flash"), 180);
     });
   });
 

@@ -91,6 +91,30 @@ main {
   z-index: 1;
 }
 
+.motion-reveal {
+  opacity: 0;
+  transform: translateY(16px) scale(0.992);
+  transition:
+    opacity 0.62s cubic-bezier(0.21, 0.78, 0.28, 0.99),
+    transform 0.62s cubic-bezier(0.21, 0.78, 0.28, 0.99);
+  transition-delay: var(--motion-delay, 0ms);
+  will-change: opacity, transform;
+}
+
+.motion-reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  will-change: auto;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .motion-reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
 .page-bg-deco,
 .vinyl-bg {
   position: fixed;

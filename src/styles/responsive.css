@@ -16,6 +16,7 @@
   }
 
   .featured-inner,
+  .featured-info,
   .featured-track-head,
   .licensing-section,
   .license-table > div,
@@ -29,6 +30,10 @@
 
   .featured-track-head {
     display: grid;
+  }
+
+  .featured-cover-thumb {
+    width: min(250px, 100%);
   }
 
   .hero-benefits {
