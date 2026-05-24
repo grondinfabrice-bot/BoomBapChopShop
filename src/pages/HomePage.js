@@ -131,7 +131,16 @@ export function HomePage(state) {
         <span class="featured-kicker">Licensing info</span>
         <h2>Clear options for every release.</h2>
       </div>
-      <p>Start with MP3 Basic, upgrade to WAV + stems when you need more control, or lock an exclusive for your campaign. Every purchase keeps the checkout simple and delivery immediate.</p>
+      <div class="licensing-copy">
+        <p>Start with MP3 Basic, upgrade to WAV + stems when you need more control, or lock an exclusive for your campaign. Every purchase keeps the checkout simple and delivery immediate.</p>
+        <div class="licensing-mini-list" aria-label="License options">
+          <span>MP3 Basic</span>
+          <span>WAV Lease</span>
+          <span>WAV + Stems</span>
+          <span>Exclusive</span>
+        </div>
+        <button class="licensing-cta" data-route="licensing" type="button">View licensing</button>
+      </div>
     </section>
   `;
 }

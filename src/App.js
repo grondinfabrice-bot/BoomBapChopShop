@@ -7,7 +7,7 @@ import {
   subscribe,
 } from "./state/store.js?v=3";
 import { Shell } from "./components/Shell.js?v=12";
-import { HomePage } from "./pages/HomePage.js?v=17";
+import { HomePage } from "./pages/HomePage.js?v=18";
 import { BlogPage } from "./pages/BlogPage.js?v=6";
 import { AboutPage } from "./pages/AboutPage.js?v=2";
 import { LicensingPage } from "./pages/LicensingPage.js?v=1";

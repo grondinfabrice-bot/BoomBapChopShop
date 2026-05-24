@@ -19,6 +19,7 @@
   .featured-info,
   .featured-track-head,
   .licensing-section,
+  .licensing-mini-list,
   .license-table > div,
   .about-hero,
   .about-process,
@@ -200,6 +201,7 @@
   }
 
   .btn-hero,
+  .licensing-cta,
   .license-btn {
     flex: 1 1 100%;
   }
@@ -216,6 +218,10 @@
   .contact-info,
   .cgrid {
     grid-template-columns: 1fr;
+  }
+
+  .licensing-cta {
+    justify-self: stretch;
   }
 
   .license-picker-grid {
