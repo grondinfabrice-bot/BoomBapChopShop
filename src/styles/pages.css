@@ -1896,6 +1896,7 @@
 }
 
 .contact-wrap {
+  position: relative;
   max-width: 760px;
 }
 
@@ -1927,6 +1928,19 @@
 .cgrid {
   display: grid;
   gap: 1rem;
+}
+
+.contact-form {
+  position: relative;
+  isolation: isolate;
+  z-index: 1;
+  padding: 1.15rem;
+  border: 1px solid rgba(176, 141, 87, 0.28);
+  border-radius: 8px;
+  background:
+    linear-gradient(135deg, rgba(243, 238, 230, 0.58), rgba(199, 191, 174, 0.24)),
+    rgba(243, 238, 230, 0.28);
+  overflow: hidden;
 }
 
 .cgrid {
