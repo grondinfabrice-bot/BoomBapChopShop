@@ -1,4 +1,4 @@
-import { beats } from "../data/beats.js?v=3";
+import { beats } from "../data/beats.js?v=5";
 import { posts } from "../data/content.js?v=19";
 import { getLicenseById, licenseOptions } from "../data/licenses.js?v=1";
 import { uid } from "../utils/format.js";
@@ -26,6 +26,11 @@ const state = {
   blogCategory: "all",
   blogTag: "",
   licensePickerBeatId: null,
+  servicePickerOffer: null,
+  servicePickerSelection: {
+    targetIds: [],
+    customTitle: "",
+  },
 };
 
 const listeners = new Set();
@@ -57,7 +62,19 @@ export function navigate(page) {
   window.scrollTo({ top: 0, behavior: "instant" });
 }
 
-export function addCartItem({ beatId = "", name, license, licenseId = "", price, type = "beat", licenseSummary = "", includes = [] }) {
+export function addCartItem({
+  beatId = "",
+  name,
+  license,
+  licenseId = "",
+  price,
+  type = "beat",
+  licenseSummary = "",
+  includes = [],
+  serviceFor = "",
+  serviceTargetId = "",
+  serviceTargetType = "",
+}) {
   const selectedLicense = licenseOptions.some((option) => option.id === licenseId) ? getLicenseById(licenseId) : null;
   const licenseName = license || selectedLicense?.name || "Upgrade";
   const itemLicenseId = selectedLicense?.id || licenseId || uid("upgrade");
@@ -75,6 +92,9 @@ export function addCartItem({ beatId = "", name, license, licenseId = "", price,
     includes: selectedLicense?.includes || includes || ["Upgrade added to order"],
     usage: selectedLicense?.allowed || [],
     licenseSummary: selectedLicense?.short || licenseSummary || "Optional cart upgrade",
+    serviceFor,
+    serviceTargetId,
+    serviceTargetType,
   });
   setState({ cart: state.cart });
   return true;

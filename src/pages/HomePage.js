@@ -1,4 +1,4 @@
-import { featuredBeat } from "../data/beats.js?v=3";
+import { featuredBeat } from "../data/beats.js?v=5";
 import { serviceOffers } from "../data/content.js?v=5";
 import { SectionHeader } from "../components/common/SectionHeader.js";
 import { Waveform } from "../components/player/Waveform.js";

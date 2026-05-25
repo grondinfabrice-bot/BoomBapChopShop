@@ -14,6 +14,7 @@ export function CheckoutPage(state) {
           <div class="os-line">
             <span>
               ${item.name} · ${item.license}
+              ${item.serviceFor ? `<small>For: ${item.serviceFor}</small>` : ""}
               <small>${(item.includes || []).slice(0, 2).join(" · ")}</small>
             </span>
             <span>${money(item.price)}</span>

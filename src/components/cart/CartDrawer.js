@@ -34,6 +34,7 @@ function CartItem(item) {
       <div>
         <h3>${item.name}</h3>
         <p>${item.license}</p>
+        ${item.serviceFor ? `<small class="cart-service-for">For: ${item.serviceFor}</small>` : ""}
         <small>${item.licenseSummary || "License details included at checkout"}</small>
         <button class="cart-remove-btn" data-remove-cart="${item.id}" type="button">Remove item</button>
       </div>

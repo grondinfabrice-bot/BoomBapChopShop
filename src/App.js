@@ -1,23 +1,23 @@
 import {
   addCartItem,
+  getCurrentTrack,
   getState,
   removeCartItem,
   setContent,
   setState,
   subscribe,
-} from "./state/store.js?v=17";
-import { Shell } from "./components/Shell.js?v=12";
-import { HomePage } from "./pages/HomePage.js?v=20";
+} from "./state/store.js?v=21";
+import { Shell } from "./components/Shell.js?v=15";
+import { HomePage } from "./pages/HomePage.js?v=22";
 import { BlogPage } from "./pages/BlogPage.js?v=8";
 import { AboutPage } from "./pages/AboutPage.js?v=2";
 import { LicensingPage } from "./pages/LicensingPage.js?v=3";
 import { ContactPage } from "./pages/ContactPage.js?v=6";
 import { UpsellPage } from "./pages/UpsellPage.js?v=4";
-import { CheckoutPage } from "./pages/CheckoutPage.js?v=3";
+import { CheckoutPage } from "./pages/CheckoutPage.js?v=4";
 import { ThanksPage } from "./pages/ThanksPage.js?v=3";
 import { AdminPage } from "./pages/AdminPage.js";
-import { featuredBeat } from "./data/beats.js?v=3";
-import { getCurrentTrack } from "./state/store.js";
+import { featuredBeat } from "./data/beats.js?v=5";
 import {
   getAdminSession,
   loadAdminContent,
@@ -34,6 +34,7 @@ let upsellTimer;
 let previousPage;
 let motionObserver;
 let motionPage = "";
+let lastAudioProgressRender = 0;
 const revealedMotionKeys = new Set();
 const audioPlayer = new Audio();
 audioPlayer.preload = "metadata";
@@ -177,6 +178,28 @@ function bindGlobalActions() {
     if (event.target.dataset.licenseOverlay !== undefined) setState({ licensePickerBeatId: null });
   });
 
+  rootNode.querySelector("[data-service-overlay]")?.addEventListener("click", (event) => {
+    if (event.target.dataset.serviceOverlay !== undefined) setState({ servicePickerOffer: null });
+  });
+
+  rootNode.querySelector("[data-service-close]")?.addEventListener("click", () => {
+    setState({ servicePickerOffer: null });
+  });
+
+  rootNode.querySelector("[data-service-target-add]")?.addEventListener("click", () => {
+    addSelectedStudioServices();
+  });
+
+  rootNode.querySelectorAll("[data-service-target-beat]").forEach((input) => {
+    input.addEventListener("change", () => {
+      updateServicePickerSelection();
+    });
+  });
+
+  rootNode.querySelector("[data-service-custom-title]")?.addEventListener("input", () => {
+    updateServicePickerSelection();
+  });
+
   rootNode.querySelectorAll("[data-remove-cart]").forEach((button) => {
     button.addEventListener("click", () => window.BBCS.removeCart(button.dataset.removeCart));
   });
@@ -192,13 +215,27 @@ function bindGlobalActions() {
     });
   });
 
-  rootNode.querySelector("[data-mini-toggle]")?.addEventListener("click", () => {
+  rootNode.querySelector("[data-mini-toggle]")?.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
     toggleCurrentTrack();
   });
 
-  rootNode.querySelector("[data-next]")?.addEventListener("click", () => window.BBCS.nextTrack(1));
-  rootNode.querySelector("[data-prev]")?.addEventListener("click", () => window.BBCS.nextTrack(-1));
-  rootNode.querySelector("[data-restart]")?.addEventListener("click", () => restartCurrentTrack());
+  rootNode.querySelector("[data-next]")?.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    window.BBCS.nextTrack(1);
+  });
+  rootNode.querySelector("[data-prev]")?.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    window.BBCS.nextTrack(-1);
+  });
+  rootNode.querySelector("[data-restart]")?.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    restartCurrentTrack();
+  });
 
   rootNode.querySelector("[data-newsletter]")?.addEventListener("submit", (event) => {
     event.preventDefault();
@@ -246,8 +283,10 @@ function bindPageActions() {
   });
 
   rootNode.querySelectorAll("[data-play-track]").forEach((row) => {
-    row.addEventListener("click", (event) => {
+    row.addEventListener("pointerdown", (event) => {
       if (event.target.closest("[data-add-cart], [data-license-open]")) return;
+      event.preventDefault();
+      event.stopPropagation();
       window.BBCS.playTrack(Number(row.dataset.playTrack));
     });
   });
@@ -285,31 +324,24 @@ function bindPageActions() {
 
   rootNode.querySelectorAll("[data-upsell]").forEach((button) => {
     button.addEventListener("click", () => {
-      window.BBCS.addCart({
+      openServicePicker({
         name: button.dataset.name,
-        license: "Studio service",
-        licenseId: `service-${button.dataset.name}`,
         price: Number(button.dataset.price),
-        type: "service",
-        licenseSummary: "Optional mix + mastering support before release",
+        summary: "Optional mix + mastering support before release",
         includes: ["Mix + mastering service", "Final delivery details confirmed after checkout"],
+        afterAddPage: "checkout",
       });
-      route("checkout");
     });
   });
 
   rootNode.querySelectorAll("[data-service-cart]").forEach((button) => {
     button.addEventListener("click", () => {
-      const added = window.BBCS.addCart({
+      openServicePicker({
         name: button.dataset.name,
-        license: "Mix + Mastering",
-        licenseId: `service-${button.dataset.name}`,
         price: Number(button.dataset.price),
-        type: "service",
-        licenseSummary: button.dataset.summary,
+        summary: button.dataset.summary,
         includes: button.dataset.includes.split("|"),
       });
-      if (added) setState({ cartOpen: true });
     });
   });
 
@@ -403,6 +435,105 @@ function bindPageActions() {
   });
 }
 
+function openServicePicker(offer) {
+  setState({
+    servicePickerOffer: {
+      name: offer.name,
+      price: offer.price,
+      summary: offer.summary,
+      includes: offer.includes || [],
+      afterAddPage: offer.afterAddPage || "",
+    },
+    servicePickerSelection: {
+      targetIds: [],
+      customTitle: "",
+    },
+    cartOpen: false,
+  });
+}
+
+function updateServicePickerSelection() {
+  const state = getState();
+  state.servicePickerSelection = {
+    targetIds: [...rootNode.querySelectorAll("[data-service-target-beat]:checked")].map((input) => String(input.value)),
+    customTitle: rootNode.querySelector("[data-service-custom-title]")?.value || "",
+  };
+}
+
+function addSelectedStudioServices() {
+  const state = getState();
+  const offer = state.servicePickerOffer;
+  if (!offer) return;
+  updateServicePickerSelection();
+
+  const selectedTargets = [...rootNode.querySelectorAll("[data-service-target-beat]:checked")].map((input) => ({
+    id: input.value,
+    name: input.dataset.targetName,
+    type: "beat",
+  }));
+  const customTitle = rootNode.querySelector("[data-service-custom-title]")?.value.trim() || "";
+  if (customTitle) {
+    selectedTargets.push({
+      id: serviceKey(customTitle),
+      name: customTitle,
+      type: "custom",
+    });
+  }
+
+  if (!selectedTargets.length) return toast("Choose the song for this service");
+
+  let addedCount = 0;
+  let blockedCount = 0;
+  selectedTargets.forEach((target) => {
+    const alreadyHasService = state.cart.some((item) => (
+      item.type === "service"
+      && item.serviceTargetType === target.type
+      && String(item.serviceTargetId) === String(target.id)
+    ));
+    if (alreadyHasService) {
+      blockedCount += 1;
+      return;
+    }
+
+    const added = addCartItem({
+      name: offer.name,
+      license: "Mix + Mastering",
+      licenseId: `service-${serviceKey(offer.name)}-${target.type}-${serviceKey(target.id)}`,
+      price: Number(offer.price),
+      type: "service",
+      licenseSummary: `${offer.summary || "Mix + mastering for one song."} Assigned to: ${target.name}`,
+      includes: offer.includes,
+      serviceFor: target.name,
+      serviceTargetId: target.id,
+      serviceTargetType: target.type,
+    });
+    if (added) addedCount += 1;
+  });
+
+  if (!addedCount) {
+    return toast(blockedCount ? "This song already has a mix/master service" : "This service is already in your cart for that song");
+  }
+
+  setState({
+    servicePickerOffer: null,
+    servicePickerSelection: {
+      targetIds: [],
+      customTitle: "",
+    },
+    cartOpen: !offer.afterAddPage,
+    page: offer.afterAddPage || state.page,
+  });
+  toast(addedCount > 1 ? `${addedCount} services added to cart` : "Service added to cart");
+}
+
+function serviceKey(value) {
+  return String(value || "")
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "");
+}
+
 function route(page) {
   if (page === "admin") window.location.hash = "admin";
   if (page !== "admin" && window.location.hash === "#admin") history.replaceState(null, "", window.location.pathname);
@@ -444,6 +575,9 @@ audioPlayer.addEventListener("timeupdate", () => {
   if (!track) return;
   const duration = audioPlayer.duration || track.durationSeconds;
   if (!duration) return;
+  const now = performance.now();
+  if (now - lastAudioProgressRender < 250 && !audioPlayer.ended) return;
+  lastAudioProgressRender = now;
   setState({ trackProgress: clamp(audioPlayer.currentTime / duration) });
 });
 
@@ -477,11 +611,10 @@ function requestTrack(trackId) {
   if (!sameTrack || audioPlayer.src !== new URL(track.previewUrl, window.location.href).href) {
     audioPlayer.src = track.previewUrl;
     audioPlayer.currentTime = 0;
-    setState({ currentTrackId: trackId, trackProgress: 0 });
   }
 
   audioPlayer.play()
-    .then(() => setState({ currentTrackId: trackId, isPlaying: true }))
+    .then(() => setState({ currentTrackId: trackId, isPlaying: true, trackProgress: sameTrack ? state.trackProgress : 0 }))
     .catch(() => {
       setState({ isPlaying: false });
       toast("Audio playback blocked");
@@ -508,11 +641,12 @@ function restartCurrentTrack() {
   audioPlayer.currentTime = 0;
   setState({ trackProgress: 0 });
 
-  if (!state.isPlaying) return;
-  audioPlayer.play().catch(() => {
-    setState({ isPlaying: false });
-    toast("Audio playback blocked");
-  });
+  audioPlayer.play()
+    .then(() => setState({ isPlaying: true }))
+    .catch(() => {
+      setState({ isPlaying: false });
+      toast("Audio playback blocked");
+    });
 }
 
 function requestNextTrack(direction = 1) {
