@@ -1,3 +1,3 @@
-import { App } from "./App.js?v=85";
+import { App } from "./App.js?v=86";
 
 App(document.querySelector("#app"));

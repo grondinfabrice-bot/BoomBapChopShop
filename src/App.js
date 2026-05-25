@@ -6,7 +6,7 @@ import {
   setContent,
   setState,
   subscribe,
-} from "./state/store.js?v=25";
+} from "./state/store.js?v=26";
 import { Shell } from "./components/Shell.js?v=15";
 import { HomePage } from "./pages/HomePage.js?v=23";
 import { BlogPage } from "./pages/BlogPage.js?v=8";
@@ -27,6 +27,7 @@ import {
   signInAdmin,
   signOutAdmin,
 } from "./services/cms.js";
+import { time } from "./utils/format.js";
 
 let rootNode;
 let featuredTimer;
@@ -57,10 +58,51 @@ export function App(root) {
   window.addEventListener("hashchange", () => {
     if (window.location.hash === "#admin") route("admin");
   });
-  subscribe(render);
+  subscribe(handleStateChange);
   render();
   startClock();
   hydrateCms();
+}
+
+function handleStateChange(state, patch = {}) {
+  if (isPlaybackProgressPatch(patch)) {
+    updatePlaybackProgress(state, patch);
+    return;
+  }
+  render();
+}
+
+function isPlaybackProgressPatch(patch) {
+  const keys = Object.keys(patch);
+  return keys.length === 1 && (keys[0] === "trackProgress" || keys[0] === "featuredProgress");
+}
+
+function updatePlaybackProgress(state, patch) {
+  if (patch.featuredProgress !== undefined) {
+    const progress = state.featuredProgress;
+    rootNode.querySelector(".featured-player .player-progress")?.style.setProperty("width", `${progress * 100}%`);
+    rootNode.querySelector(".featured-player .time-display")?.replaceChildren(
+      document.createTextNode(`${time(Math.floor(featuredBeat.durationSeconds * progress))} / ${featuredBeat.duration}`)
+    );
+    updateWaveBars(rootNode.querySelector(".featured-player .player-waveform"), progress);
+  }
+
+  if (patch.trackProgress !== undefined) {
+    const track = state.beats.find((beat) => beat.id === state.currentTrackId);
+    const progress = state.trackProgress;
+    rootNode.querySelector(".mini-progress-fill")?.style.setProperty("width", `${progress * 100}%`);
+    const miniElapsed = rootNode.querySelector(".mini-progress-wrap .mini-time:first-child");
+    if (miniElapsed && track) miniElapsed.textContent = time(track.durationSeconds * progress);
+    updateWaveBars(rootNode.querySelector(".beat-row.playing .player-waveform"), progress);
+  }
+}
+
+function updateWaveBars(waveform, progress) {
+  if (!waveform) return;
+  waveform.querySelector(".player-progress")?.style.setProperty("width", `${progress * 100}%`);
+  waveform.querySelectorAll(".wbar").forEach((bar, index) => {
+    bar.classList.toggle("played", index / 64 <= progress);
+  });
 }
 
 function render() {

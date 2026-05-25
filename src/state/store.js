@@ -47,7 +47,7 @@ export function subscribe(listener) {
 
 export function setState(patch) {
   Object.assign(state, patch);
-  listeners.forEach((listener) => listener(state));
+  listeners.forEach((listener) => listener(state, patch));
 }
 
 export function setContent({ beats: nextBeats, posts: nextPosts }) {
