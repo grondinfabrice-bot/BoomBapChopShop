@@ -6,9 +6,9 @@ import {
   setContent,
   setState,
   subscribe,
-} from "./state/store.js?v=21";
+} from "./state/store.js?v=25";
 import { Shell } from "./components/Shell.js?v=15";
-import { HomePage } from "./pages/HomePage.js?v=22";
+import { HomePage } from "./pages/HomePage.js?v=23";
 import { BlogPage } from "./pages/BlogPage.js?v=8";
 import { AboutPage } from "./pages/AboutPage.js?v=2";
 import { LicensingPage } from "./pages/LicensingPage.js?v=3";
@@ -17,7 +17,7 @@ import { UpsellPage } from "./pages/UpsellPage.js?v=4";
 import { CheckoutPage } from "./pages/CheckoutPage.js?v=4";
 import { ThanksPage } from "./pages/ThanksPage.js?v=3";
 import { AdminPage } from "./pages/AdminPage.js";
-import { featuredBeat } from "./data/beats.js?v=5";
+import { featuredBeat } from "./data/beats.js?v=9";
 import {
   getAdminSession,
   loadAdminContent,
@@ -303,14 +303,23 @@ function bindPageActions() {
     });
   });
 
-  rootNode.querySelector("[data-featured-toggle]")?.addEventListener("click", () => {
-    const state = getState();
-    setState({ featuredPlaying: !state.featuredPlaying });
+  rootNode.querySelector("[data-featured-toggle]")?.addEventListener("pointerdown", (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    requestFeaturedTrack();
   });
 
   rootNode.querySelector("[data-featured-wave]")?.addEventListener("click", (event) => {
     const rect = event.currentTarget.getBoundingClientRect();
-    setState({ featuredProgress: clamp((event.clientX - rect.left) / rect.width) });
+    const progress = clamp((event.clientX - rect.left) / rect.width);
+    if (getState().featuredPlaying) audioPlayer.currentTime = featuredBeat.durationSeconds * progress;
+    setState({ featuredProgress: progress });
+  });
+
+  rootNode.querySelector("[data-volume-control]")?.addEventListener("input", (event) => {
+    const volume = clamp(Number(event.target.value) / 100);
+    audioPlayer.volume = volume;
+    getState().audioVolume = volume;
   });
 
   rootNode.querySelectorAll("[data-sp-pad]").forEach((pad) => {
@@ -557,12 +566,6 @@ function startClock() {
   clearInterval(featuredTimer);
   clearInterval(upsellTimer);
 
-  featuredTimer = setInterval(() => {
-    const state = getState();
-    if (!state.featuredPlaying) return;
-    setState({ featuredProgress: (state.featuredProgress + 1 / featuredBeat.durationSeconds) % 1 });
-  }, 1000);
-
   upsellTimer = setInterval(() => {
     const state = getState();
     if (state.page !== "upsell" || state.upsellSeconds <= 0) return;
@@ -571,22 +574,35 @@ function startClock() {
 }
 
 audioPlayer.addEventListener("timeupdate", () => {
+  const state = getState();
+  const now = performance.now();
+  if (now - lastAudioProgressRender < 250 && !audioPlayer.ended) return;
+  lastAudioProgressRender = now;
+
+  if (state.featuredPlaying) {
+    const duration = audioPlayer.duration || featuredBeat.durationSeconds;
+    if (!duration) return;
+    setState({ featuredProgress: clamp(audioPlayer.currentTime / duration) });
+    return;
+  }
+
   const track = getCurrentTrack();
   if (!track) return;
   const duration = audioPlayer.duration || track.durationSeconds;
   if (!duration) return;
-  const now = performance.now();
-  if (now - lastAudioProgressRender < 250 && !audioPlayer.ended) return;
-  lastAudioProgressRender = now;
   setState({ trackProgress: clamp(audioPlayer.currentTime / duration) });
 });
 
 audioPlayer.addEventListener("ended", () => {
-  setState({ isPlaying: false, trackProgress: 0 });
+  const state = getState();
+  setState(state.featuredPlaying
+    ? { featuredPlaying: false, featuredProgress: 0 }
+    : { isPlaying: false, trackProgress: 0 }
+  );
 });
 
 audioPlayer.addEventListener("error", () => {
-  setState({ isPlaying: false });
+  setState({ isPlaying: false, featuredPlaying: false });
   toast("Preview audio unavailable");
 });
 
@@ -612,9 +628,15 @@ function requestTrack(trackId) {
     audioPlayer.src = track.previewUrl;
     audioPlayer.currentTime = 0;
   }
+  audioPlayer.volume = state.audioVolume;
 
   audioPlayer.play()
-    .then(() => setState({ currentTrackId: trackId, isPlaying: true, trackProgress: sameTrack ? state.trackProgress : 0 }))
+    .then(() => setState({
+      currentTrackId: trackId,
+      isPlaying: true,
+      featuredPlaying: false,
+      trackProgress: sameTrack ? state.trackProgress : 0,
+    }))
     .catch(() => {
       setState({ isPlaying: false });
       toast("Audio playback blocked");
@@ -625,6 +647,34 @@ function toggleCurrentTrack() {
   const state = getState();
   if (!state.currentTrackId) return;
   requestTrack(state.currentTrackId);
+}
+
+function requestFeaturedTrack() {
+  const state = getState();
+  if (!featuredBeat.previewUrl) {
+    toast("Preview audio not added yet");
+    return;
+  }
+
+  const featuredUrl = new URL(featuredBeat.previewUrl, window.location.href).href;
+  if (state.featuredPlaying) {
+    audioPlayer.pause();
+    setState({ featuredPlaying: false });
+    return;
+  }
+
+  if (audioPlayer.src !== featuredUrl) {
+    audioPlayer.src = featuredBeat.previewUrl;
+    audioPlayer.currentTime = featuredBeat.durationSeconds * state.featuredProgress;
+  }
+  audioPlayer.volume = state.audioVolume;
+
+  audioPlayer.play()
+    .then(() => setState({ featuredPlaying: true, isPlaying: false }))
+    .catch(() => {
+      setState({ featuredPlaying: false });
+      toast("Audio playback blocked");
+    });
 }
 
 function restartCurrentTrack() {

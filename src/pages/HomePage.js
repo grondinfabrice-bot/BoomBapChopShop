@@ -1,4 +1,4 @@
-import { featuredBeat } from "../data/beats.js?v=5";
+import { featuredBeat } from "../data/beats.js?v=9";
 import { serviceOffers } from "../data/content.js?v=5";
 import { SectionHeader } from "../components/common/SectionHeader.js";
 import { Waveform } from "../components/player/Waveform.js";
@@ -69,7 +69,7 @@ export function HomePage(state) {
             <div class="player-controls">
               <button class="btn-play" data-featured-toggle type="button">${state.featuredPlaying ? "Pause" : "Play"}</button>
               <span class="time-display">${time(currentSeconds)} / ${featuredBeat.duration}</span>
-              <label class="volume-wrap">VOL <input type="range" min="0" max="100" value="80" /></label>
+              <label class="volume-wrap">VOL <input data-volume-control type="range" min="0" max="100" value="${Math.round(state.audioVolume * 100)}" /></label>
             </div>
           </div>
           ${LicenseButtons(featuredBeat)}

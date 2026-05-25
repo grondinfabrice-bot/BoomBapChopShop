@@ -7,9 +7,10 @@ export const featuredBeat = {
   subtitle: "rare soul chop / SP-1200 drums",
   bpm: 94,
   key: "F Min",
-  duration: "2:47",
-  durationSeconds: 167,
-  previewUrl: "",
+  duration: "3:30",
+  durationSeconds: 210,
+  previewUrl: "./audio/previews/ghost-of-good-times.mp3",
+  coverUrl: "./images/covers/shadow-of-the-sp.jpg",
   catalog: "BBCS-001",
   year: "2026",
   mood: "Dusty Soul",
@@ -28,7 +29,7 @@ export const beats = [
   { id: 6, name: "BRICK CITY LOOP", subtitle: "deep keys / basement texture", bpm: 96, key: "B Min", duration: "3:03", durationSeconds: 183, previewUrl: "./audio/previews/silence.mp3", coverUrl: "./images/covers/brick-city-loop.jpg", price: 24.99, tags: ["boom bap", "90s"] },
   { id: 7, name: "MPC DREAMS", subtitle: "loose hats / dusty pads", bpm: 78, key: "E Min", duration: "3:15", durationSeconds: 195, previewUrl: "./audio/previews/lofi2-sortie-mesure.mp3", coverUrl: "./images/covers/mpc-dreams.jpg", price: 14.99, tags: ["soul", "drums"] },
   { id: 8, name: "HARLEM NIGHTS", subtitle: "piano soul / classic bounce", bpm: 90, key: "F Maj", duration: "3:21", durationSeconds: 201, previewUrl: "./audio/previews/wutang-type-beat-90s-hiphop.mp3", coverUrl: "./images/covers/harlem-nights.jpg", price: 29.99, tags: ["soul", "90s"] },
-  { id: 9, name: "RAW MECHANICS", subtitle: "bass heavy / drum workout", bpm: 102, key: "G Min", duration: "2:45", durationSeconds: 165, previewUrl: "", coverUrl: "./images/covers/raw-mechanics.jpg", price: 19.99, tags: ["boom bap", "drums", "chopped"] },
+  { id: 9, name: "RAW MECHANICS", subtitle: "bass heavy / drum workout", bpm: 102, key: "G Min", duration: "2:55", durationSeconds: 175, previewUrl: "./audio/previews/chapter-two.mp3", coverUrl: "./images/covers/raw-mechanics.jpg", price: 19.99, tags: ["boom bap", "drums", "chopped"] },
 ];
 
 export const filters = ["all", "boom bap", "jazzy", "guitare", "swing", "freestyle", "soul", "chopped", "drums", "90s"];

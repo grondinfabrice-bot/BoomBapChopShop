@@ -1,4 +1,4 @@
-import { beats } from "../data/beats.js?v=5";
+import { beats } from "../data/beats.js?v=9";
 import { posts } from "../data/content.js?v=19";
 import { getLicenseById, licenseOptions } from "../data/licenses.js?v=1";
 import { uid } from "../utils/format.js";
@@ -17,6 +17,7 @@ const state = {
   currentTrackId: null,
   isPlaying: false,
   trackProgress: 0,
+  audioVolume: 0.8,
   featuredPlaying: false,
   featuredProgress: 0,
   toast: "",
