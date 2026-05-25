@@ -10,6 +10,7 @@ import { time } from "../utils/format.js";
 export function HomePage(state) {
   const beats = state.beats;
   const filters = ["all", ...new Set(beats.flatMap((beat) => beat.tags || []))];
+  const priorityFilters = ["all", "jazzy", "soul", "drums", "freestyle", "guitare"];
   const visibleBeats = state.filter === "all" ? beats : beats.filter((beat) => (beat.tags || []).includes(state.filter));
   const currentSeconds = Math.floor(featuredBeat.durationSeconds * state.featuredProgress);
   const featuredCover = featuredBeat.coverUrl || beats.find((beat) => beat.id === featuredBeat.storeBeatId)?.coverUrl;
@@ -95,7 +96,7 @@ export function HomePage(state) {
       <div class="filter-row">
         <span>Tags</span>
         ${filters.map((filter) => `
-          <button class="filter-tag ${state.filter === filter ? "active" : ""}" data-filter="${filter}" type="button">
+          <button class="filter-tag ${state.filter === filter ? "active" : ""} ${priorityFilters.includes(filter) ? "" : "mobile-hidden"}" data-filter="${filter}" type="button">
             ${filter === "all" ? "All" : filter}
           </button>
         `).join("")}

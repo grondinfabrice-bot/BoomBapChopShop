@@ -35,6 +35,7 @@
   }
 
   .featured-cover-thumb {
+    justify-self: center;
     width: min(250px, 100%);
   }
 
@@ -138,7 +139,7 @@
   }
 
   .shop-info-section {
-    scroll-margin-top: 24px;
+    scroll-margin-top: 112px;
   }
 
   .playlist-section {
@@ -195,8 +196,43 @@
     font-size: clamp(3.35rem, 14.8vw, 4.75rem);
   }
 
+  .featured-info {
+    text-align: center;
+  }
+
+  .featured-cover-thumb {
+    width: min(82vw, 320px);
+  }
+
+  .featured-track-head {
+    justify-items: center;
+  }
+
+  .featured-track-head .beat-meta {
+    justify-content: center;
+  }
+
+  .player-controls {
+    display: grid;
+    grid-template-columns: minmax(108px, 0.45fr) minmax(0, 1fr);
+    gap: 0.65rem;
+    align-items: center;
+  }
+
+  .btn-play {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .time-display {
+    justify-self: start;
+  }
+
+  .volume-wrap {
+    display: none;
+  }
+
   .hero-actions,
-  .player-controls,
   .buy-row,
   .mini-player {
     flex-wrap: wrap;
@@ -223,8 +259,57 @@
     grid-template-columns: 1fr;
   }
 
+  .footer-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1.35rem 1rem;
+  }
+
+  .footer-brand,
+  .footer-newsletter {
+    grid-column: 1 / -1;
+  }
+
+  .footer-block {
+    min-width: 0;
+  }
+
+  .footer-block button,
+  .footer-block small {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
   .licensing-cta {
     justify-self: stretch;
+  }
+
+  .catalogue-toolbar select {
+    display: none;
+  }
+
+  .filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.42rem;
+    max-height: 5.25rem;
+    overflow: hidden;
+    margin-bottom: 1rem;
+  }
+
+  .filter-row > span {
+    flex: 0 0 100%;
+    font-size: 0.9rem;
+  }
+
+  .filter-tag {
+    padding: 0.4rem 0.62rem;
+    font-size: 0.82rem;
+    line-height: 1;
+  }
+
+  .filter-tag.mobile-hidden {
+    display: none;
   }
 
   .license-picker-grid {
@@ -236,6 +321,7 @@
   }
 
   .volume-wrap {
+    display: none;
     width: 100%;
     margin-left: 0;
   }
@@ -286,6 +372,25 @@
   .beat-wave,
   .beat-price {
     display: none;
+  }
+
+  .beat-meta-stack {
+    grid-column: 3;
+    width: 100%;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.45rem;
+    color: var(--dusty-beige);
+    font-family: var(--font-body);
+    font-size: 0.76rem;
+    font-weight: 800;
+  }
+
+  .beat-meta-stack span {
+    padding: 0.24rem 0.55rem;
+    border: 1px solid rgba(243, 238, 230, 0.16);
+    border-radius: 999px;
   }
 
   .beat-buy {
@@ -365,6 +470,7 @@
 
   .beat-row {
     grid-template-columns: 1fr;
+    gap: 0.9rem;
   }
 
   .beat-num {
@@ -372,10 +478,38 @@
   }
 
   .beat-art {
-    width: min(194px, 100%);
+    justify-self: center;
+    width: min(92vw, 360px);
+    max-width: 100%;
+    display: grid;
+    place-items: center;
+  }
+
+  .beat-cover {
+    width: min(82vw, 320px);
+  }
+
+  .beat-vinyl {
+    display: none;
+  }
+
+  .beat-info {
+    justify-items: center;
+    text-align: center;
+  }
+
+  .beat-tags {
+    justify-content: center;
   }
 
   .beat-buy {
+    grid-column: auto;
+    justify-self: stretch;
+    width: 100%;
+    min-height: 48px;
+  }
+
+  .beat-meta-stack {
     grid-column: auto;
   }
 }
