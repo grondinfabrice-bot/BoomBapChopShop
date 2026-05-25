@@ -20,9 +20,7 @@ export function BlogPage(state) {
       ${state.blogTag ? `<button class="blog-filter-clear" data-blog-clear type="button">Showing tag: ${state.blogTag} - clear filter</button>` : ""}
       ${featured ? `
       <article class="blog-featured">
-        <div class="blog-feat-cover ${featured.tone}">
-          <div class="blog-machine-tag">${featured.art}</div>
-        </div>
+        ${BlogCover(featured, "blog-feat-cover")}
         <div class="blog-featured-copy">
           <span class="blog-cat">${featured.category}</span>
           <button class="blog-feat-title" data-blog-post="${featured.id}" type="button">${featured.title}</button>
@@ -43,9 +41,7 @@ export function BlogPage(state) {
 function PostCard(post) {
   return `
     <article class="blog-card" data-blog-post="${post.id}">
-      <div class="blog-card-cover ${post.tone}">
-        <div class="blog-machine-tag">${post.art}</div>
-      </div>
+      ${BlogCover(post, "blog-card-cover")}
       <div class="blog-card-body">
         <span class="blog-cat">${post.category}</span>
         <div class="blog-tag-row">${post.tags.map((tag) => `<span>${tag}</span>`).join("")}</div>
@@ -57,14 +53,28 @@ function PostCard(post) {
   `;
 }
 
+function BlogCover(post, className) {
+  return post.imageUrl
+    ? `<div class="${className} has-image">
+        <img class="blog-cover-image" src="${post.imageUrl}" alt="${post.title}" loading="lazy" decoding="async" />
+      </div>`
+    : `<div class="${className} ${post.tone}">
+        <div class="blog-machine-tag">${post.art}</div>
+      </div>`;
+}
+
 function ArticleView(post) {
+  const articleCover = post.imageUrl
+    ? `<img class="blog-article-cover-image" src="${post.imageUrl}" alt="${post.title}" loading="eager" decoding="async" />`
+    : `<div class="blog-feat-cover ${post.tone}">
+        <div class="blog-machine-tag">${post.art}</div>
+      </div>`;
+
   return `
     <section class="blog-wrap">
       <button class="blog-back" data-blog-back type="button">Back to notes</button>
       <article class="blog-article">
-        <div class="blog-feat-cover ${post.tone}">
-          <div class="blog-machine-tag">${post.art}</div>
-        </div>
+        ${articleCover}
         <div class="blog-article-head">
           <span class="blog-cat">${post.category}</span>
           <h1>${post.title}</h1>

@@ -171,6 +171,7 @@ function mapPost(post) {
     category: post.category || "Notes",
     tags: post.tags || [],
     title: post.title,
+    imageUrl: post.image_url || "",
     excerpt: post.excerpt || "",
     body: post.body || [],
     date: formatDate(post.published_at || post.created_at),

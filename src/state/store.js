@@ -1,5 +1,5 @@
 import { beats } from "../data/beats.js?v=3";
-import { posts } from "../data/content.js?v=3";
+import { posts } from "../data/content.js?v=19";
 import { getLicenseById, licenseOptions } from "../data/licenses.js?v=1";
 import { uid } from "../utils/format.js";
 
