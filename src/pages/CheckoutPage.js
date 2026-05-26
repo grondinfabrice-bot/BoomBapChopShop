@@ -41,11 +41,13 @@ export function CheckoutPage(state) {
         <label class="fg full"><span class="fl">Email</span><input class="fi" data-email type="text" inputmode="email" placeholder="contact@example.com" /></label>
       </div>
       <div class="cdivider">Payment</div>
-      <div class="card-icons"><span>VISA</span><span>MC</span><span>AMEX</span><span>PAYPAL</span></div>
-      <div class="cgrid">
-        <label class="fg full"><span class="fl">Card number</span><input class="fi" type="text" placeholder="4242 4242 4242 4242" maxlength="19" /></label>
-        <label class="fg"><span class="fl">Expiration</span><input class="fi" type="text" placeholder="MM / AA" maxlength="7" /></label>
-        <label class="fg"><span class="fl">CVV</span><input class="fi" type="text" placeholder="•••" maxlength="4" /></label>
+      <div class="stripe-handoff">
+        <div>
+          <span>Secure Stripe checkout</span>
+          <strong>Card details are entered on Stripe's encrypted payment page.</strong>
+          <p>After payment, you will return here and receive your delivery email automatically.</p>
+        </div>
+        <div class="card-icons" aria-label="Accepted payment methods"><span>VISA</span><span>MC</span><span>AMEX</span></div>
       </div>
       <label class="checkout-accept">
         <input data-license-accept type="checkbox" />
@@ -54,8 +56,8 @@ export function CheckoutPage(state) {
           does not transfer ownership of the instrumental, and must not be used to block the producer or other valid licensees through Content ID.
         </span>
       </label>
-      <button class="btn-pay" data-pay type="button">Pay and Download</button>
-      <p class="pay-secure">Your data is encrypted and never stored</p>
+      <button class="btn-pay" data-pay type="button">Continue to secure payment</button>
+      <p class="pay-secure">Payment handled by Stripe. Card data is never stored by BOOM BAP CHOP SHOP.</p>
     </section>
   `;
 }

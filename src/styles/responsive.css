@@ -345,6 +345,11 @@
     width: 100%;
   }
 
+  .stripe-handoff {
+    display: grid;
+    align-items: start;
+  }
+
   .volume-wrap {
     display: none;
     width: 100%;

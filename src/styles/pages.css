@@ -2378,7 +2378,7 @@
 .card-icons {
   display: flex;
   gap: 0.5rem;
-  margin-bottom: 1rem;
+  flex-wrap: wrap;
 }
 
 .card-icons span {
@@ -2390,6 +2390,40 @@
   border-radius: 4px;
   color: var(--deep-brick);
   font-size: 0.62rem;
+}
+
+.stripe-handoff {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.2rem;
+  align-items: center;
+  padding: 1.15rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--muted-gold);
+  border-radius: 6px;
+  background: rgba(243, 238, 230, 0.64);
+}
+
+.stripe-handoff > div:first-child {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.stripe-handoff span {
+  color: var(--deep-brick);
+  font-family: var(--font-display);
+  text-transform: uppercase;
+}
+
+.stripe-handoff strong {
+  color: var(--charcoal);
+}
+
+.stripe-handoff p {
+  margin: 0;
+  color: var(--ink-soft);
+  font-size: 0.88rem;
+  line-height: 1.55;
 }
 
 .btn-pay {

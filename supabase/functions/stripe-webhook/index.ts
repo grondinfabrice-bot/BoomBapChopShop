@@ -268,46 +268,57 @@ function buildEmailHtml({ orderId, email, items, total, currency, siteUrl }: {
   currency: string;
   siteUrl: string;
 }) {
+  const logoUrl = absoluteUrl("./src/assets/boom-bap-chop-shop-logo.png", siteUrl);
   const rows = items.map((item) => {
     const contractUrl = item.personalizedContractUrl || item.contractUrl || "";
     const contractLabel = item.personalizedContractUrl ? "Download personalized contract" : "Read license contract";
     const contractLink = contractUrl
-      ? `<a href="${escapeHtml(absoluteUrl(contractUrl, siteUrl))}" style="display:inline-block;margin-top:10px;padding:10px 12px;background:#8E3B2E;color:#fff;text-decoration:none;font-weight:800;text-transform:uppercase;letter-spacing:.04em;">${contractLabel}</a>`
+      ? `<a href="${escapeHtml(absoluteUrl(contractUrl, siteUrl))}" style="display:inline-block;margin-top:10px;padding:11px 13px;background:#8e3b2e;color:#f3eee6;text-decoration:none;font-weight:800;text-transform:uppercase;letter-spacing:.04em;border:1px solid #8e3b2e;">${contractLabel}</a>`
       : "Contract will be confirmed by email.";
     const serviceFor = item.serviceFor ? `<br><small style="color:#6b6256;">For: ${escapeHtml(item.serviceFor)}</small>` : "";
     return `
       <tr>
-        <td style="padding:18px;border-bottom:1px solid #ded2be;">
-          <strong style="font-size:16px;text-transform:uppercase;">${escapeHtml(item.name || "Order item")}</strong>${serviceFor}<br>
-          <span style="color:#6b6256;">${escapeHtml(item.license || item.type || "License")}</span><br>
+        <td style="padding:18px;border-bottom:1px solid rgba(176,141,87,.32);">
+          <strong style="font-size:16px;text-transform:uppercase;color:#1e1e1e;">${escapeHtml(item.name || "Order item")}</strong>${serviceFor}<br>
+          <span style="color:#9b9180;">${escapeHtml(item.license || item.type || "License")}</span><br>
           ${contractLink}
           ${buildDeliveryLinksHtml(item.deliveryLinks || [], siteUrl)}
         </td>
-        <td style="padding:18px;border-bottom:1px solid #ded2be;text-align:right;white-space:nowrap;font-weight:800;">${formatMoney(item.price || 0, currency)}</td>
+        <td style="padding:18px;border-bottom:1px solid rgba(176,141,87,.32);text-align:right;white-space:nowrap;font-weight:800;color:#1e1e1e;">${formatMoney(item.price || 0, currency)}</td>
       </tr>
     `;
   }).join("");
 
   return `
-    <div style="margin:0;padding:0;background:#efe6d7;font-family:Arial,Helvetica,sans-serif;color:#1f1d1a;">
+    <div style="margin:0;padding:0;background:#f3eee6;font-family:Arial,Helvetica,sans-serif;color:#1e1e1e;">
       <div style="max-width:720px;margin:0 auto;padding:30px 16px;">
-        <div style="border:1px solid #cdbd9f;background:#fff8ea;">
-          <div style="padding:28px 24px 22px;background:#1f1d1a;color:#fff8ea;">
-            <p style="margin:0 0 8px;color:#c29a57;font-weight:900;letter-spacing:.12em;text-transform:uppercase;">BOOM BAP CHOP SHOP</p>
-            <h1 style="margin:0;font-size:38px;line-height:.95;text-transform:uppercase;">Respect for the support.</h1>
-            <p style="margin:14px 0 0;line-height:1.65;color:#efe6d7;">Your order is confirmed. The beat, secure links and personalized license contract are packed below.</p>
+        <div style="border:1px solid rgba(176,141,87,.32);background:#e5dccb;">
+          <div style="padding:24px;background:#191918;color:#f3eee6;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
+              <tr>
+                <td style="vertical-align:middle;width:72px;">
+                  <img src="${escapeHtml(logoUrl)}" width="58" height="58" alt="BOOM BAP CHOP SHOP" style="display:block;width:58px;height:58px;object-fit:contain;border:0;">
+                </td>
+                <td style="vertical-align:middle;">
+                  <p style="margin:0;color:#b08d57;font-weight:900;letter-spacing:.12em;text-transform:uppercase;">BOOM BAP CHOP SHOP</p>
+                  <p style="margin:4px 0 0;color:#c7bfae;font-size:12px;text-transform:uppercase;letter-spacing:.08em;">Heavy drums. Clear paperwork.</p>
+                </td>
+              </tr>
+            </table>
+            <h1 style="margin:22px 0 0;font-size:38px;line-height:.95;text-transform:uppercase;color:#f3eee6;">Respect for the support.</h1>
+            <p style="margin:14px 0 0;line-height:1.65;color:#c7bfae;">Your order is confirmed. The beat, secure links and personalized license contract are packed below.</p>
           </div>
           <div style="padding:22px 24px;">
             <p style="margin:0 0 18px;line-height:1.7;"><strong>Order:</strong> ${escapeHtml(orderId)}<br><strong>Delivery email:</strong> ${escapeHtml(email)}</p>
-            <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;border:1px solid #ded2be;background:#fff;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;border:1px solid rgba(176,141,87,.32);background:#f3eee6;">
             ${rows}
             <tr>
               <td style="padding:16px;text-align:right;"><strong>Total</strong></td>
               <td style="padding:16px;text-align:right;white-space:nowrap;"><strong>${formatMoney(total, currency)}</strong></td>
             </tr>
             </table>
-            <p style="margin:18px 0 0;line-height:1.7;color:#5f574d;">Keep this email and contract with your release records. Download links may expire for security reasons, but your order remains logged.</p>
-            <p style="margin:16px 0 0;line-height:1.7;color:#8E3B2E;font-weight:800;">Make the record. Let the drums talk.</p>
+            <p style="margin:18px 0 0;line-height:1.7;color:#1e1e1e;">Keep this email and contract with your release records. Download links may expire for security reasons, but your order remains logged.</p>
+            <p style="margin:16px 0 0;line-height:1.7;color:#8e3b2e;font-weight:800;">Make the record. Let the drums talk.</p>
           </div>
         </div>
       </div>

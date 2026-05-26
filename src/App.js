@@ -14,7 +14,7 @@ import { AboutPage } from "./pages/AboutPage.js?v=2";
 import { LicensingPage } from "./pages/LicensingPage.js?v=5";
 import { ContactPage } from "./pages/ContactPage.js?v=6";
 import { UpsellPage } from "./pages/UpsellPage.js?v=4";
-import { CheckoutPage } from "./pages/CheckoutPage.js?v=6";
+import { CheckoutPage } from "./pages/CheckoutPage.js?v=7";
 import { ThanksPage } from "./pages/ThanksPage.js?v=4";
 import { AdminPage } from "./pages/AdminPage.js";
 import { featuredBeat } from "./data/beats.js?v=9";
