@@ -3,6 +3,10 @@ import { money } from "../utils/format.js";
 export function CheckoutPage(state) {
   const total = state.cart.reduce((sum, item) => sum + item.price, 0);
   const hasService = state.cart.some((item) => item.type === "service");
+  const contractLinks = state.cart
+    .filter((item) => item.contractUrl)
+    .map((item) => `<a href="${item.contractUrl}" target="_blank" rel="noreferrer">${item.license}</a>`)
+    .join(" · ");
 
   return `
     <section class="checkout-wrap">
@@ -43,6 +47,13 @@ export function CheckoutPage(state) {
         <label class="fg"><span class="fl">Expiration</span><input class="fi" type="text" placeholder="MM / AA" maxlength="7" /></label>
         <label class="fg"><span class="fl">CVV</span><input class="fi" type="text" placeholder="•••" maxlength="4" /></label>
       </div>
+      <label class="checkout-accept">
+        <input data-license-accept type="checkbox" />
+        <span>
+          I have read and accept the license agreement${contractLinks ? ` (${contractLinks})` : ""} applicable to this order. I understand each beat license covers one final song,
+          does not transfer ownership of the instrumental, and must not be used to block the producer or other valid licensees through Content ID.
+        </span>
+      </label>
       <button class="btn-pay" data-pay type="button">Pay and Download</button>
       <p class="pay-secure">Your data is encrypted and never stored</p>
     </section>

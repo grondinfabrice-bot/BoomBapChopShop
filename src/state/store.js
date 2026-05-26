@@ -1,6 +1,6 @@
 import { beats } from "../data/beats.js?v=9";
 import { posts } from "../data/content.js?v=19";
-import { getLicenseById, licenseOptions } from "../data/licenses.js?v=1";
+import { getLicenseById, licenseOptions } from "../data/licenses.js?v=3";
 import { uid } from "../utils/format.js";
 
 const state = {
@@ -93,6 +93,7 @@ export function addCartItem({
     includes: selectedLicense?.includes || includes || ["Upgrade added to order"],
     usage: selectedLicense?.allowed || [],
     licenseSummary: selectedLicense?.short || licenseSummary || "Optional cart upgrade",
+    contractUrl: selectedLicense?.contractUrl || "",
     serviceFor,
     serviceTargetId,
     serviceTargetType,

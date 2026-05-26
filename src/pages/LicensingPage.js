@@ -1,4 +1,4 @@
-import { licenseOptions } from "../data/licenses.js";
+import { licenseOptions } from "../data/licenses.js?v=3";
 import { money } from "../utils/format.js";
 
 export function LicensingPage() {
@@ -8,8 +8,8 @@ export function LicensingPage() {
         <span class="about-kicker">Licensing</span>
         <h1>Choose the right license before the cart.</h1>
         <p>
-          These terms are placeholder summaries until the final contracts are added. They are designed
-          to help artists understand the practical difference between each option before checkout.
+          These summaries explain the practical rules behind each license. The final checkout document
+          controls the legal details, but the idea stays simple: one beat license covers one final song.
         </p>
       </header>
 
@@ -24,15 +24,15 @@ export function LicensingPage() {
             <div>
               <strong>Demo / Freestyle</strong>
               <h3>MP3 Lease</h3>
-              <p>Test a song idea, post a freestyle, or send a clean draft around.</p>
+              <p>Write, test, post, or release small while staying under the stream limit.</p>
             </div>
           </article>
           <article>
             ${ProjectIcon("single")}
             <div>
-              <strong>Serious Single</strong>
-              <h3>WAV Lease</h3>
-              <p>Release properly on streaming, YouTube, socials, and promo channels.</p>
+              <strong>Serious Release</strong>
+              <h3>WAV + Stems</h3>
+              <p>Record vocals, send the track to an engineer, and keep mix control.</p>
             </div>
           </article>
           <article>
@@ -40,7 +40,7 @@ export function LicensingPage() {
             <div>
               <strong>Official Release</strong>
               <h3>Exclusive</h3>
-              <p>Keep the beat for your project only and remove it from future licensing.</p>
+              <p>Reserve the beat for your song and stop any future licenses from being sold.</p>
             </div>
           </article>
         </div>
@@ -53,15 +53,37 @@ export function LicensingPage() {
       <section class="license-compare">
         <h2>Quick comparison</h2>
         <div class="license-table">
-          <div><strong>License</strong><strong>Files</strong><strong>Best for</strong><strong>Availability</strong></div>
+          <div><strong>License</strong><strong>Files</strong><strong>Main use</strong><strong>Status</strong></div>
           ${licenseOptions.map((license) => `
             <div>
               <span>${license.name}</span>
               <span>${license.includes.slice(0, 2).join(" + ")}</span>
               <span>${license.short}</span>
-              <span>${license.id === "exclusive" ? "One artist only" : "Non-exclusive"}</span>
+              <span>${license.id === "exclusive" ? "No future licenses" : "Non-exclusive"}</span>
             </div>
           `).join("")}
+        </div>
+      </section>
+
+      <section class="license-legal-notes">
+        <h2>Important notes</h2>
+        <div>
+          <article>
+            <h3>One song per license</h3>
+            <p>Each purchased beat license is for one new final song that adds your vocal, writing, topline, or other original contribution.</p>
+          </article>
+          <article>
+            <h3>Producer rights stay attached</h3>
+            <p>A license lets you use the beat, but it does not transfer the instrumental master, producer credit, authorship, or publishing share unless a separate written agreement says so.</p>
+          </article>
+          <article>
+            <h3>Content ID stays clean</h3>
+            <p>You can monetize your final song, but you cannot register the beat in a way that blocks the producer or other artists with valid licenses.</p>
+          </article>
+          <article>
+            <h3>Exclusive is not retroactive</h3>
+            <p>If a beat was licensed before an exclusive purchase, those older non-exclusive licenses remain valid under their original terms.</p>
+          </article>
         </div>
       </section>
     </section>
@@ -120,6 +142,7 @@ function LicenseCard(license) {
         <h3>Limits</h3>
         <ul>${license.limits.map((item) => `<li>${item}</li>`).join("")}</ul>
       </div>
+      <a class="license-contract-link" href="${license.contractUrl}" target="_blank" rel="noreferrer">Read contract PDF</a>
     </article>
   `;
 }

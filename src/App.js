@@ -6,15 +6,15 @@ import {
   setContent,
   setState,
   subscribe,
-} from "./state/store.js?v=26";
-import { Shell } from "./components/Shell.js?v=15";
-import { HomePage } from "./pages/HomePage.js?v=23";
+} from "./state/store.js?v=28";
+import { Shell } from "./components/Shell.js?v=16";
+import { HomePage } from "./pages/HomePage.js?v=24";
 import { BlogPage } from "./pages/BlogPage.js?v=8";
 import { AboutPage } from "./pages/AboutPage.js?v=2";
-import { LicensingPage } from "./pages/LicensingPage.js?v=3";
+import { LicensingPage } from "./pages/LicensingPage.js?v=5";
 import { ContactPage } from "./pages/ContactPage.js?v=6";
 import { UpsellPage } from "./pages/UpsellPage.js?v=4";
-import { CheckoutPage } from "./pages/CheckoutPage.js?v=4";
+import { CheckoutPage } from "./pages/CheckoutPage.js?v=6";
 import { ThanksPage } from "./pages/ThanksPage.js?v=3";
 import { AdminPage } from "./pages/AdminPage.js";
 import { featuredBeat } from "./data/beats.js?v=9";
@@ -145,6 +145,7 @@ function setupPageMotion(page, pageChanged) {
     ".licensing-page-wrap > *",
     ".license-detail-grid > *",
     ".license-compare > *",
+    ".license-legal-notes > *",
     ".license-table > *",
     ".blog-wrap > *",
     ".about-wrap > *",
@@ -401,6 +402,7 @@ function bindPageActions() {
   rootNode.querySelector("[data-pay]")?.addEventListener("click", () => {
     const email = rootNode.querySelector("[data-email]")?.value.trim() || "";
     if (!email.includes("@")) return toast("Enter a valid email");
+    if (!rootNode.querySelector("[data-license-accept]")?.checked) return toast("Please accept the license terms");
     setState({ checkoutEmail: email, page: "thanks", cart: [] });
   });
 

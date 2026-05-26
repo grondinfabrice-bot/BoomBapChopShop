@@ -1,5 +1,5 @@
 import { money } from "../../utils/format.js";
-import { licenseOptions } from "../../data/licenses.js?v=1";
+import { licenseOptions } from "../../data/licenses.js?v=3";
 import { Waveform } from "../player/Waveform.js";
 
 export function BeatRow(beat, index, state) {

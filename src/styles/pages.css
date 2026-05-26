@@ -1789,6 +1789,7 @@
 
 .license-detail-card,
 .license-compare,
+.license-legal-notes,
 .checkout-license-note,
 .cart-upgrade-note {
   border: 1px solid var(--line);
@@ -1852,6 +1853,21 @@
   margin: 0;
 }
 
+.license-contract-link {
+  display: inline-flex;
+  justify-self: start;
+  margin-top: 0.25rem;
+  padding: 0.62rem 0.8rem;
+  border: 1px solid rgba(142, 59, 46, 0.34);
+  border-radius: 4px;
+  color: var(--deep-brick);
+  font-family: var(--font-body);
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
 .license-detail-card ul,
 .checkout-license-note ul {
   display: grid;
@@ -1863,6 +1879,50 @@
 .license-compare {
   margin-top: 1.2rem;
   padding: 1.25rem;
+}
+
+.license-legal-notes {
+  margin-top: 1.2rem;
+  padding: 1.25rem;
+}
+
+.license-legal-notes h2 {
+  margin: 0 0 1rem;
+  color: var(--deep-brick);
+  font-family: var(--font-display);
+  font-weight: 400;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.license-legal-notes > div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+
+.license-legal-notes article {
+  padding: 0.95rem;
+  border: 1px solid rgba(30, 30, 30, 0.12);
+  border-radius: 4px;
+  background: rgba(229, 220, 203, 0.45);
+}
+
+.license-legal-notes h3 {
+  margin: 0 0 0.45rem;
+  color: var(--charcoal);
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 400;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.license-legal-notes p {
+  margin: 0;
+  color: var(--charcoal);
+  font-size: 0.92rem;
+  line-height: 1.6;
 }
 
 .license-table {
@@ -2217,6 +2277,33 @@
 .checkout-license-note h2 {
   margin: 0 0 0.8rem;
   font-weight: 400;
+}
+
+.checkout-accept {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.75rem;
+  align-items: start;
+  margin: 1.2rem 0;
+  padding: 1rem;
+  border: 1px solid rgba(142, 59, 46, 0.28);
+  border-radius: 6px;
+  background: rgba(142, 59, 46, 0.07);
+  color: var(--charcoal);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.checkout-accept input {
+  width: 18px;
+  height: 18px;
+  margin-top: 0.16rem;
+  accent-color: var(--deep-brick);
+}
+
+.checkout-accept a {
+  color: var(--deep-brick);
+  font-weight: 800;
 }
 
 .os-line small {

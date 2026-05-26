@@ -3,7 +3,7 @@ import { serviceOffers } from "../data/content.js?v=5";
 import { SectionHeader } from "../components/common/SectionHeader.js";
 import { Waveform } from "../components/player/Waveform.js";
 import { LicenseButtons } from "../components/shop/LicenseButtons.js?v=4";
-import { BeatRow } from "../components/shop/BeatRow.js?v=5";
+import { BeatRow } from "../components/shop/BeatRow.js?v=6";
 import { Sp1200Panel } from "../components/studio/Sp1200Panel.js?v=2";
 import { time } from "../utils/format.js";
 

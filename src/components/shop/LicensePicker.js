@@ -1,4 +1,4 @@
-import { licenseOptions } from "../../data/licenses.js";
+import { licenseOptions } from "../../data/licenses.js?v=3";
 import { money } from "../../utils/format.js";
 
 export function LicensePicker(state) {
