@@ -36,8 +36,8 @@ export function CheckoutPage(state) {
         </ul>
       </div>
       <div class="cgrid">
-        <label class="fg"><span class="fl">First name</span><input class="fi" type="text" placeholder="Jay" /></label>
-        <label class="fg"><span class="fl">Last name</span><input class="fi" type="text" placeholder="Z" /></label>
+        <label class="fg"><span class="fl">First name</span><input class="fi" data-first-name type="text" placeholder="Jay" /></label>
+        <label class="fg"><span class="fl">Last name</span><input class="fi" data-last-name type="text" placeholder="Z" /></label>
         <label class="fg full"><span class="fl">Email</span><input class="fi" data-email type="text" inputmode="email" placeholder="contact@example.com" /></label>
       </div>
       <div class="cdivider">Payment</div>

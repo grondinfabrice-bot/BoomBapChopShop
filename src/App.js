@@ -6,7 +6,7 @@ import {
   setContent,
   setState,
   subscribe,
-} from "./state/store.js?v=28";
+} from "./state/store.js?v=29";
 import { Shell } from "./components/Shell.js?v=16";
 import { HomePage } from "./pages/HomePage.js?v=24";
 import { BlogPage } from "./pages/BlogPage.js?v=8";
@@ -27,6 +27,7 @@ import {
   signInAdmin,
   signOutAdmin,
 } from "./services/cms.js";
+import { createCheckoutSession } from "./services/orders.js?v=3";
 import { time } from "./utils/format.js";
 
 let rootNode;
@@ -399,11 +400,24 @@ function bindPageActions() {
 
   rootNode.querySelector("[data-skip-upsell]")?.addEventListener("click", () => route("checkout"));
 
-  rootNode.querySelector("[data-pay]")?.addEventListener("click", () => {
+  rootNode.querySelector("[data-pay]")?.addEventListener("click", async () => {
     const email = rootNode.querySelector("[data-email]")?.value.trim() || "";
+    const firstName = rootNode.querySelector("[data-first-name]")?.value.trim() || "";
+    const lastName = rootNode.querySelector("[data-last-name]")?.value.trim() || "";
     if (!email.includes("@")) return toast("Enter a valid email");
     if (!rootNode.querySelector("[data-license-accept]")?.checked) return toast("Please accept the license terms");
-    setState({ checkoutEmail: email, page: "thanks", cart: [] });
+    const state = getState();
+    const cart = [...state.cart];
+    const total = cart.reduce((sum, item) => sum + item.price, 0);
+    try {
+      const checkout = await createCheckoutSession({ email, firstName, lastName, items: cart, total });
+      window.location.href = checkout.checkoutUrl;
+      return;
+    } catch (error) {
+      console.error(error);
+      toast("Stripe payment is not available right now. Please try again in a moment.");
+      return;
+    }
   });
 
   rootNode.querySelector("[data-contact-send]")?.addEventListener("click", () => {

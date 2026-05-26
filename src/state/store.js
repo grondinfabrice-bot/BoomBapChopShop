@@ -94,12 +94,25 @@ export function addCartItem({
     usage: selectedLicense?.allowed || [],
     licenseSummary: selectedLicense?.short || licenseSummary || "Optional cart upgrade",
     contractUrl: selectedLicense?.contractUrl || "",
+    deliveryFiles: buildDemoDeliveryFiles(name, selectedLicense),
     serviceFor,
     serviceTargetId,
     serviceTargetType,
   });
   setState({ cart: state.cart });
   return true;
+}
+
+function buildDemoDeliveryFiles(name, license) {
+  if (!license) return [];
+  const beat = state.beats.find((item) => item.name === name);
+  if (!beat?.previewUrl) return [];
+  const formatLabel = license.id === "mp3-basic" ? "MP3 demo delivery" : `${license.label} demo delivery`;
+  return [{
+    label: formatLabel,
+    url: beat.previewUrl,
+    note: "Demo audio file. Replace with private final deliverables before real sales.",
+  }];
 }
 
 export function removeCartItem(id) {

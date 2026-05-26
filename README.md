@@ -95,3 +95,84 @@ La page admin n'apparait pas dans la navigation publique. Les donnees restent pr
 ## Prochaine etape conseillee
 
 Quand l'admin Supabase est valide, la prochaine etape sera de brancher le paiement et la livraison automatique des fichiers achetes.
+
+## Test email de commande
+
+Le checkout peut appeler une Supabase Edge Function nommee `send-order-email`.
+Elle envoie au client un email de confirmation avec les liens vers les contrats PDF applicables a sa commande.
+
+Pre-requis:
+
+- un compte Resend;
+- un domaine ou email expediteur verifie dans Resend;
+- la CLI Supabase connectee au projet.
+
+Variables serveur a configurer:
+
+```bash
+supabase secrets set RESEND_API_KEY="TA_CLE_RESEND"
+supabase secrets set ORDER_FROM_EMAIL="BOOM BAP CHOP SHOP <orders@ton-domaine.com>"
+supabase secrets set ORDER_REPLY_TO="contact@ton-domaine.com"
+supabase secrets set SITE_URL="https://ton-site.com"
+supabase secrets set BBCS_SUPABASE_SECRET_KEY="TA_CLE_SECRETE_SUPABASE"
+```
+
+Deploiement de la fonction:
+
+```bash
+supabase functions deploy send-order-email
+```
+
+Test direct:
+
+```bash
+supabase functions invoke send-order-email --body '{
+  "email": "client@example.com",
+  "total": 14.99,
+  "currency": "EUR",
+  "siteUrl": "https://ton-site.com",
+  "items": [
+    {
+      "name": "STAIRCASE SWAGGER",
+      "license": "MP3 Basic",
+      "price": 14.99,
+      "contractUrl": "./documents/licenses/licence-non-exclusive-mp3-100k-streams.pdf"
+    }
+  ]
+}'
+```
+
+Pour la production finale, l'appel email devra partir apres confirmation reelle du paiement, pas seulement apres le bouton de demo.
+
+## Table des commandes
+
+La table `orders` conserve l'historique des commandes demo puis, plus tard, des vraies commandes payees.
+La fonction genere aussi un PDF personnalise par licence et le stocke dans le bucket prive `contracts`.
+L'email client contient un lien signe temporaire vers ce PDF personnalise.
+
+Pour l'ajouter a Supabase sans relancer tout le schema:
+
+```bash
+supabase db execute --file supabase-orders-schema.sql
+```
+
+Si ta version de Supabase CLI ne supporte pas `db execute`, ouvre Supabase > SQL Editor et colle le contenu de `supabase-orders-schema.sql`.
+
+## Stripe Checkout en mode test
+
+La fonction `create-checkout-session` cree une commande `pending_payment`, cree une session Stripe Checkout et renvoie l'URL de paiement au site.
+La fonction `stripe-webhook` ecoute ensuite le paiement valide, passe la commande en `paid`, genere les contrats personnalises et envoie l'email de livraison.
+
+Secret a configurer avec la cle test Stripe:
+
+```bash
+supabase secrets set STRIPE_SECRET_KEY="sk_test_..."
+supabase functions deploy create-checkout-session
+```
+
+Apres creation du webhook dans Stripe, configurer son secret de signature:
+
+```bash
+supabase secrets set STRIPE_WEBHOOK_SECRET="whsec_..."
+supabase functions deploy stripe-webhook
+```
