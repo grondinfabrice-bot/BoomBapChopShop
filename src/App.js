@@ -15,7 +15,7 @@ import { LicensingPage } from "./pages/LicensingPage.js?v=5";
 import { ContactPage } from "./pages/ContactPage.js?v=6";
 import { UpsellPage } from "./pages/UpsellPage.js?v=4";
 import { CheckoutPage } from "./pages/CheckoutPage.js?v=7";
-import { ThanksPage } from "./pages/ThanksPage.js?v=4";
+import { ThanksPage } from "./pages/ThanksPage.js?v=5";
 import { AdminPage } from "./pages/AdminPage.js";
 import { featuredBeat } from "./data/beats.js?v=9";
 import {
@@ -71,13 +71,32 @@ function hydrateCheckoutReturn() {
   const checkoutStatus = params.get("checkout");
   const order = params.get("order") || "";
   if (checkoutStatus === "success") {
+    const savedCheckout = getSavedCheckout(order);
     setState({
       page: "thanks",
       checkoutOrder: order,
-      checkoutEmail: "",
+      checkoutEmail: savedCheckout.email || "",
       cart: [],
       cartOpen: false,
     });
+  }
+}
+
+function saveCheckoutReturn(orderNumber, email) {
+  if (!orderNumber || !email) return;
+  try {
+    localStorage.setItem(`bbcs_checkout_${orderNumber}`, JSON.stringify({ email, savedAt: Date.now() }));
+  } catch (error) {
+    console.warn("Checkout email could not be saved locally.", error);
+  }
+}
+
+function getSavedCheckout(orderNumber) {
+  if (!orderNumber) return {};
+  try {
+    return JSON.parse(localStorage.getItem(`bbcs_checkout_${orderNumber}`) || "{}");
+  } catch {
+    return {};
   }
 }
 
@@ -427,6 +446,7 @@ function bindPageActions() {
     const total = cart.reduce((sum, item) => sum + item.price, 0);
     try {
       const checkout = await createCheckoutSession({ email, firstName, lastName, items: cart, total });
+      saveCheckoutReturn(checkout.orderNumber, email);
       window.location.href = checkout.checkoutUrl;
       return;
     } catch (error) {
