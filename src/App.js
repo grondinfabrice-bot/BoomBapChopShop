@@ -6,7 +6,7 @@ import {
   setContent,
   setState,
   subscribe,
-} from "./state/store.js?v=30";
+} from "./state/store.js?v=31";
 import { Shell } from "./components/Shell.js?v=16";
 import { HomePage } from "./pages/HomePage.js?v=24";
 import { BlogPage } from "./pages/BlogPage.js?v=8";
@@ -15,7 +15,7 @@ import { LicensingPage } from "./pages/LicensingPage.js?v=5";
 import { ContactPage } from "./pages/ContactPage.js?v=6";
 import { UpsellPage } from "./pages/UpsellPage.js?v=4";
 import { CheckoutPage } from "./pages/CheckoutPage.js?v=7";
-import { ThanksPage } from "./pages/ThanksPage.js?v=5";
+import { ThanksPage } from "./pages/ThanksPage.js?v=6";
 import { AdminPage } from "./pages/AdminPage.js";
 import { featuredBeat } from "./data/beats.js?v=9";
 import {
@@ -76,16 +76,17 @@ function hydrateCheckoutReturn() {
       page: "thanks",
       checkoutOrder: order,
       checkoutEmail: savedCheckout.email || "",
+      checkoutHasService: Boolean(savedCheckout.hasService),
       cart: [],
       cartOpen: false,
     });
   }
 }
 
-function saveCheckoutReturn(orderNumber, email) {
+function saveCheckoutReturn(orderNumber, email, hasService = false) {
   if (!orderNumber || !email) return;
   try {
-    localStorage.setItem(`bbcs_checkout_${orderNumber}`, JSON.stringify({ email, savedAt: Date.now() }));
+    localStorage.setItem(`bbcs_checkout_${orderNumber}`, JSON.stringify({ email, hasService, savedAt: Date.now() }));
   } catch (error) {
     console.warn("Checkout email could not be saved locally.", error);
   }
@@ -444,9 +445,10 @@ function bindPageActions() {
     const state = getState();
     const cart = [...state.cart];
     const total = cart.reduce((sum, item) => sum + item.price, 0);
+    const hasService = cart.some((item) => item.type === "service");
     try {
       const checkout = await createCheckoutSession({ email, firstName, lastName, items: cart, total });
-      saveCheckoutReturn(checkout.orderNumber, email);
+      saveCheckoutReturn(checkout.orderNumber, email, hasService);
       window.location.href = checkout.checkoutUrl;
       return;
     } catch (error) {

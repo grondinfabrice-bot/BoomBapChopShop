@@ -2546,6 +2546,37 @@
   line-height: 1.65;
 }
 
+.thanks-service-note {
+  display: grid;
+  gap: 0.65rem;
+  margin: -0.6rem 0 2rem;
+  padding: 1.2rem;
+  border: 1px solid rgba(142, 59, 46, 0.28);
+  border-left: 3px solid var(--deep-brick);
+  border-radius: 6px;
+  background: rgba(142, 59, 46, 0.07);
+}
+
+.thanks-service-note span {
+  color: var(--deep-brick);
+  font-family: var(--font-display);
+  text-transform: uppercase;
+}
+
+.thanks-service-note h2 {
+  margin: 0;
+  color: var(--charcoal);
+  font-family: var(--font-display);
+  font-weight: 400;
+  text-transform: uppercase;
+}
+
+.thanks-service-note p {
+  margin: 0;
+  color: var(--charcoal);
+  line-height: 1.65;
+}
+
 .thanks-actions {
   display: flex;
   flex-wrap: wrap;

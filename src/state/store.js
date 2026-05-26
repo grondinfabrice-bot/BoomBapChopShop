@@ -23,6 +23,7 @@ const state = {
   toast: "",
   checkoutEmail: "",
   checkoutOrder: "",
+  checkoutHasService: false,
   upsellSeconds: 599,
   activePostId: "",
   blogCategory: "all",

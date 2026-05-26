@@ -269,6 +269,7 @@ function buildEmailHtml({ orderId, email, items, total, currency, siteUrl }: {
   siteUrl: string;
 }) {
   const logoUrl = absoluteUrl("./src/assets/boom-bap-chop-shop-logo.png", siteUrl);
+  const hasService = hasStudioService(items);
   const rows = items.map((item) => {
     const contractUrl = item.personalizedContractUrl || item.contractUrl || "";
     const contractLabel = item.personalizedContractUrl ? "Download personalized contract" : "Read license contract";
@@ -317,11 +318,31 @@ function buildEmailHtml({ orderId, email, items, total, currency, siteUrl }: {
               <td style="padding:16px;text-align:right;white-space:nowrap;"><strong>${formatMoney(total, currency)}</strong></td>
             </tr>
             </table>
+            ${hasService ? buildStudioServiceProcessHtml() : ""}
             <p style="margin:18px 0 0;line-height:1.7;color:#1e1e1e;">Keep this email and contract with your release records. Download links may expire for security reasons, but your order remains logged.</p>
             <p style="margin:16px 0 0;line-height:1.7;color:#8e3b2e;font-weight:800;">Make the record. Let the drums talk.</p>
           </div>
         </div>
       </div>
+    </div>
+  `;
+}
+
+function buildStudioServiceProcessHtml() {
+  return `
+    <div style="margin:18px 0 0;padding:16px;border:1px solid rgba(142,59,46,.32);border-left:3px solid #8e3b2e;background:rgba(142,59,46,.07);">
+      <p style="margin:0 0 8px;color:#8e3b2e;font-weight:900;letter-spacing:.08em;text-transform:uppercase;">Mix/Master next steps</p>
+      <p style="margin:0 0 10px;line-height:1.7;color:#1e1e1e;">Reply to this email with your project files so the session can be prepared.</p>
+      <ul style="margin:0 0 12px;padding-left:18px;line-height:1.7;color:#1e1e1e;">
+        <li>Lead vocal WAV, dry if possible</li>
+        <li>Adlibs, doubles and backing vocals separated</li>
+        <li>Beat WAV or trackouts if available</li>
+        <li>Rough mix/demo bounce</li>
+        <li>1 or 2 reference tracks</li>
+        <li>Artist name, song title, creative notes and any deadline</li>
+      </ul>
+      <p style="margin:0;line-height:1.7;color:#1e1e1e;"><strong>File sync:</strong> all exported WAV files must start at bar 1 / 00:00, even if there is silence before the vocal starts. Do not trim each vocal to its first word, or the timing may shift when the session is rebuilt.</p>
+      <p style="margin:10px 0 0;line-height:1.7;color:#1e1e1e;">If the files are too heavy, send a private WeTransfer, Google Drive, Dropbox or SwissTransfer link.</p>
     </div>
   `;
 }
@@ -412,6 +433,9 @@ function buildEmailText({ orderId, items, total, currency, siteUrl }: {
   currency: string;
   siteUrl: string;
 }) {
+  const serviceProcess = hasStudioService(items)
+    ? "\n\nMIX/MASTER NEXT STEPS\nReply to this email with your vocal WAV stems, beat WAV or trackouts if available, rough mix, 1 or 2 reference tracks, artist name, song title, notes and any deadline.\n\nFILE SYNC: all exported WAV files must start at bar 1 / 00:00, even if there is silence before the vocal starts. Do not trim each vocal to its first word, or the timing may shift when the session is rebuilt.\n\nIf files are too heavy, send a private WeTransfer, Google Drive, Dropbox or SwissTransfer link."
+    : "";
   const lines = items.map((item) => {
     const contractUrl = item.personalizedContractUrl || item.contractUrl || "";
     const contract = contractUrl ? `\nContract: ${absoluteUrl(contractUrl, siteUrl)}` : "";
@@ -422,7 +446,11 @@ function buildEmailText({ orderId, items, total, currency, siteUrl }: {
     return `- ${item.name || "Order item"} / ${item.license || item.type || "License"} / ${formatMoney(item.price || 0, currency)}${serviceFor}${contract}${delivery}`;
   }).join("\n\n");
 
-  return `BOOM BAP CHOP SHOP\nRespect for the support.\nOrder confirmed: ${orderId}\n\n${lines}\n\nTotal: ${formatMoney(total, currency)}\n\nKeep this email and contract with your release records.\nMake the record. Let the drums talk.`;
+  return `BOOM BAP CHOP SHOP\nRespect for the support.\nOrder confirmed: ${orderId}\n\n${lines}\n\nTotal: ${formatMoney(total, currency)}${serviceProcess}\n\nKeep this email and contract with your release records.\nMake the record. Let the drums talk.`;
+}
+
+function hasStudioService(items: OrderItem[]) {
+  return items.some((item) => item.type === "service" || /mix|master/i.test(`${item.name || ""} ${item.license || ""}`));
 }
 
 async function attachPersonalizedContracts({
