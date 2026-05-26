@@ -22,6 +22,7 @@ const state = {
   featuredProgress: 0,
   toast: "",
   checkoutEmail: "",
+  checkoutOrder: "",
   upsellSeconds: 599,
   activePostId: "",
   blogCategory: "all",

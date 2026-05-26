@@ -110,10 +110,13 @@
   .license-project-grid,
   .license-legal-notes > div,
   .upsell-cards,
-  .thanks-steps,
   .testimonial-grid,
   .service-pricing {
     grid-template-columns: repeat(2, 1fr);
+  }
+
+  .thanks-steps {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .shop-info-section,
@@ -253,6 +256,8 @@
   .license-legal-notes > div,
   .upsell-cards,
   .thanks-steps,
+  .thanks-hero,
+  .thanks-confirm,
   .testimonial-grid,
   .service-pricing,
   .shop-info-section,
@@ -320,6 +325,24 @@
 
   .blog-bottom-links {
     justify-content: flex-start;
+  }
+
+  .thanks-copy {
+    text-align: center;
+  }
+
+  .thanks-logo-mark {
+    width: min(62vw, 190px);
+    margin: 0 auto;
+  }
+
+  .thanks-sub {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .thanks-actions .btn-hero {
+    width: 100%;
   }
 
   .volume-wrap {

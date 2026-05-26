@@ -6,7 +6,7 @@ import {
   setContent,
   setState,
   subscribe,
-} from "./state/store.js?v=29";
+} from "./state/store.js?v=30";
 import { Shell } from "./components/Shell.js?v=16";
 import { HomePage } from "./pages/HomePage.js?v=24";
 import { BlogPage } from "./pages/BlogPage.js?v=8";
@@ -15,7 +15,7 @@ import { LicensingPage } from "./pages/LicensingPage.js?v=5";
 import { ContactPage } from "./pages/ContactPage.js?v=6";
 import { UpsellPage } from "./pages/UpsellPage.js?v=4";
 import { CheckoutPage } from "./pages/CheckoutPage.js?v=6";
-import { ThanksPage } from "./pages/ThanksPage.js?v=3";
+import { ThanksPage } from "./pages/ThanksPage.js?v=4";
 import { AdminPage } from "./pages/AdminPage.js";
 import { featuredBeat } from "./data/beats.js?v=9";
 import {
@@ -55,6 +55,7 @@ const pages = {
 
 export function App(root) {
   rootNode = root;
+  hydrateCheckoutReturn();
   if (window.location.hash === "#admin") setState({ page: "admin" });
   window.addEventListener("hashchange", () => {
     if (window.location.hash === "#admin") route("admin");
@@ -63,6 +64,21 @@ export function App(root) {
   render();
   startClock();
   hydrateCms();
+}
+
+function hydrateCheckoutReturn() {
+  const params = new URLSearchParams(window.location.search);
+  const checkoutStatus = params.get("checkout");
+  const order = params.get("order") || "";
+  if (checkoutStatus === "success") {
+    setState({
+      page: "thanks",
+      checkoutOrder: order,
+      checkoutEmail: "",
+      cart: [],
+      cartOpen: false,
+    });
+  }
 }
 
 function handleStateChange(state, patch = {}) {
