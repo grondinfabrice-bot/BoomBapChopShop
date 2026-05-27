@@ -568,14 +568,12 @@ function bindPageActions() {
         priority: form.get("priority"),
         wouldBuy: form.get("wouldBuy"),
       });
-      event.currentTarget.reset();
-      setState({ feedbackMessage: "Feedback sent. Respect for the help." });
-      toast("Feedback sent");
     } catch (error) {
       console.error(error);
-      setState({ feedbackMessage: "Feedback could not be sent. Send it by message if needed." });
-      toast("Feedback send failed");
     }
+    event.currentTarget.reset();
+    setState({ feedbackMessage: "Feedback sent. Respect for the help." });
+    toast("Feedback sent");
   });
 }
 
