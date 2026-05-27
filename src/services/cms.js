@@ -140,17 +140,17 @@ export async function saveTestFeedback(payload) {
   if (!supabase) throw new Error("Supabase is not configured yet.");
 
   const { error } = await supabase.from("test_feedback").insert({
-    tester_name: payload.testerName,
-    tester_email: payload.testerEmail,
-    device: payload.device,
+    tester_name: emptyToNull(payload.testerName),
+    tester_email: emptyToNull(payload.testerEmail),
+    device: emptyToNull(payload.device),
     ratings: payload.ratings,
-    clicked: payload.clicked,
-    blocked: payload.blocked,
-    unclear_step: payload.unclearStep,
-    trust_notes: payload.trustNotes,
-    bugs: payload.bugs,
-    priority: payload.priority,
-    would_buy: payload.wouldBuy,
+    clicked: emptyToNull(payload.clicked),
+    blocked: emptyToNull(payload.blocked),
+    unclear_step: emptyToNull(payload.unclearStep),
+    trust_notes: emptyToNull(payload.trustNotes),
+    bugs: emptyToNull(payload.bugs),
+    priority: emptyToNull(payload.priority),
+    would_buy: emptyToNull(payload.wouldBuy),
   });
   if (error) throw error;
 }
@@ -213,6 +213,11 @@ function numberOrNull(value) {
 
 function compact(object) {
   return Object.fromEntries(Object.entries(object).filter(([, value]) => value !== "" && value !== null));
+}
+
+function emptyToNull(value) {
+  const text = String(value || "").trim();
+  return text || null;
 }
 
 function slugify(value) {
