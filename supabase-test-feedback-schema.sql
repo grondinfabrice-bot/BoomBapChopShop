@@ -25,6 +25,33 @@ create table if not exists public.test_feedback (
 
 create index if not exists test_feedback_created_at_idx on public.test_feedback (created_at desc);
 
+alter table public.test_feedback alter column tester_name drop not null;
+alter table public.test_feedback alter column tester_email drop not null;
+alter table public.test_feedback alter column device drop not null;
+alter table public.test_feedback alter column clicked drop not null;
+alter table public.test_feedback alter column blocked drop not null;
+alter table public.test_feedback alter column unclear_step drop not null;
+alter table public.test_feedback alter column trust_notes drop not null;
+alter table public.test_feedback alter column bugs drop not null;
+alter table public.test_feedback alter column priority drop not null;
+alter table public.test_feedback alter column would_buy drop not null;
+
+do $$
+begin
+  if exists (
+    select 1 from information_schema.columns
+    where table_schema = 'public'
+    and table_name = 'test_feedback'
+    and column_name = 'title'
+  ) then
+    alter table public.test_feedback alter column title drop not null;
+  end if;
+end $$;
+
+grant insert on public.test_feedback to anon;
+grant insert on public.test_feedback to authenticated;
+grant select, update, delete on public.test_feedback to authenticated;
+
 alter table public.test_feedback enable row level security;
 
 drop policy if exists "Public can create test feedback" on public.test_feedback;

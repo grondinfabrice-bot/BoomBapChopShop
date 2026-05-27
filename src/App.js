@@ -28,7 +28,7 @@ import {
   saveTestFeedback,
   signInAdmin,
   signOutAdmin,
-} from "./services/cms.js?v=2";
+} from "./services/cms.js?v=3";
 import { createCheckoutSession } from "./services/orders.js?v=3";
 import { time } from "./utils/format.js";
 

@@ -136,10 +136,9 @@ export async function savePost(form) {
 }
 
 export async function saveTestFeedback(payload) {
-  const supabase = await getSupabase();
-  if (!supabase) throw new Error("Supabase is not configured yet.");
-
-  const { error } = await supabase.from("test_feedback").insert({
+  if (!isCmsConfigured()) throw new Error("Supabase is not configured yet.");
+  const config = window.BBCS_CONFIG;
+  const body = {
     tester_name: emptyToNull(payload.testerName),
     tester_email: emptyToNull(payload.testerEmail),
     device: emptyToNull(payload.device),
@@ -151,8 +150,20 @@ export async function saveTestFeedback(payload) {
     bugs: emptyToNull(payload.bugs),
     priority: emptyToNull(payload.priority),
     would_buy: emptyToNull(payload.wouldBuy),
+  };
+
+  const response = await fetch(`${config.supabaseUrl}/rest/v1/test_feedback`, {
+    method: "POST",
+    headers: {
+      apikey: config.supabaseAnonKey,
+      Authorization: `Bearer ${config.supabaseAnonKey}`,
+      "Content-Type": "application/json",
+      Prefer: "return=minimal",
+    },
+    body: JSON.stringify(body),
   });
-  if (error) throw error;
+
+  if (!response.ok) throw new Error(await response.text());
 }
 
 async function uploadFile(bucket, file, baseName) {
