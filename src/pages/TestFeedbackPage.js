@@ -12,6 +12,10 @@ const ratingFields = [
 ];
 
 export function TestFeedbackPage(state) {
+  const isSending = state.feedbackStatus === "sending";
+  const isSent = state.feedbackStatus === "sent";
+  const buttonLabel = isSending ? "Sending..." : isSent ? "Feedback sent" : "Send feedback";
+  const buttonState = isSending || isSent ? "disabled" : "";
   return `
     <section class="feedback-wrap">
       <div class="feedback-head">
@@ -19,7 +23,7 @@ export function TestFeedbackPage(state) {
         <h1>Rate the shop</h1>
         <p>Entre tes notes, tes bugs, et ce qui t'a bloque. Ces retours servent directement a ameliorer BOOM BAP CHOP SHOP.</p>
       </div>
-      <form class="feedback-form" data-feedback-form>
+      <form class="feedback-form ${isSending ? "is-sending" : ""} ${isSent ? "is-sent" : ""}" data-feedback-form>
         <div class="feedback-panel">
           <h2>Tester</h2>
           <div class="cgrid">
@@ -61,7 +65,7 @@ export function TestFeedbackPage(state) {
           </div>
         </div>
 
-        <button class="btn-pay" type="submit">Send feedback</button>
+        <button class="btn-pay feedback-submit" type="submit" ${buttonState}>${buttonLabel}</button>
         <p class="feedback-message">${state.feedbackMessage || ""}</p>
       </form>
     </section>

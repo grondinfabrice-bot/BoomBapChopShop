@@ -2687,12 +2687,47 @@
 }
 
 .feedback-message {
-  min-height: 1.4rem;
+  min-height: 3.1rem;
   margin: 0;
+  padding: 0.85rem;
+  border: 1px solid transparent;
+  border-radius: 4px;
   color: var(--deep-brick);
   font-family: var(--font-display);
   text-align: center;
   text-transform: uppercase;
+}
+
+.feedback-submit {
+  transition: transform 0.16s ease, background 0.16s ease, opacity 0.16s ease;
+}
+
+.feedback-submit:disabled {
+  cursor: not-allowed;
+  opacity: 0.86;
+}
+
+.feedback-form.is-sending .feedback-submit {
+  background: var(--muted-gold);
+  color: var(--black);
+  transform: translateY(1px);
+}
+
+.feedback-form.is-sending .feedback-message {
+  border-color: var(--line);
+  background: rgba(176, 141, 87, 0.12);
+  color: var(--charcoal);
+}
+
+.feedback-form.is-sent .feedback-submit {
+  background: var(--charcoal);
+  color: var(--off-white);
+}
+
+.feedback-form.is-sent .feedback-message {
+  border-color: rgba(142, 59, 46, 0.28);
+  background: rgba(142, 59, 46, 0.08);
+  color: var(--deep-brick);
 }
 
 .admin-head,

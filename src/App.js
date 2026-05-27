@@ -6,7 +6,7 @@ import {
   setContent,
   setState,
   subscribe,
-} from "./state/store.js?v=32";
+} from "./state/store.js?v=33";
 import { Shell } from "./components/Shell.js?v=16";
 import { HomePage } from "./pages/HomePage.js?v=24";
 import { BlogPage } from "./pages/BlogPage.js?v=8";
@@ -17,7 +17,7 @@ import { UpsellPage } from "./pages/UpsellPage.js?v=4";
 import { CheckoutPage } from "./pages/CheckoutPage.js?v=7";
 import { ThanksPage } from "./pages/ThanksPage.js?v=6";
 import { AdminPage } from "./pages/AdminPage.js";
-import { TestFeedbackPage } from "./pages/TestFeedbackPage.js?v=2";
+import { TestFeedbackPage } from "./pages/TestFeedbackPage.js?v=3";
 import { featuredBeat } from "./data/beats.js?v=9";
 import {
   getAdminSession,
@@ -551,6 +551,9 @@ function bindPageActions() {
 
   rootNode.querySelector("[data-feedback-form]")?.addEventListener("submit", async (event) => {
     event.preventDefault();
+    const state = getState();
+    if (state.feedbackStatus === "sending" || state.feedbackStatus === "sent") return;
+    setState({ feedbackStatus: "sending", feedbackMessage: "Sending feedback..." });
     const form = new FormData(event.currentTarget);
     const ratingKeys = ["style", "clarity", "navigation", "listening", "checkout", "licenses", "mobile", "trust", "speed", "global"];
     const ratings = Object.fromEntries(ratingKeys.map((key) => [key, numberOrNull(form.get(`rating_${key}`))]));
@@ -572,7 +575,7 @@ function bindPageActions() {
       console.error(error);
     }
     event.currentTarget.reset();
-    setState({ feedbackMessage: "Feedback sent. Respect for the help." });
+    setState({ feedbackStatus: "sent", feedbackMessage: "Feedback sent. Respect for the help." });
     toast("Feedback sent");
   });
 }

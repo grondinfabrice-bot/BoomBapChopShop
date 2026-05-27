@@ -10,6 +10,7 @@ const state = {
   cmsReady: false,
   cmsMessage: "",
   feedbackMessage: "",
+  feedbackStatus: "",
   adminSession: null,
   adminBeats: [],
   adminPosts: [],
