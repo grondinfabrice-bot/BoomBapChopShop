@@ -228,11 +228,12 @@ def build_pages():
         p.rect(M, y - 15, 12, 12, stroke="brick", lw=1)
         p.text(M + 22, y - 12, c, 10.5, "F1", "charcoal")
         y -= 31
-    p.rect(M, 66, W - 2 * M, 118, fill="surface", stroke="gold", lw=0.7)
-    p.text(M + 14, 134, "Retour final", 13, "F2", "gold")
-    p.paragraph(M + 14, 112, "Envoie-moi tes notes, les bugs, et ton impression honnete. Une critique dure est utile si elle rend le shop plus clair.", 9.8, "F1", "offwhite", 39)
-    p.text(M + 14, 82, FEEDBACK_URL, 9.5, "F2", "gold")
-    p.link(M + 14, 76, 216, 16, FEEDBACK_URL)
+    p.rect(M, 98, W - 2 * M, 112, fill="surface", stroke="gold", lw=0.7)
+    p.text(M + 14, 180, "Retour final", 13, "F2", "gold")
+    p.paragraph(M + 14, 158, "Envoie-moi tes notes, les bugs, et ton impression honnete. Une critique dure est utile si elle rend le shop plus clair.", 9.6, "F1", "offwhite", 38)
+    p.rect(M, 58, W - 2 * M, 32, fill="paper", stroke="brick", lw=0.7)
+    p.text(M + 12, 70, FEEDBACK_URL, 9.2, "F2", "brick")
+    p.link(M + 12, 64, 216, 16, FEEDBACK_URL)
     footer(p, 5)
     pages.append(p)
     return pages

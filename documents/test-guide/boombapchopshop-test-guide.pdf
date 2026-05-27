@@ -1799,7 +1799,7 @@ endobj
 << /Type /Page /Parent 21 0 R /MediaBox [0 0 390 844] /Resources << /Font << /F1 1 0 R /F2 2 0 R >> >> /Annots [15 0 R] /Contents 14 0 R >>
 endobj
 17 0 obj
-<< /Length 5900 >>
+<< /Length 5985 >>
 stream
 q
 0.953 0.933 0.902 rg
@@ -2216,54 +2216,61 @@ q
 0.098 0.098 0.094 rg
 0.690 0.553 0.341 RG
 0.7 w
-28.00 66.00 334.00 118.00 re
+28.00 98.00 334.00 112.00 re
 B
 Q
 q
 0.690 0.553 0.341 rg
 BT
 /F2 13.00 Tf
-42.00 134.00 Td
+42.00 180.00 Td
 (Retour final) Tj
 ET
 Q
 q
 0.953 0.933 0.902 rg
 BT
-/F1 9.80 Tf
-42.00 112.00 Td
+/F1 9.60 Tf
+42.00 158.00 Td
 (Envoie-moi tes notes, les bugs, et ton) Tj
 ET
 Q
 q
 0.953 0.933 0.902 rg
 BT
-/F1 9.80 Tf
-42.00 98.77 Td
+/F1 9.60 Tf
+42.00 145.04 Td
 (impression honnete. Une critique dure) Tj
 ET
 Q
 q
 0.953 0.933 0.902 rg
 BT
-/F1 9.80 Tf
-42.00 85.54 Td
+/F1 9.60 Tf
+42.00 132.08 Td
 (est utile si elle rend le shop plus) Tj
 ET
 Q
 q
 0.953 0.933 0.902 rg
 BT
-/F1 9.80 Tf
-42.00 72.31 Td
+/F1 9.60 Tf
+42.00 119.12 Td
 (clair.) Tj
 ET
 Q
 q
-0.690 0.553 0.341 rg
+0.898 0.863 0.796 rg
+0.557 0.231 0.180 RG
+0.7 w
+28.00 58.00 334.00 32.00 re
+B
+Q
+q
+0.557 0.231 0.180 rg
 BT
-/F2 9.50 Tf
-42.00 82.00 Td
+/F2 9.20 Tf
+40.00 70.00 Td
 (https://boombapchopshop.art/#test-feedback) Tj
 ET
 Q
@@ -2294,7 +2301,7 @@ Q
 endstream
 endobj
 18 0 obj
-<< /Type /Annot /Subtype /Link /Rect [42.00 76.00 258.00 92.00] /Border [0 0 0] /A << /S /URI /URI (https://boombapchopshop.art/#test-feedback) >> >>
+<< /Type /Annot /Subtype /Link /Rect [40.00 64.00 256.00 80.00] /Border [0 0 0] /A << /S /URI /URI (https://boombapchopshop.art/#test-feedback) >> >>
 endobj
 19 0 obj
 << /Type /Annot /Subtype /Link /Rect [140.00 18.00 272.00 32.00] /Border [0 0 0] /A << /S /URI /URI (https://boombapchopshop.art) >> >>
@@ -2328,13 +2335,13 @@ xref
 0000023100 00000 n 
 0000023252 00000 n 
 0000023408 00000 n 
-0000029361 00000 n 
-0000029527 00000 n 
-0000029679 00000 n 
-0000029842 00000 n 
-0000029928 00000 n 
+0000029446 00000 n 
+0000029612 00000 n 
+0000029764 00000 n 
+0000029927 00000 n 
+0000030013 00000 n 
 trailer
 << /Size 23 /Root 22 0 R >>
 startxref
-29979
+30064
 %%EOF
