@@ -135,6 +135,26 @@ export async function savePost(form) {
   if (error) throw error;
 }
 
+export async function saveTestFeedback(payload) {
+  const supabase = await getSupabase();
+  if (!supabase) throw new Error("Supabase is not configured yet.");
+
+  const { error } = await supabase.from("test_feedback").insert({
+    tester_name: payload.testerName,
+    tester_email: payload.testerEmail,
+    device: payload.device,
+    ratings: payload.ratings,
+    clicked: payload.clicked,
+    blocked: payload.blocked,
+    unclear_step: payload.unclearStep,
+    trust_notes: payload.trustNotes,
+    bugs: payload.bugs,
+    priority: payload.priority,
+    would_buy: payload.wouldBuy,
+  });
+  if (error) throw error;
+}
+
 async function uploadFile(bucket, file, baseName) {
   if (!file || !file.name) return "";
   const supabase = await getSupabase();

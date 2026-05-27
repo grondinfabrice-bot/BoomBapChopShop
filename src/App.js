@@ -6,7 +6,7 @@ import {
   setContent,
   setState,
   subscribe,
-} from "./state/store.js?v=31";
+} from "./state/store.js?v=32";
 import { Shell } from "./components/Shell.js?v=16";
 import { HomePage } from "./pages/HomePage.js?v=24";
 import { BlogPage } from "./pages/BlogPage.js?v=8";
@@ -17,6 +17,7 @@ import { UpsellPage } from "./pages/UpsellPage.js?v=4";
 import { CheckoutPage } from "./pages/CheckoutPage.js?v=7";
 import { ThanksPage } from "./pages/ThanksPage.js?v=6";
 import { AdminPage } from "./pages/AdminPage.js";
+import { TestFeedbackPage } from "./pages/TestFeedbackPage.js?v=2";
 import { featuredBeat } from "./data/beats.js?v=9";
 import {
   getAdminSession,
@@ -24,6 +25,7 @@ import {
   loadPublishedContent,
   saveBeat,
   savePost,
+  saveTestFeedback,
   signInAdmin,
   signOutAdmin,
 } from "./services/cms.js";
@@ -51,19 +53,27 @@ const pages = {
   checkout: CheckoutPage,
   thanks: ThanksPage,
   admin: AdminPage,
+  feedback: TestFeedbackPage,
 };
 
 export function App(root) {
   rootNode = root;
   hydrateCheckoutReturn();
+  hydrateHashRoute();
   if (window.location.hash === "#admin") setState({ page: "admin" });
   window.addEventListener("hashchange", () => {
-    if (window.location.hash === "#admin") route("admin");
+    hydrateHashRoute();
   });
   subscribe(handleStateChange);
   render();
   startClock();
   hydrateCms();
+}
+
+function hydrateHashRoute() {
+  const hash = window.location.hash.replace("#", "");
+  if (hash === "admin") route("admin");
+  if (hash === "test-feedback") route("feedback");
 }
 
 function hydrateCheckoutReturn() {
@@ -538,6 +548,35 @@ function bindPageActions() {
       setState({ cmsMessage: error.message || "Note save failed." });
     }
   });
+
+  rootNode.querySelector("[data-feedback-form]")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const ratingKeys = ["style", "clarity", "navigation", "listening", "checkout", "licenses", "mobile", "trust", "speed", "global"];
+    const ratings = Object.fromEntries(ratingKeys.map((key) => [key, numberOrNull(form.get(`rating_${key}`))]));
+    try {
+      await saveTestFeedback({
+        testerName: form.get("testerName"),
+        testerEmail: form.get("testerEmail"),
+        device: form.get("device"),
+        ratings,
+        clicked: form.get("clicked"),
+        blocked: form.get("blocked"),
+        unclearStep: form.get("unclearStep"),
+        trustNotes: form.get("trustNotes"),
+        bugs: form.get("bugs"),
+        priority: form.get("priority"),
+        wouldBuy: form.get("wouldBuy"),
+      });
+      event.currentTarget.reset();
+      setState({ feedbackMessage: "Feedback sent. Respect for the help." });
+      toast("Feedback sent");
+    } catch (error) {
+      console.error(error);
+      setState({ feedbackMessage: "Feedback could not be sent. Send it by message if needed." });
+      toast("Feedback send failed");
+    }
+  });
 }
 
 function openServicePicker(offer) {
@@ -639,9 +678,16 @@ function serviceKey(value) {
     .replace(/^-|-$/g, "");
 }
 
+function numberOrNull(value) {
+  if (value === "" || value === null || value === undefined) return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
 function route(page) {
-  if (page === "admin") window.location.hash = "admin";
-  if (page !== "admin" && window.location.hash === "#admin") history.replaceState(null, "", window.location.pathname);
+  if (page === "admin" && window.location.hash !== "#admin") window.location.hash = "admin";
+  if (page === "feedback" && window.location.hash !== "#test-feedback") window.location.hash = "test-feedback";
+  if (!["admin", "feedback"].includes(page) && ["#admin", "#test-feedback"].includes(window.location.hash)) history.replaceState(null, "", window.location.pathname);
   setState({
     page,
     activePostId: "",

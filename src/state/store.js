@@ -9,6 +9,7 @@ const state = {
   posts,
   cmsReady: false,
   cmsMessage: "",
+  feedbackMessage: "",
   adminSession: null,
   adminBeats: [],
   adminPosts: [],

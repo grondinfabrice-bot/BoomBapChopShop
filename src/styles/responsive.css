@@ -286,6 +286,10 @@
     overflow-wrap: anywhere;
   }
 
+  .feedback-ratings {
+    grid-template-columns: 1fr;
+  }
+
   .licensing-cta {
     justify-self: stretch;
   }
