@@ -192,6 +192,7 @@ function mapBeat(beat) {
     tags: beat.tags || [],
     description: beat.description || "",
     published: beat.published,
+    sortOrder: beat.sort_order,
   };
 }
 

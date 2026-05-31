@@ -8,7 +8,7 @@ import {
   subscribe,
 } from "./state/store.js?v=33";
 import { Shell } from "./components/Shell.js?v=16";
-import { HomePage } from "./pages/HomePage.js?v=24";
+import { HomePage } from "./pages/HomePage.js?v=25";
 import { BlogPage } from "./pages/BlogPage.js?v=8";
 import { AboutPage } from "./pages/AboutPage.js?v=2";
 import { LicensingPage } from "./pages/LicensingPage.js?v=5";
@@ -18,7 +18,7 @@ import { CheckoutPage } from "./pages/CheckoutPage.js?v=7";
 import { ThanksPage } from "./pages/ThanksPage.js?v=6";
 import { AdminPage } from "./pages/AdminPage.js";
 import { TestFeedbackPage } from "./pages/TestFeedbackPage.js?v=3";
-import { featuredBeat } from "./data/beats.js?v=9";
+import { getFeaturedBeat } from "./utils/featured.js?v=1";
 import {
   getAdminSession,
   loadAdminContent,
@@ -28,7 +28,7 @@ import {
   saveTestFeedback,
   signInAdmin,
   signOutAdmin,
-} from "./services/cms.js?v=3";
+} from "./services/cms.js?v=4";
 import { createCheckoutSession } from "./services/orders.js?v=3";
 import { time } from "./utils/format.js";
 
@@ -126,6 +126,7 @@ function isPlaybackProgressPatch(patch) {
 
 function updatePlaybackProgress(state, patch) {
   if (patch.featuredProgress !== undefined) {
+    const featuredBeat = getFeaturedBeat(state);
     const progress = state.featuredProgress;
     rootNode.querySelector(".featured-player .player-progress")?.style.setProperty("width", `${progress * 100}%`);
     rootNode.querySelector(".featured-player .time-display")?.replaceChildren(
@@ -402,7 +403,8 @@ function bindPageActions() {
   rootNode.querySelector("[data-featured-wave]")?.addEventListener("click", (event) => {
     const rect = event.currentTarget.getBoundingClientRect();
     const progress = clamp((event.clientX - rect.left) / rect.width);
-    if (getState().featuredPlaying) audioPlayer.currentTime = featuredBeat.durationSeconds * progress;
+    const state = getState();
+    if (state.featuredPlaying) audioPlayer.currentTime = getFeaturedBeat(state).durationSeconds * progress;
     setState({ featuredProgress: progress });
   });
 
@@ -723,6 +725,7 @@ audioPlayer.addEventListener("timeupdate", () => {
   lastAudioProgressRender = now;
 
   if (state.featuredPlaying) {
+    const featuredBeat = getFeaturedBeat(state);
     const duration = audioPlayer.duration || featuredBeat.durationSeconds;
     if (!duration) return;
     setState({ featuredProgress: clamp(audioPlayer.currentTime / duration) });
@@ -738,10 +741,12 @@ audioPlayer.addEventListener("timeupdate", () => {
 
 audioPlayer.addEventListener("ended", () => {
   const state = getState();
-  setState(state.featuredPlaying
-    ? { featuredPlaying: false, featuredProgress: 0 }
-    : { isPlaying: false, trackProgress: 0 }
-  );
+  if (state.featuredPlaying) {
+    setState({ featuredPlaying: false, featuredProgress: 0 });
+    return;
+  }
+
+  requestNextTrack(1, { autoplay: true });
 });
 
 audioPlayer.addEventListener("error", () => {
@@ -749,7 +754,7 @@ audioPlayer.addEventListener("error", () => {
   toast("Preview audio unavailable");
 });
 
-function requestTrack(trackId) {
+function requestTrack(trackId, options = {}) {
   const state = getState();
   const track = state.beats.find((beat) => beat.id === trackId);
   if (!track) return;
@@ -761,13 +766,13 @@ function requestTrack(trackId) {
 
   const sameTrack = state.currentTrackId === trackId;
 
-  if (sameTrack && state.isPlaying) {
+  if (sameTrack && state.isPlaying && !options.autoplay) {
     audioPlayer.pause();
     setState({ isPlaying: false });
     return;
   }
 
-  if (!sameTrack || audioPlayer.src !== new URL(track.previewUrl, window.location.href).href) {
+  if (!sameTrack || options.autoplay || audioPlayer.src !== new URL(track.previewUrl, window.location.href).href) {
     audioPlayer.src = track.previewUrl;
     audioPlayer.currentTime = 0;
   }
@@ -778,7 +783,7 @@ function requestTrack(trackId) {
       currentTrackId: trackId,
       isPlaying: true,
       featuredPlaying: false,
-      trackProgress: sameTrack ? state.trackProgress : 0,
+      trackProgress: sameTrack && !options.autoplay ? state.trackProgress : 0,
     }))
     .catch(() => {
       setState({ isPlaying: false });
@@ -794,6 +799,7 @@ function toggleCurrentTrack() {
 
 function requestFeaturedTrack() {
   const state = getState();
+  const featuredBeat = getFeaturedBeat(state);
   if (!featuredBeat.previewUrl) {
     toast("Preview audio not added yet");
     return;
@@ -842,11 +848,27 @@ function restartCurrentTrack() {
     });
 }
 
-function requestNextTrack(direction = 1) {
+function requestNextTrack(direction = 1, options = {}) {
   const state = getState();
-  const index = state.beats.findIndex((beat) => beat.id === state.currentTrackId);
-  const nextIndex = index < 0 ? 0 : (index + direction + state.beats.length) % state.beats.length;
-  requestTrack(state.beats[nextIndex].id);
+  const queue = getCatalogueQueue(state).filter((beat) => beat.previewUrl);
+  if (!queue.length) {
+    setState({ isPlaying: false, trackProgress: 0 });
+    toast("No preview audio available");
+    return;
+  }
+
+  const currentIndex = queue.findIndex((beat) => beat.id === state.currentTrackId);
+  const step = direction < 0 ? -1 : 1;
+  const nextIndex = currentIndex < 0
+    ? (step > 0 ? 0 : queue.length - 1)
+    : (currentIndex + step + queue.length) % queue.length;
+
+  requestTrack(queue[nextIndex].id, options);
+}
+
+function getCatalogueQueue(state) {
+  if (state.filter === "all") return state.beats;
+  return state.beats.filter((beat) => (beat.tags || []).includes(state.filter));
 }
 
 async function hydrateCms() {

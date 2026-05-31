@@ -1,4 +1,3 @@
-import { featuredBeat } from "../data/beats.js?v=9";
 import { serviceOffers } from "../data/content.js?v=5";
 import { SectionHeader } from "../components/common/SectionHeader.js";
 import { Waveform } from "../components/player/Waveform.js";
@@ -6,9 +5,11 @@ import { LicenseButtons } from "../components/shop/LicenseButtons.js?v=4";
 import { BeatRow } from "../components/shop/BeatRow.js?v=6";
 import { Sp1200Panel } from "../components/studio/Sp1200Panel.js?v=2";
 import { time } from "../utils/format.js";
+import { getFeaturedBeat } from "../utils/featured.js?v=1";
 
 export function HomePage(state) {
   const beats = state.beats;
+  const featuredBeat = getFeaturedBeat(state);
   const filters = ["all", ...new Set(beats.flatMap((beat) => beat.tags || []))];
   const priorityFilters = ["all", "jazzy", "soul", "drums", "freestyle", "guitare"];
   const visibleBeats = state.filter === "all" ? beats : beats.filter((beat) => (beat.tags || []).includes(state.filter));

@@ -1,6 +1,6 @@
 import { CartDrawer } from "./cart/CartDrawer.js?v=6";
 import { Footer } from "./layout/Footer.js?v=2";
-import { MiniPlayer } from "./player/MiniPlayer.js?v=3";
+import { MiniPlayer } from "./player/MiniPlayer.js?v=4";
 import { DemoBanner } from "./layout/DemoBanner.js";
 import { Nav } from "./layout/Nav.js?v=4";
 import { LicensePicker } from "./shop/LicensePicker.js?v=2";

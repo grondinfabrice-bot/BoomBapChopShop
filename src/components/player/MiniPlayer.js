@@ -16,8 +16,8 @@ export function MiniPlayer(state) {
       </div>
       <div class="mini-controls">
         <button class="mini-btn" data-prev type="button" aria-label="Titre precedent">◀◀</button>
-        <button class="mini-btn" data-restart type="button" aria-label="Rejouer le titre depuis le debut">Replay</button>
-        <button class="mini-btn active" data-mini-toggle type="button" aria-label="Lecture pause">${state.isPlaying ? "Pause" : "Play"}</button>
+        <button class="mini-btn" data-restart type="button" aria-label="Rejouer le titre depuis le debut">↺</button>
+        <button class="mini-btn active" data-mini-toggle type="button" aria-label="Lecture pause">${state.isPlaying ? "Ⅱ" : "▶"}</button>
         <button class="mini-btn" data-next type="button" aria-label="Titre suivant">▶▶</button>
       </div>
       <div class="mini-progress-wrap">
