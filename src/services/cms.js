@@ -88,6 +88,7 @@ export async function saveBeat(form) {
   const supabase = await getSupabase();
   if (!supabase) throw new Error("Supabase is not configured yet.");
 
+  const beatId = form.get("id");
   const slug = slugify(form.get("name"));
   const coverUrl = await uploadFile("covers", form.get("cover"), `${slug}-cover`);
   const previewUrl = await uploadFile("previews", form.get("preview"), `${slug}-preview`);
@@ -105,9 +106,14 @@ export async function saveBeat(form) {
     tags: splitTags(form.get("tags")),
     description: form.get("description"),
     published: form.get("published") === "on",
+    sort_order: numberOrNull(form.get("sortOrder")),
   });
 
-  const { error } = await supabase.from("beats").insert(payload);
+  const query = beatId
+    ? supabase.from("beats").update(payload).eq("id", beatId)
+    : supabase.from("beats").insert(payload);
+
+  const { error } = await query;
   if (error) throw error;
 }
 

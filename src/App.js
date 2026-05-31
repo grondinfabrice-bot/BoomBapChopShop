@@ -6,7 +6,7 @@ import {
   setContent,
   setState,
   subscribe,
-} from "./state/store.js?v=33";
+} from "./state/store.js?v=34";
 import { Shell } from "./components/Shell.js?v=16";
 import { HomePage } from "./pages/HomePage.js?v=25";
 import { BlogPage } from "./pages/BlogPage.js?v=8";
@@ -16,9 +16,9 @@ import { ContactPage } from "./pages/ContactPage.js?v=6";
 import { UpsellPage } from "./pages/UpsellPage.js?v=4";
 import { CheckoutPage } from "./pages/CheckoutPage.js?v=7";
 import { ThanksPage } from "./pages/ThanksPage.js?v=6";
-import { AdminPage } from "./pages/AdminPage.js";
+import { AdminPage } from "./pages/AdminPage.js?v=1";
 import { TestFeedbackPage } from "./pages/TestFeedbackPage.js?v=3";
-import { getFeaturedBeat } from "./utils/featured.js?v=1";
+import { getFeaturedBeat } from "./utils/featured.js?v=3";
 import {
   getAdminSession,
   loadAdminContent,
@@ -28,7 +28,7 @@ import {
   saveTestFeedback,
   signInAdmin,
   signOutAdmin,
-} from "./services/cms.js?v=4";
+} from "./services/cms.js?v=5";
 import { createCheckoutSession } from "./services/orders.js?v=3";
 import { time } from "./utils/format.js";
 
@@ -522,15 +522,27 @@ function bindPageActions() {
 
   rootNode.querySelector("[data-admin-logout]")?.addEventListener("click", async () => {
     await signOutAdmin();
-    setState({ adminSession: null, cmsMessage: "Signed out." });
+    setState({ adminSession: null, adminEditingBeatId: null, cmsMessage: "Signed out." });
+  });
+
+  rootNode.querySelectorAll("[data-admin-edit-beat]").forEach((button) => {
+    button.addEventListener("click", () => {
+      setState({ adminEditingBeatId: button.dataset.adminEditBeat, cmsMessage: "" });
+      setTimeout(() => rootNode.querySelector("[data-admin-beat-form]")?.scrollIntoView({ behavior: "smooth" }), 40);
+    });
+  });
+
+  rootNode.querySelector("[data-admin-edit-cancel]")?.addEventListener("click", () => {
+    setState({ adminEditingBeatId: null, cmsMessage: "" });
   });
 
   rootNode.querySelector("[data-admin-beat-form]")?.addEventListener("submit", async (event) => {
     event.preventDefault();
+    const editing = Boolean(getState().adminEditingBeatId);
     try {
       await saveBeat(new FormData(event.currentTarget));
       event.currentTarget.reset();
-      setState({ cmsMessage: "Beat saved." });
+      setState({ adminEditingBeatId: null, cmsMessage: editing ? "Beat updated." : "Beat saved." });
       await refreshAdminContent();
       await hydrateCms();
     } catch (error) {

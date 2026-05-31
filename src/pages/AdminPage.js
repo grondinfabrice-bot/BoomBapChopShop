@@ -4,6 +4,8 @@ export function AdminPage(state) {
   if (!isCmsConfigured()) return AdminSetup();
   if (!state.adminSession) return AdminLogin(state);
 
+  const editingBeat = state.adminBeats.find((beat) => String(beat.id) === String(state.adminEditingBeatId));
+
   return `
     <section class="admin-wrap">
       <div class="admin-head">
@@ -18,26 +20,31 @@ export function AdminPage(state) {
       <div class="admin-grid">
         <form class="admin-panel" data-admin-beat-form>
           <div class="admin-panel-head">
-            <span>New beat</span>
+            <span>${editingBeat ? "Edit beat" : "New beat"}</span>
             <strong>${state.adminBeats.length} saved</strong>
           </div>
-          <label>Name<input name="name" required placeholder="STAIRCASE SWAGGER" /></label>
-          <label>Subtitle<input name="subtitle" placeholder="boom bap instrumental" /></label>
+          ${editingBeat ? `<input name="id" type="hidden" value="${attr(editingBeat.id)}" />` : ""}
+          <label>Name<input name="name" required placeholder="STAIRCASE SWAGGER" value="${attr(editingBeat?.name)}" /></label>
+          <label>Subtitle<input name="subtitle" placeholder="boom bap instrumental" value="${attr(editingBeat?.subtitle)}" /></label>
           <div class="admin-two">
-            <label>BPM<input name="bpm" type="number" min="40" max="220" placeholder="90" /></label>
-            <label>Key<input name="key" placeholder="Eb Min" /></label>
+            <label>BPM<input name="bpm" type="number" min="40" max="220" placeholder="90" value="${attr(editingBeat?.bpm || "")}" /></label>
+            <label>Key<input name="key" placeholder="Eb Min" value="${attr(editingBeat?.key)}" /></label>
           </div>
           <div class="admin-two">
-            <label>Duration<input name="duration" placeholder="2:46" /></label>
-            <label>Seconds<input name="durationSeconds" type="number" min="1" placeholder="166" /></label>
+            <label>Duration<input name="duration" placeholder="2:46" value="${attr(editingBeat?.duration)}" /></label>
+            <label>Seconds<input name="durationSeconds" type="number" min="1" placeholder="166" value="${attr(editingBeat?.durationSeconds || "")}" /></label>
           </div>
-          <label>Price<input name="price" type="number" min="0" step="0.01" placeholder="29.99" /></label>
-          <label>Tags<input name="tags" placeholder="boom bap, soul, 90s" /></label>
-          <label>Description<textarea name="description" rows="4" placeholder="Short mood and production notes"></textarea></label>
-          <label>Cover image<input name="cover" type="file" accept="image/*" /></label>
-          <label>Preview audio<input name="preview" type="file" accept="audio/*" /></label>
-          <label class="admin-check"><input name="published" type="checkbox" checked /> Published</label>
-          <button class="admin-submit" type="submit">Save beat</button>
+          <div class="admin-two">
+            <label>Price<input name="price" type="number" min="0" step="0.01" placeholder="29.99" value="${attr(editingBeat?.price || "")}" /></label>
+            <label>Sort order<input name="sortOrder" type="number" placeholder="100" value="${attr(editingBeat?.sortOrder ?? "")}" /></label>
+          </div>
+          <label>Tags<input name="tags" placeholder="boom bap, soul, featured" value="${attr((editingBeat?.tags || []).join(", "))}" /></label>
+          <label>Description<textarea name="description" rows="4" placeholder="Short mood and production notes">${text(editingBeat?.description)}</textarea></label>
+          <label>Cover image<input name="cover" type="file" accept="image/*" />${editingBeat ? "<small>Leave empty to keep the current cover.</small>" : ""}</label>
+          <label>Preview audio<input name="preview" type="file" accept="audio/*" />${editingBeat ? "<small>Leave empty to keep the current preview.</small>" : ""}</label>
+          <label class="admin-check"><input name="published" type="checkbox" ${editingBeat?.published === false ? "" : "checked"} /> Published</label>
+          <button class="admin-submit" type="submit">${editingBeat ? "Update beat" : "Save beat"}</button>
+          ${editingBeat ? `<button class="admin-ghost" data-admin-edit-cancel type="button">Cancel edit</button>` : ""}
         </form>
 
         <form class="admin-panel" data-admin-post-form>
@@ -74,11 +81,27 @@ export function AdminPage(state) {
             <span>${beat.published ? "Live" : "Draft"}</span>
             <strong>${beat.name}</strong>
             <small>${beat.bpm || "-"} BPM · ${(beat.tags || []).join(", ")}</small>
+            <button class="admin-ghost" data-admin-edit-beat="${beat.id}" type="button">Edit</button>
           </article>
         `).join("") || `<p>No beats saved yet.</p>`}
       </div>
     </section>
   `;
+}
+
+function attr(value = "") {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
+function text(value = "") {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
 }
 
 function AdminSetup() {

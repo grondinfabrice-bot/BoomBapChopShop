@@ -12,6 +12,7 @@ const state = {
   feedbackMessage: "",
   feedbackStatus: "",
   adminSession: null,
+  adminEditingBeatId: null,
   adminBeats: [],
   adminPosts: [],
   cart: [],

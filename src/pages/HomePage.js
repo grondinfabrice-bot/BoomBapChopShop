@@ -5,7 +5,7 @@ import { LicenseButtons } from "../components/shop/LicenseButtons.js?v=4";
 import { BeatRow } from "../components/shop/BeatRow.js?v=6";
 import { Sp1200Panel } from "../components/studio/Sp1200Panel.js?v=2";
 import { time } from "../utils/format.js";
-import { getFeaturedBeat } from "../utils/featured.js?v=1";
+import { getFeaturedBeat } from "../utils/featured.js?v=3";
 
 export function HomePage(state) {
   const beats = state.beats;
