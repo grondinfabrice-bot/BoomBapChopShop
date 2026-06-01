@@ -84,23 +84,26 @@ export function buildChatReply(message, state = {}) {
 export function buildCatalogSearchReply(message, state = {}) {
   const text = normalize(message);
   const language = detectLanguage(message, state.chatLanguage);
-  if (!isCatalogQuestion(text)) return null;
+  const previousCatalogQuestion = findPreviousCatalogQuestion(state.chatMessages || []);
+  const isFollowUp = isCatalogFollowUp(text) && previousCatalogQuestion;
+  if (!isCatalogQuestion(text) && !isFollowUp) return null;
 
-  const criteria = getCatalogCriteria(text);
+  const criteria = getCatalogCriteria(isFollowUp ? previousCatalogQuestion : text);
   if (!criteria.length) return null;
 
-  const catalog = getCatalog();
+  const catalog = getCatalog(state);
   const matches = catalog.filter((beat) => criteria.every((criterion) => criterion.match(beat)));
   if (matches.length) {
-    const shown = matches.slice(0, 5).map(formatBeatLine).join("\n");
-    const more = matches.length > 5
-      ? language === "en" ? `\n\n${matches.length - 5} more result(s) are also in the catalogue.` : `\n\n${matches.length - 5} autre(s) resultat(s) sont aussi dans le catalogue.`
-      : "";
+    const shown = matches.map(formatBeatLine).join("\n");
+    const actions = matches.map((beat) => ({
+      label: `▶ ${beat.name}`,
+      playTrack: beat.id,
+    })).concat([{ label: language === "en" ? "Browse beats" : "Voir les beats", scroll: "#catalogue" }]);
     return {
       text: language === "en"
-        ? `I found ${matches.length} matching beat(s):\n\n${shown}${more}`
-        : `J'ai trouve ${matches.length} instru(s) qui correspondent :\n\n${shown}${more}`,
-      actions: [{ label: language === "en" ? "Browse beats" : "Voir les beats", scroll: "#catalogue" }],
+        ? `${isFollowUp ? "Here are all the matching choices I have in the catalogue" : `I found ${matches.length} matching beat(s)`}:\n\n${shown}\n\nClick a title below to play the preview.`
+        : `${isFollowUp ? "Voici tous les choix disponibles que j'ai dans le catalogue" : `J'ai trouve ${matches.length} instru(s) qui correspondent`} :\n\n${shown}\n\nClique sur un titre ci-dessous pour lancer la preview.`,
+      actions,
     };
   }
 
@@ -319,6 +322,18 @@ function isCatalogQuestion(text) {
   return catalogIntent && criteriaIntent;
 }
 
+function isCatalogFollowUp(text) {
+  return includesAny(text, ["autre", "autres", "d'autre", "d autres", "encore", "plus de choix", "more", "other", "others", "else"]);
+}
+
+function findPreviousCatalogQuestion(messages = []) {
+  return [...messages]
+    .reverse()
+    .filter((message) => message.role === "user")
+    .map((message) => normalize(message.text))
+    .find((text) => isCatalogQuestion(text) && getCatalogCriteria(text).length) || "";
+}
+
 function getCatalogCriteria(text) {
   return [
     getKeyCriterion(text),
@@ -388,9 +403,10 @@ function getTagCriterion(text) {
   };
 }
 
-function getCatalog() {
+function getCatalog(state = {}) {
   const byName = new Map();
-  [featuredBeat, ...beats].forEach((beat) => {
+  const sourceBeats = Array.isArray(state.beats) && state.beats.length ? state.beats : beats;
+  [...sourceBeats, featuredBeat].forEach((beat) => {
     if (beat?.name && !byName.has(beat.name)) byName.set(beat.name, beat);
   });
   return [...byName.values()];

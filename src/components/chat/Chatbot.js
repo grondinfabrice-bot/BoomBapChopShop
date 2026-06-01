@@ -60,6 +60,7 @@ function ChatMessage(message) {
               type="button"
               ${action.route ? `data-route="${attr(action.route)}"` : ""}
               ${action.scroll ? `data-scroll="${attr(action.scroll)}"` : ""}
+              ${action.playTrack !== undefined ? `data-chat-play-track="${attr(action.playTrack)}"` : ""}
             >${attr(action.label)}</button>
           `).join("")}
         </div>

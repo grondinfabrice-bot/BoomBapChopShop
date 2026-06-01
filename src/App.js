@@ -358,6 +358,12 @@ function bindGlobalActions() {
     });
   });
 
+  rootNode.querySelectorAll("[data-chat-play-track]").forEach((button) => {
+    button.addEventListener("click", () => {
+      playChatTrack(button.dataset.chatPlayTrack);
+    });
+  });
+
   rootNode.querySelector("[data-chat-form]")?.addEventListener("submit", (event) => {
     event.preventDefault();
     const input = rootNode.querySelector("[data-chat-input]");
@@ -817,6 +823,26 @@ function scrollChatToEnd() {
     if (log) log.scrollTop = log.scrollHeight;
     rootNode.querySelector("[data-chat-input]")?.focus();
   }, 40);
+}
+
+function playChatTrack(trackId) {
+  const state = getState();
+  const id = Number(trackId);
+  const track = state.beats.find((beat) => String(beat.id) === String(trackId));
+  if (track) {
+    setState({ page: "home" });
+    setTimeout(() => {
+      document.querySelector("#catalogue")?.scrollIntoView({ behavior: "smooth" });
+      window.BBCS.playTrack(Number.isFinite(id) ? id : track.id);
+    }, 80);
+    return;
+  }
+
+  const featuredBeat = getFeaturedBeat(state);
+  if (String(featuredBeat.id) === String(trackId) || String(featuredBeat.name) === String(trackId)) {
+    setState({ page: "home" });
+    setTimeout(() => requestFeaturedTrack(), 80);
+  }
 }
 
 function resetPageScroll() {
