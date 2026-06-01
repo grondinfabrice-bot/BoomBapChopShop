@@ -1,6 +1,7 @@
 import { customerFaq } from "../data/faq.js?v=1";
 import { licenseOptions } from "../data/licenses.js?v=3";
 import { serviceOffers } from "../data/content.js?v=5";
+import { beats, featuredBeat, filters } from "../data/beats.js?v=1";
 
 const businessFacts = {
   email: "contact@boombapchopshop.art",
@@ -78,6 +79,35 @@ export function buildChatReply(message, state = {}) {
   if (faq) return faqReply(faq, language);
 
   return fallbackReply(language);
+}
+
+export function buildCatalogSearchReply(message, state = {}) {
+  const text = normalize(message);
+  const language = detectLanguage(message, state.chatLanguage);
+  if (!isCatalogQuestion(text)) return null;
+
+  const criteria = getCatalogCriteria(text);
+  if (!criteria.length) return null;
+
+  const catalog = getCatalog();
+  const matches = catalog.filter((beat) => criteria.every((criterion) => criterion.match(beat)));
+  if (matches.length) {
+    const shown = matches.slice(0, 5).map(formatBeatLine).join("\n");
+    const more = matches.length > 5
+      ? language === "en" ? `\n\n${matches.length - 5} more result(s) are also in the catalogue.` : `\n\n${matches.length - 5} autre(s) resultat(s) sont aussi dans le catalogue.`
+      : "";
+    return {
+      text: language === "en"
+        ? `I found ${matches.length} matching beat(s):\n\n${shown}${more}`
+        : `J'ai trouve ${matches.length} instru(s) qui correspondent :\n\n${shown}${more}`,
+      actions: [{ label: language === "en" ? "Browse beats" : "Voir les beats", scroll: "#catalogue" }],
+    };
+  }
+
+  return {
+    text: noCatalogMatchReply(criteria, catalog, language),
+    actions: [{ label: language === "en" ? "Browse beats" : "Voir les beats", scroll: "#catalogue" }],
+  };
 }
 
 export function detectLanguage(message = "", preferred = "auto") {
@@ -281,6 +311,127 @@ function isProducerQuestion(text) {
   const producerIntent = includesAny(text, ["producer", "produces", "producteur", "produit", "compose", "beatmaker", "qui fait", "qui a fait", "qui compose", "qui produit"]);
   const beatIntent = includesAny(text, ["beat", "beats", "instrumentale", "instrumentales", "instru", "instrus", "prod", "prods"]);
   return producerIntent && beatIntent;
+}
+
+function isCatalogQuestion(text) {
+  const catalogIntent = includesAny(text, ["beat", "beats", "instru", "instrus", "instrumentale", "instrumentales", "prod", "prods", "catalogue", "acheter"]);
+  const criteriaIntent = includesAny(text, ["tonalite", "key", "mineur", "majeur", "min", "maj", "bpm", "tempo", "duree", "duration", "minutes", "minute", "tag", "tags", "boom bap", "soul", "jazzy", "drums", "chopped", "freestyle", "guitare", "swing", "90s"]);
+  return catalogIntent && criteriaIntent;
+}
+
+function getCatalogCriteria(text) {
+  return [
+    getKeyCriterion(text),
+    getDurationCriterion(text),
+    getBpmCriterion(text),
+    getTagCriterion(text),
+  ].filter(Boolean);
+}
+
+function getKeyCriterion(text) {
+  const hasKeyContext = includesAny(text, ["tonalite", "key", "tonality"]);
+  const mode = includesAny(text, ["mineur", "minor", " min"]) ? "min" : includesAny(text, ["majeur", "major", " maj"]) ? "maj" : "";
+  if (!hasKeyContext && !mode) return null;
+
+  const notes = [
+    ["ab", "ab"], ["bb", "bb"], ["db", "db"], ["eb", "eb"], ["gb", "gb"],
+    ["a#", "bb"], ["c#", "db"], ["d#", "eb"], ["f#", "gb"], ["g#", "ab"],
+    ["do", "c"], ["re", "d"], ["mi", "e"], ["fa", "f"], ["sol", "g"], ["la", "a"], ["si", "b"],
+    ["c", "c"], ["d", "d"], ["e", "e"], ["f", "f"], ["g", "g"], ["a", "a"], ["b", "b"],
+  ];
+  for (const [label, value] of notes) {
+    if (new RegExp(`\\b${escapeRegex(label)}\\b`).test(text)) {
+      const wanted = mode ? `${value} ${mode}` : value;
+      return {
+        label: `tonalite ${displayKey(wanted)}`,
+        match: (beat) => normalizeKey(beat.key).startsWith(wanted),
+      };
+    }
+  }
+  return null;
+}
+
+function getDurationCriterion(text) {
+  const match = text.match(/(?:(?:\+|>)\s*(?:de\s*)?|plus de|superieur a|over|longer than|(?:<)\s*(?:de\s*)?|moins de|inferieur a|under)?\s*(\d+(?:[,.]\d+)?)\s*(?:min|minute|minutes|m)\b/);
+  if (!match) return null;
+  const seconds = Math.round(Number(match[1].replace(",", ".")) * 60);
+  const isUnder = includesAny(text, ["moins de", "inferieur a", "under", "<"]);
+  const isOver = includesAny(text, ["plus de", "superieur a", "over", "longer than", ">", "+"]);
+  return {
+    label: isUnder ? `duree < ${formatDuration(seconds)}` : isOver ? `duree > ${formatDuration(seconds)}` : `duree autour de ${formatDuration(seconds)}`,
+    match: (beat) => isUnder
+      ? beat.durationSeconds < seconds
+      : isOver
+        ? beat.durationSeconds > seconds
+        : Math.abs(beat.durationSeconds - seconds) <= 20,
+  };
+}
+
+function getBpmCriterion(text) {
+  const match = text.match(/(?:>|plus de|superieur a|over|moins de|inferieur a|under|<)?\s*(\d{2,3})\s*bpm\b/);
+  if (!match) return null;
+  const bpm = Number(match[1]);
+  const isUnder = includesAny(text, ["moins de", "inferieur a", "under", "<"]);
+  const isOver = includesAny(text, ["plus de", "superieur a", "over", ">"]);
+  return {
+    label: isUnder ? `BPM < ${bpm}` : isOver ? `BPM > ${bpm}` : `BPM autour de ${bpm}`,
+    match: (beat) => isUnder ? beat.bpm < bpm : isOver ? beat.bpm > bpm : Math.abs(beat.bpm - bpm) <= 3,
+  };
+}
+
+function getTagCriterion(text) {
+  const tag = filters.filter((item) => item !== "all").find((item) => text.includes(normalize(item)));
+  if (!tag) return null;
+  return {
+    label: `tag ${tag}`,
+    match: (beat) => (beat.tags || []).some((beatTag) => normalize(beatTag) === normalize(tag)),
+  };
+}
+
+function getCatalog() {
+  const byName = new Map();
+  [featuredBeat, ...beats].forEach((beat) => {
+    if (beat?.name && !byName.has(beat.name)) byName.set(beat.name, beat);
+  });
+  return [...byName.values()];
+}
+
+function formatBeatLine(beat) {
+  const tags = (beat.tags || []).slice(0, 3).join(", ");
+  return `- ${beat.name} — ${beat.key}, ${beat.duration}, ${beat.bpm} BPM${tags ? `, ${tags}` : ""}`;
+}
+
+function noCatalogMatchReply(criteria, catalog, language) {
+  const criteriaLabel = criteria.map((item) => item.label).join(" + ");
+  const longest = [...catalog].sort((a, b) => b.durationSeconds - a.durationSeconds).slice(0, 3).map(formatBeatLine).join("\n");
+  const keys = [...new Set(catalog.map((beat) => beat.key).filter(Boolean))].join(", ");
+
+  if (language === "en") {
+    return `I did not find an exact beat for: ${criteriaLabel}.\n\nClosest useful info:\n${longest}\n\nAvailable keys right now: ${keys}.`;
+  }
+  return `Je n'ai pas trouve d'instru exacte pour : ${criteriaLabel}.\n\nInfos utiles les plus proches :\n${longest}\n\nTonalites disponibles actuellement : ${keys}.`;
+}
+
+function normalizeKey(value) {
+  return normalize(value)
+    .replace("minor", "min")
+    .replace("major", "maj")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function displayKey(value) {
+  return value.split(" ").map((part) => part.length === 1 ? part.toUpperCase() : part.charAt(0).toUpperCase() + part.slice(1)).join(" ");
+}
+
+function formatDuration(seconds) {
+  const minutes = Math.floor(seconds / 60);
+  const rest = Math.round(seconds % 60);
+  return `${minutes}:${String(rest).padStart(2, "0")}`;
+}
+
+function escapeRegex(value) {
+  return String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 function findSpecificService(text) {

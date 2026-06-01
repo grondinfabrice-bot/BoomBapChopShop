@@ -45,7 +45,7 @@ export function Chatbot(state) {
 function WelcomeMessage(language) {
   const text = language === "en"
     ? "Hi, I am the Chop Shop Guide. Ask me about licenses, prices, instant delivery, refunds, stems, exclusives, Content ID, or mix/mastering."
-    : "Salut, je suis le Chop Shop Guide. Pose-moi une question sur les licences, prix, livraison instantanee, remboursements, stems, exclusives, Content ID ou mix/mastering.";
+    : "Salut, je suis Chop Shop Guide. Pose-moi une question sur les licences, prix, livraison instantanee, remboursements, stems, exclusives, Content ID ou mix/mastering.";
   return ChatMessage({ role: "assistant", text, actions: [] });
 }
 

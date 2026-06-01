@@ -30,7 +30,7 @@ import {
   signOutAdmin,
 } from "./services/cms.js?v=5";
 import { createCheckoutSession } from "./services/orders.js?v=3";
-import { buildChatReply } from "./services/chatbot.js?v=1";
+import { buildCatalogSearchReply, buildChatReply } from "./services/chatbot.js?v=1";
 import { askAiChatbot } from "./services/aiChat.js?v=1";
 import { time } from "./utils/format.js";
 
@@ -754,6 +754,19 @@ async function submitChatMessage(rawMessage) {
     chatMessages: pendingMessages,
   });
   scrollChatToEnd();
+
+  const catalogReply = buildCatalogSearchReply(resolvedMessage, state);
+  if (catalogReply) {
+    setState({
+      chatMessages: [...pendingMessages, {
+        role: "assistant",
+        text: catalogReply.text,
+        actions: catalogReply.actions || [],
+      }].slice(-12),
+    });
+    scrollChatToEnd();
+    return;
+  }
 
   try {
     const ai = await askAiChatbot({
