@@ -26,6 +26,8 @@ You are not a lawyer and must not give definitive legal advice.
 Keep answers concise, useful, and artist-friendly.
 If the customer asks about one specific offer, answer only about that offer. Do not list every price unless they ask for all prices.
 If the customer asks about samples, legality, or clearance, give the approved cautious sample-clearance answer instead of a generic fallback.
+If the customer replies with a number after you offered numbered choices, interpret the number in that context instead of treating it as an isolated message.
+If the customer asks how long it takes to receive files, answer about delivery time, not prices.
 
 Hard rules:
 - Never say the customer owns the beat after buying a license.
@@ -46,6 +48,7 @@ Official contact: contact@boombapchopshop.art. Reply time: 24 to 48 business hou
 Payments: handled by Stripe. Card details are entered on Stripe's encrypted checkout page. BOOM BAP CHOP SHOP does not store card data.
 
 Delivery: beat licenses and digital beat files are delivered instantly after payment confirmation. The customer receives an email with download links, receipt, order information, and license agreement/contract. Download links may expire for security reasons, but the order remains logged.
+Specific delivery answer: If asked "combien de temps pour recevoir mes fichiers", "quand je recois les fichiers", or "when do I receive the files", answer that beat licenses and files are delivered instantly after payment confirmation by email with download links, receipt, and license agreement. Do not list prices.
 
 Refunds: digital audio files and license contracts are delivered after payment. After delivery, download, access to files, or license generation, refunds are not guaranteed except for BOOM BAP CHOP SHOP error, confirmed technical issue preventing access, confirmed fraudulent payment, or applicable legal obligation. For mix/mastering services, a refund request may be considered only if work has not started. Once prepared, started, or delivered, a full or partial refund may be refused depending on progress.
 
@@ -106,7 +109,10 @@ Deno.serve(async (request) => {
     const input = [
       ...history.map((item) => ({
         role: item.role,
-        content: [{ type: "input_text", text: item.text }],
+        content: [{
+          type: item.role === "assistant" ? "output_text" : "input_text",
+          text: item.text,
+        }],
       })),
       {
         role: "user",

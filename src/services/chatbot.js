@@ -64,9 +64,9 @@ export function buildChatReply(message, state = {}) {
 
   if (isSampleQuestion(text)) return sampleReply(language);
   const serviceOffer = findSpecificService(text);
+  if (isDeliveryQuestion(text)) return faqReply(customerFaq.find((item) => item.id === "delivery"), language);
   if (serviceOffer) return specificServiceReply(serviceOffer, language);
   if (isPriceQuestion(text)) return priceReply(language);
-  if (isDeliveryQuestion(text)) return faqReply(customerFaq.find((item) => item.id === "delivery"), language);
   if (isServiceQuestion(text)) return serviceReply(language);
   if (isGuideQuestion(text)) return guideReply(text, language);
 
@@ -280,7 +280,7 @@ function serviceDetails(name) {
 }
 
 function isDeliveryQuestion(text) {
-  const deliveryIntent = includesAny(text, ["receive", "delivery", "deliver", "download", "get my files", "recois", "recevoir", "livraison", "telechargement", "fichiers"]);
+  const deliveryIntent = includesAny(text, ["receive", "delivery", "deliver", "download", "get my files", "recois", "recevoir", "livraison", "telechargement", "fichiers", "temps pour recevoir", "delai pour recevoir"]);
   const serviceFilePrep = includesAny(text, ["envoyer", "send", "vocal", "rough", "reference", "mix master", "mix/master"]);
   return deliveryIntent && !serviceFilePrep;
 }

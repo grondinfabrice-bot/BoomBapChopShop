@@ -746,6 +746,7 @@ async function submitChatMessage(rawMessage) {
   const message = String(rawMessage || "").trim();
   if (!message) return;
   const state = getState();
+  const resolvedMessage = resolveChatShortcut(message, state.chatMessages || []);
   const userMessage = { role: "user", text: message, actions: [] };
   const pendingMessages = [...(state.chatMessages || []), userMessage].slice(-12);
   setState({
@@ -756,7 +757,7 @@ async function submitChatMessage(rawMessage) {
 
   try {
     const ai = await askAiChatbot({
-      message,
+      message: resolvedMessage,
       language: state.chatLanguage || "auto",
       history: state.chatMessages || [],
     });
@@ -769,7 +770,7 @@ async function submitChatMessage(rawMessage) {
     });
   } catch (error) {
     console.warn("AI chatbot unavailable, using local fallback.", error);
-    const reply = buildChatReply(message, state);
+    const reply = buildChatReply(resolvedMessage, state);
     setState({
       chatMessages: [...pendingMessages, {
         role: "assistant",
@@ -780,6 +781,21 @@ async function submitChatMessage(rawMessage) {
   }
 
   scrollChatToEnd();
+}
+
+function resolveChatShortcut(message, messages = []) {
+  const value = String(message || "").trim();
+  if (!/^[1-4]$/.test(value)) return value;
+  const lastAssistant = [...messages].reverse().find((item) => item.role === "assistant")?.text || "";
+  const menuText = String(lastAssistant).toLowerCase();
+  if (!menuText.includes("tu cherches") && !menuText.includes("you looking")) return value;
+  const choices = {
+    1: "Je choisis l'option 1 : licence de beat.",
+    2: "Je choisis l'option 2 : mix et mastering.",
+    3: "Je choisis l'option 3 : informations sur stems, Content ID ou exclusivite.",
+    4: "Je choisis l'option 4 : livraison ou remboursement.",
+  };
+  return choices[value] || value;
 }
 
 function scrollChatToEnd() {

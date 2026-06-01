@@ -207,3 +207,33 @@ Must not say:
 All samples are 100% cleared.
 Must not say:
 The instrumentals are illegal.
+
+## 23. Numbered Menu Follow-Up
+
+Context:
+The bot asks:
+"Tu cherches plutôt :
+1) une licence de beat,
+2) du mix & mastering,
+3) des infos sur stems / Content ID / exclusivité,
+4) livraison / remboursement ?"
+
+Customer:
+2
+
+Expected:
+The bot understands the customer chose mix & mastering. It should answer about Mix + Mastering services or ask which service they want: Essential, Premium, or Express.
+
+Must not say:
+Generic fallback.
+
+## 24. Delivery Time Not Price
+
+Customer:
+combien de temps pour recevoir mes fichiers
+
+Expected:
+The bot answers delivery time: files are delivered instantly after payment confirmation by email with download links, receipt, and license agreement.
+
+Must not say:
+All prices.
