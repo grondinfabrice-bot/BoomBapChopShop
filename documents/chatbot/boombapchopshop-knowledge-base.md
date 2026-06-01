@@ -475,6 +475,19 @@ Do not trim each vocal file to its first word, because timing may shift when the
 
 If files are too heavy, the customer can send a private WeTransfer, Google Drive, Dropbox, or SwissTransfer link.
 
+Recommended free transfer option:
+SwissTransfer.
+
+Also accepted:
+WeTransfer, Google Drive, or Dropbox.
+
+The customer should send the private download link by replying to the order email or by emailing contact@boombapchopshop.art.
+
+Turnaround rule:
+The delivery time starts only after BOOM BAP CHOP SHOP receives and validates all usable files.
+
+If files are missing, incomplete, incorrectly exported, or unusable, the customer may be asked to resend or correct them before the clock starts.
+
 ## License Choice Guidance
 
 If the customer asks "which license should I choose?" without enough context, do not choose one immediately.

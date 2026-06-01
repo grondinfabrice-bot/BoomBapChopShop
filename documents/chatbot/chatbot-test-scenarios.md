@@ -237,3 +237,14 @@ The bot answers delivery time: files are delivered instantly after payment confi
 
 Must not say:
 All prices.
+
+## 25. Mix/Master File Sending Process
+
+Customer:
+dis moi ou et comment j'envoie mes fichiers
+
+Expected:
+The bot says to send a private download link. It recommends SwissTransfer as the free option and also accepts WeTransfer, Google Drive, or Dropbox. It says to send the link by replying to the order email or to contact@boombapchopshop.art. It includes the file checklist and says the turnaround starts only after all usable files are received and validated.
+
+Must not say:
+The process is unknown.

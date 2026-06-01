@@ -63,6 +63,7 @@ export function buildChatReply(message, state = {}) {
   const language = detectLanguage(message, state.chatLanguage);
 
   if (isSampleQuestion(text)) return sampleReply(language);
+  if (isFileSendingQuestion(text)) return fileSendingReply(language);
   const serviceOffer = findSpecificService(text);
   if (isDeliveryQuestion(text)) return faqReply(customerFaq.find((item) => item.id === "delivery"), language);
   if (serviceOffer) return specificServiceReply(serviceOffer, language);
@@ -128,6 +129,20 @@ function specificServiceReply(offer, language) {
 
   return {
     text: `${offer.name}\n\n- Prix : ${formatMoney(offer.price)}\n- Delai : ${details.delayFr}\n- Inclus : ${details.includesFr.join(", ")}`,
+    actions: [{ label: "Voir les services", scroll: "#services" }, { label: "Contact", route: "contact" }],
+  };
+}
+
+function fileSendingReply(language) {
+  if (language === "en") {
+    return {
+      text: `For mix/mastering, send a private download link.\n\n- Recommended: SwissTransfer (free)\n- Also accepted: WeTransfer, Google Drive, or Dropbox\n- Send the link by replying to the order email or to ${businessFacts.email}\n\nPut in the folder:\n- vocal WAV stems\n- beat WAV or trackouts if available\n- rough mix\n- 1 or 2 references\n- artist name + song title\n- notes + deadline if needed\n\nImportant: all WAV files must start at 00:00 / bar 1. The turnaround starts after BOOM BAP CHOP SHOP receives and validates all usable files.`,
+      actions: [{ label: "View services", scroll: "#services" }, { label: "Contact", route: "contact" }],
+    };
+  }
+
+  return {
+    text: `Pour le mix/mastering, envoie un lien prive de telechargement.\n\n- Recommande : SwissTransfer (gratuit)\n- Accepte aussi : WeTransfer, Google Drive ou Dropbox\n- Envoie le lien en repondant a l'email de commande ou a ${businessFacts.email}\n\nA mettre dans le dossier :\n- pistes vocales WAV\n- beat WAV ou trackouts si disponibles\n- rough mix\n- 1 ou 2 references\n- nom d'artiste + titre du morceau\n- notes + deadline si besoin\n\nImportant : tous les WAV doivent commencer a 00:00 / bar 1. Le delai commence apres reception et validation de tous les fichiers exploitables.`,
     actions: [{ label: "Voir les services", scroll: "#services" }, { label: "Contact", route: "contact" }],
   };
 }
@@ -283,6 +298,13 @@ function isDeliveryQuestion(text) {
   const deliveryIntent = includesAny(text, ["receive", "delivery", "deliver", "download", "get my files", "recois", "recevoir", "livraison", "telechargement", "fichiers", "temps pour recevoir", "delai pour recevoir"]);
   const serviceFilePrep = includesAny(text, ["envoyer", "send", "vocal", "rough", "reference", "mix master", "mix/master"]);
   return deliveryIntent && !serviceFilePrep;
+}
+
+function isFileSendingQuestion(text) {
+  const sendIntent = includesAny(text, ["envoyer", "envoie", "send", "upload", "uploader", "transfer", "transferer", "wetransfer", "swisstransfer", "dropbox", "drive", "lien"]);
+  const fileIntent = includesAny(text, ["fichier", "fichiers", "files", "stems", "pistes", "vocals", "vocal", "wav", "rough", "reference", "trackout", "trackouts", "dossier"]);
+  const locationIntent = /\b(ou|where|comment|how)\b/.test(text);
+  return fileIntent && (sendIntent || locationIntent);
 }
 
 function isServiceQuestion(text) {

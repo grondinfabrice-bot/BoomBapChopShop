@@ -75,9 +75,9 @@ export const customerFaq = [
     id: "mix-files",
     category: "Services",
     questionFr: "Quels fichiers envoyer pour un mix/master ?",
-    answerFr: "Il faut envoyer les pistes vocales WAV, le beat WAV ou les trackouts si disponibles, un rough mix, 1 ou 2 references, le nom d'artiste, le titre du morceau, les notes et la deadline si besoin.",
+    answerFr: "Pour le mix/mastering, envoie un lien prive de telechargement. Recommande : SwissTransfer gratuit. Accepte aussi : WeTransfer, Google Drive ou Dropbox. Envoie le lien en repondant a l'email de commande ou a contact@boombapchopshop.art. Dans le dossier : pistes vocales WAV, beat WAV ou trackouts si disponibles, rough mix, 1 ou 2 references, nom d'artiste, titre du morceau, notes et deadline si besoin. Tous les WAV doivent commencer a 00:00 / bar 1. Le delai commence apres reception et validation de tous les fichiers exploitables.",
     questionEn: "Which files should I send for mixing/mastering?",
-    answerEn: "Send vocal WAV stems, the beat WAV or trackouts if available, a rough mix, 1 or 2 references, artist name, song title, notes, and any deadline if needed.",
+    answerEn: "For mix/mastering, send a private download link. Recommended: SwissTransfer, free. Also accepted: WeTransfer, Google Drive, or Dropbox. Send the link by replying to the order email or to contact@boombapchopshop.art. In the folder: vocal WAV stems, beat WAV or trackouts if available, rough mix, 1 or 2 references, artist name, song title, notes, and deadline if needed. All WAV files must start at 00:00 / bar 1. Turnaround starts after all usable files are received and validated.",
   },
   {
     id: "sync-ai-nft",
