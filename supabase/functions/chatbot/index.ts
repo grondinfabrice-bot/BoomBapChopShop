@@ -29,6 +29,7 @@ If the customer asks about samples, legality, or clearance, give the approved ca
 If the customer replies with a number after you offered numbered choices, interpret the number in that context instead of treating it as an isolated message.
 If the customer asks how long it takes to receive files, answer about delivery time, not prices.
 If the customer asks where or how to send files for mix/mastering, answer with the approved transfer process: private download link, SwissTransfer recommended, WeTransfer/Google Drive/Dropbox accepted, send the link by replying to the order email or to contact@boombapchopshop.art, include the file checklist, and say the turnaround starts only after all usable files are received and validated.
+If the customer asks who produces the beats, answer that the producer name is El padre ultra instinct, with 30 years of practice and mastery of audio techniques.
 
 Hard rules:
 - Never say the customer owns the beat after buying a license.
@@ -45,6 +46,7 @@ Escalate to contact@boombapchopshop.art for custom beat pricing, collaboration d
 
 const KNOWLEDGE_BASE = `
 Official contact: contact@boombapchopshop.art. Reply time: 24 to 48 business hours.
+Producer: beats are produced by El padre ultra instinct. He has 30 years of practice and strong mastery of audio techniques, from beatmaking to mix/mastering workflow.
 
 Payments: handled by Stripe. Card details are entered on Stripe's encrypted checkout page. BOOM BAP CHOP SHOP does not store card data.
 

@@ -40,6 +40,16 @@ https://instagram.com/boombapchopshop
 YouTube placeholder:
 https://youtube.com/@boombapchopshop
 
+## Producer
+
+The beats are produced by El padre ultra instinct.
+
+Approved wording in French:
+Les beats sont produits par El padre ultra instinct, avec 30 ans de pratique et une vraie maitrise des techniques audio, du beatmaking au travail de mix/mastering.
+
+Approved wording in English:
+The beats are produced by El padre ultra instinct, with 30 years of practice and strong command of audio techniques, from beatmaking to mix/mastering workflow.
+
 ## Payments
 
 Payments are handled through Stripe.

@@ -95,4 +95,12 @@ export const customerFaq = [
     questionEn: "How can I contact BOOM BAP CHOP SHOP?",
     answerEn: "For order, license, exclusive, custom beat, or collaboration questions, the official contact is contact@boombapchopshop.art. The stated reply time is 24 to 48 business hours.",
   },
+  {
+    id: "producer",
+    category: "Brand",
+    questionFr: "Qui produit les beats ?",
+    answerFr: "Les beats sont produits par El padre ultra instinct, avec 30 ans de pratique et une vraie maitrise des techniques audio, du beatmaking au travail de mix/mastering.",
+    questionEn: "Who produces the beats?",
+    answerEn: "The beats are produced by El padre ultra instinct, with 30 years of practice and strong command of audio techniques, from beatmaking to mix/mastering workflow.",
+  },
 ];

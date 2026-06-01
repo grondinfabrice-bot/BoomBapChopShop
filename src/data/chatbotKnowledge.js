@@ -11,6 +11,11 @@ export const chatbotKnowledge = {
     instagram: "https://instagram.com/boombapchopshop",
     youtube: "https://youtube.com/@boombapchopshop",
   },
+  producer: {
+    name: "El padre ultra instinct",
+    fr: "Les beats sont produits par El padre ultra instinct, avec 30 ans de pratique et une vraie maitrise des techniques audio, du beatmaking au travail de mix/mastering.",
+    en: "The beats are produced by El padre ultra instinct, with 30 years of practice and strong command of audio techniques, from beatmaking to mix/mastering workflow.",
+  },
   botRules: [
     "Answer in the customer's language when possible.",
     "Default to French if the language is unclear.",

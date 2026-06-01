@@ -11,6 +11,7 @@ const businessFacts = {
   essentialDelayFr: "5 jours",
   premiumDelayFr: "5 jours",
   expressDelayFr: "2 jours",
+  producerName: "El padre ultra instinct",
 };
 
 const licenseFr = {
@@ -49,6 +50,7 @@ const keywordMap = [
   { id: "mix-files", words: ["files", "fichiers", "send", "envoyer", "vocal", "rough", "reference", "mix master"] },
   { id: "sync-ai-nft", words: ["sync", "pub", "film", "serie", "game", "jeu", "ai", "ia", "nft", "sample pack", "dataset"] },
   { id: "contact", words: ["contact", "email", "support", "help", "aide", "instagram", "youtube"] },
+  { id: "producer", words: ["producer", "produces", "beatmaker", "produit", "producteur", "qui fait", "qui compose"] },
 ];
 
 export const chatSuggestions = [
@@ -63,6 +65,7 @@ export function buildChatReply(message, state = {}) {
   const language = detectLanguage(message, state.chatLanguage);
 
   if (isSampleQuestion(text)) return sampleReply(language);
+  if (isProducerQuestion(text)) return producerReply(language);
   if (isFileSendingQuestion(text)) return fileSendingReply(language);
   const serviceOffer = findSpecificService(text);
   if (isDeliveryQuestion(text)) return faqReply(customerFaq.find((item) => item.id === "delivery"), language);
@@ -144,6 +147,20 @@ function fileSendingReply(language) {
   return {
     text: `Pour le mix/mastering, envoie un lien prive de telechargement.\n\n- Recommande : SwissTransfer (gratuit)\n- Accepte aussi : WeTransfer, Google Drive ou Dropbox\n- Envoie le lien en repondant a l'email de commande ou a ${businessFacts.email}\n\nA mettre dans le dossier :\n- pistes vocales WAV\n- beat WAV ou trackouts si disponibles\n- rough mix\n- 1 ou 2 references\n- nom d'artiste + titre du morceau\n- notes + deadline si besoin\n\nImportant : tous les WAV doivent commencer a 00:00 / bar 1. Le delai commence apres reception et validation de tous les fichiers exploitables.`,
     actions: [{ label: "Voir les services", scroll: "#services" }, { label: "Contact", route: "contact" }],
+  };
+}
+
+function producerReply(language) {
+  if (language === "en") {
+    return {
+      text: `The beats are produced by ${businessFacts.producerName}. He brings 30 years of practice and strong command of audio techniques, from beatmaking to mix/mastering workflow.`,
+      actions: [{ label: "Browse beats", scroll: "#catalogue" }, { label: "Contact", route: "contact" }],
+    };
+  }
+
+  return {
+    text: `Les beats sont produits par ${businessFacts.producerName}. Il apporte 30 ans de pratique et une vraie maitrise des techniques audio, du beatmaking au travail de mix/mastering.`,
+    actions: [{ label: "Voir les beats", scroll: "#catalogue" }, { label: "Contact", route: "contact" }],
   };
 }
 
@@ -258,6 +275,12 @@ function isPriceQuestion(text) {
 
 function isSampleQuestion(text) {
   return includesAny(text, ["sample", "samples", "cleared", "clearance", "legal", "legaux", "legalite", "droit tiers", "droits tiers", "illegaux", "illegale", "autorisation"]);
+}
+
+function isProducerQuestion(text) {
+  const producerIntent = includesAny(text, ["producer", "produces", "producteur", "produit", "compose", "beatmaker", "qui fait", "qui a fait", "qui compose", "qui produit"]);
+  const beatIntent = includesAny(text, ["beat", "beats", "instrumentale", "instrumentales", "instru", "instrus", "prod", "prods"]);
+  return producerIntent && beatIntent;
 }
 
 function findSpecificService(text) {

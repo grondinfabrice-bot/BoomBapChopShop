@@ -5,18 +5,20 @@ export function Chatbot(state) {
   const messages = state.chatMessages || [];
   const language = state.chatLanguage || "auto";
   const suggestions = chatSuggestions.map((item) => language === "en" ? item.en : item.fr);
+  const iconSrc = "./src/assets/images/chop-shop-guide-icon.png?v=1";
 
   return `
     <section class="chatbot ${open ? "open" : ""}" aria-label="Customer support chat">
       <button class="chatbot-toggle" data-chat-toggle type="button" aria-expanded="${open ? "true" : "false"}">
+        <img src="${iconSrc}" alt="" aria-hidden="true" loading="lazy" decoding="async" />
         <span>Chat</span>
-        <strong>?</strong>
       </button>
       <div class="chatbot-panel" aria-hidden="${open ? "false" : "true"}">
         <header class="chatbot-head">
+          <img class="chatbot-avatar" src="${iconSrc}" alt="" aria-hidden="true" loading="lazy" decoding="async" />
           <div>
-            <span>BOOM BAP ASSIST</span>
-            <h2>Licenses, delivery, support</h2>
+            <span>Chop Shop Guide</span>
+            <h2>${language === "en" ? "Licenses, files, support" : "Licences, fichiers, support"}</h2>
           </div>
           <button data-chat-close type="button" aria-label="Close chat">x</button>
         </header>
@@ -42,8 +44,8 @@ export function Chatbot(state) {
 
 function WelcomeMessage(language) {
   const text = language === "en"
-    ? "Hi. Ask me about licenses, prices, instant delivery, refunds, stems, exclusives, Content ID, or mix/mastering."
-    : "Salut. Pose-moi une question sur les licences, prix, livraison instantanee, remboursements, stems, exclusives, Content ID ou mix/mastering.";
+    ? "Hi, I am the Chop Shop Guide. Ask me about licenses, prices, instant delivery, refunds, stems, exclusives, Content ID, or mix/mastering."
+    : "Salut, je suis le Chop Shop Guide. Pose-moi une question sur les licences, prix, livraison instantanee, remboursements, stems, exclusives, Content ID ou mix/mastering.";
   return ChatMessage({ role: "assistant", text, actions: [] });
 }
 

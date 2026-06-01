@@ -248,3 +248,14 @@ The bot says to send a private download link. It recommends SwissTransfer as the
 
 Must not say:
 The process is unknown.
+
+## 26. Producer Name
+
+Customer:
+qui produit les beats ?
+
+Expected:
+The bot says the beats are produced by El padre ultra instinct, with 30 years of practice and mastery of audio techniques.
+
+Must not say:
+An unknown producer name.
