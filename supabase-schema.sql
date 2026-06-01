@@ -11,6 +11,7 @@ create table if not exists public.beats (
   price numeric(10, 2) default 29.99,
   tags text[] default '{}',
   description text,
+  stems_available boolean default true,
   published boolean default false,
   sort_order integer default 100,
   created_at timestamptz default now()

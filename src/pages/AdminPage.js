@@ -42,6 +42,7 @@ export function AdminPage(state) {
           <label>Description<textarea name="description" rows="4" placeholder="Short mood and production notes">${text(editingBeat?.description)}</textarea></label>
           <label>Cover image<input name="cover" type="file" accept="image/*" />${editingBeat ? "<small>Leave empty to keep the current cover.</small>" : ""}</label>
           <label>Preview audio<input name="preview" type="file" accept="audio/*" />${editingBeat ? "<small>Leave empty to keep the current preview.</small>" : ""}</label>
+          <label class="admin-check"><input name="stemsAvailable" type="checkbox" ${editingBeat?.stemsAvailable === false ? "" : "checked"} /> Stems available</label>
           <label class="admin-check"><input name="published" type="checkbox" ${editingBeat?.published === false ? "" : "checked"} /> Published</label>
           <button class="admin-submit" type="submit">${editingBeat ? "Update beat" : "Save beat"}</button>
           ${editingBeat ? `<button class="admin-ghost" data-admin-edit-cancel type="button">Cancel edit</button>` : ""}
@@ -80,7 +81,7 @@ export function AdminPage(state) {
           <article>
             <span>${beat.published ? "Live" : "Draft"}</span>
             <strong>${beat.name}</strong>
-            <small>${beat.bpm || "-"} BPM · ${(beat.tags || []).join(", ")}</small>
+            <small>${beat.bpm || "-"} BPM · ${beat.stemsAvailable === false ? "No stems" : "Stems"} · ${(beat.tags || []).join(", ")}</small>
             <button class="admin-ghost" data-admin-edit-beat="${beat.id}" type="button">Edit</button>
           </article>
         `).join("") || `<p>No beats saved yet.</p>`}

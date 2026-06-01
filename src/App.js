@@ -30,6 +30,8 @@ import {
   signOutAdmin,
 } from "./services/cms.js?v=5";
 import { createCheckoutSession } from "./services/orders.js?v=3";
+import { buildChatReply } from "./services/chatbot.js?v=1";
+import { askAiChatbot } from "./services/aiChat.js?v=1";
 import { time } from "./utils/format.js";
 
 let rootNode;
@@ -333,6 +335,33 @@ function bindGlobalActions() {
     const email = rootNode.querySelector("[data-newsletter-email]")?.value.trim() || "";
     if (!email.includes("@")) return toast("Enter a valid email");
     toast("Welcome to the Chop List");
+  });
+
+  rootNode.querySelector("[data-chat-toggle]")?.addEventListener("click", () => {
+    setState({ chatOpen: !getState().chatOpen });
+    setTimeout(() => rootNode.querySelector("[data-chat-input]")?.focus(), 40);
+  });
+
+  rootNode.querySelector("[data-chat-close]")?.addEventListener("click", () => {
+    setState({ chatOpen: false });
+  });
+
+  rootNode.querySelectorAll("[data-chat-language]").forEach((button) => {
+    button.addEventListener("click", () => {
+      setState({ chatLanguage: button.dataset.chatLanguage });
+    });
+  });
+
+  rootNode.querySelectorAll("[data-chat-suggest]").forEach((button) => {
+    button.addEventListener("click", () => {
+      submitChatMessage(button.dataset.chatSuggest);
+    });
+  });
+
+  rootNode.querySelector("[data-chat-form]")?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const input = rootNode.querySelector("[data-chat-input]");
+    submitChatMessage(input?.value || "");
   });
 }
 
@@ -711,6 +740,54 @@ function route(page) {
     licensePickerBeatId: null,
   });
   resetPageScroll();
+}
+
+async function submitChatMessage(rawMessage) {
+  const message = String(rawMessage || "").trim();
+  if (!message) return;
+  const state = getState();
+  const userMessage = { role: "user", text: message, actions: [] };
+  const pendingMessages = [...(state.chatMessages || []), userMessage].slice(-12);
+  setState({
+    chatOpen: true,
+    chatMessages: pendingMessages,
+  });
+  scrollChatToEnd();
+
+  try {
+    const ai = await askAiChatbot({
+      message,
+      language: state.chatLanguage || "auto",
+      history: state.chatMessages || [],
+    });
+    setState({
+      chatMessages: [...pendingMessages, {
+        role: "assistant",
+        text: ai.reply,
+        actions: [],
+      }].slice(-12),
+    });
+  } catch (error) {
+    console.warn("AI chatbot unavailable, using local fallback.", error);
+    const reply = buildChatReply(message, state);
+    setState({
+      chatMessages: [...pendingMessages, {
+        role: "assistant",
+        text: reply.text,
+        actions: reply.actions || [],
+      }].slice(-12),
+    });
+  }
+
+  scrollChatToEnd();
+}
+
+function scrollChatToEnd() {
+  setTimeout(() => {
+    const log = rootNode.querySelector("[data-chat-log]");
+    if (log) log.scrollTop = log.scrollHeight;
+    rootNode.querySelector("[data-chat-input]")?.focus();
+  }, 40);
 }
 
 function resetPageScroll() {

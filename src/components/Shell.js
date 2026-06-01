@@ -7,6 +7,7 @@ import { LicensePicker } from "./shop/LicensePicker.js?v=2";
 import { ServiceTargetPicker } from "./shop/ServiceTargetPicker.js?v=3";
 import { Ticker } from "./layout/Ticker.js";
 import { Toast } from "./feedback/Toast.js?v=2";
+import { Chatbot } from "./chat/Chatbot.js?v=1";
 
 export function Shell(pageHtml, state) {
   return `
@@ -18,6 +19,7 @@ export function Shell(pageHtml, state) {
     ${LicensePicker(state)}
     ${ServiceTargetPicker(state)}
     ${MiniPlayer(state)}
+    ${Chatbot(state)}
     ${Toast(state.toast, state)}
     ${Footer()}
   `;

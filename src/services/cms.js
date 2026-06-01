@@ -105,6 +105,7 @@ export async function saveBeat(form) {
     price: numberOrNull(form.get("price")),
     tags: splitTags(form.get("tags")),
     description: form.get("description"),
+    stems_available: form.get("stemsAvailable") === "on",
     published: form.get("published") === "on",
     sort_order: numberOrNull(form.get("sortOrder")),
   });
@@ -197,6 +198,7 @@ function mapBeat(beat) {
     price: beat.price || 0,
     tags: beat.tags || [],
     description: beat.description || "",
+    stemsAvailable: beat.stems_available !== false,
     published: beat.published,
     sortOrder: beat.sort_order,
   };

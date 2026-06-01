@@ -464,6 +464,19 @@
     top: auto;
     bottom: 118px;
   }
+
+  .chatbot {
+    right: 1rem;
+    bottom: 118px;
+  }
+
+  .chatbot-panel {
+    width: calc(100vw - 2rem);
+  }
+
+  .chatbot-log {
+    max-height: 42vh;
+  }
 }
 
 @media (max-width: 440px) {
@@ -545,5 +558,19 @@
 
   .beat-meta-stack {
     grid-column: auto;
+  }
+
+  .chatbot {
+    right: 0.65rem;
+    left: 0.65rem;
+    bottom: 112px;
+  }
+
+  .chatbot-toggle {
+    justify-self: end;
+  }
+
+  .chatbot-panel {
+    width: 100%;
   }
 }

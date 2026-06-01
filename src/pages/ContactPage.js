@@ -31,11 +31,11 @@ export function ContactPage() {
       <div class="contact-info">
         <div class="contact-card">
           <span class="contact-icon">@</span>
-          <div><span>Email</span><a href="mailto:contact@boombapchopshop.com">contact@boombapchopshop.com</a></div>
+          <div><span>Email</span><a href="mailto:contact@boombapchopshop.art">contact@boombapchopshop.art</a></div>
         </div>
         <div class="contact-card">
           <span class="contact-icon">IG</span>
-          <div><span>Instagram</span><a href="#">@boombapchopshop</a></div>
+          <div><span>Instagram</span><a href="https://instagram.com/boombapchopshop" target="_blank" rel="noreferrer">@boombapchopshop</a></div>
         </div>
         <div class="contact-card">
           <span class="contact-icon">24</span>
@@ -43,7 +43,7 @@ export function ContactPage() {
         </div>
         <div class="contact-card">
           <span class="contact-icon">YT</span>
-          <div><span>YouTube</span><a href="#">youtube.com/@boombapchopshop</a></div>
+          <div><span>YouTube</span><a href="https://youtube.com/@boombapchopshop" target="_blank" rel="noreferrer">youtube.com/@boombapchopshop</a></div>
         </div>
       </div>
     </section>
