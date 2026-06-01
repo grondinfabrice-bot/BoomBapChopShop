@@ -36,12 +36,15 @@ export async function loadPublishedContent() {
       .order("published_at", { ascending: false }),
   ]);
 
+  const settings = await loadSettingsSafe(supabase);
+
   if (beatsResult.error) throw beatsResult.error;
   if (postsResult.error) throw postsResult.error;
 
   return {
     beats: beatsResult.data.map(mapBeat),
     posts: postsResult.data.map(mapPost),
+    settings,
   };
 }
 
@@ -68,19 +71,22 @@ export async function getAdminSession() {
 
 export async function loadAdminContent() {
   const supabase = await getSupabase();
-  if (!supabase) return { beats: [], posts: [] };
+  if (!supabase) return { beats: [], posts: [], settings: {} };
 
-  const [beatsResult, postsResult] = await Promise.all([
+  const [beatsResult, postsResult, settingsResult] = await Promise.all([
     supabase.from("beats").select("*").order("created_at", { ascending: false }),
     supabase.from("posts").select("*").order("created_at", { ascending: false }),
+    supabase.from("site_settings").select("key,value"),
   ]);
 
   if (beatsResult.error) throw beatsResult.error;
   if (postsResult.error) throw postsResult.error;
+  if (settingsResult.error && !isMissingSettingsTable(settingsResult.error)) throw settingsResult.error;
 
   return {
     beats: beatsResult.data.map(mapBeat),
     posts: postsResult.data.map(mapPost),
+    settings: mapSettings(settingsResult.data || []),
   };
 }
 
@@ -142,6 +148,19 @@ export async function savePost(form) {
   if (error) throw error;
 }
 
+export async function saveSiteSettings(form) {
+  const supabase = await getSupabase();
+  if (!supabase) throw new Error("Supabase is not configured yet.");
+
+  const tickerText = String(form.get("tickerText") || "").trim();
+  const { error } = await supabase.from("site_settings").upsert({
+    key: "ticker",
+    value: { tickerText },
+    updated_at: new Date().toISOString(),
+  });
+  if (error) throw error;
+}
+
 export async function saveTestFeedback(payload) {
   if (!isCmsConfigured()) throw new Error("Supabase is not configured yet.");
   const config = window.BBCS_CONFIG;
@@ -171,6 +190,28 @@ export async function saveTestFeedback(payload) {
   });
 
   if (!response.ok) throw new Error(await response.text());
+}
+
+async function loadSettingsSafe(supabase) {
+  const result = await supabase.from("site_settings").select("key,value");
+  if (result.error) {
+    if (isMissingSettingsTable(result.error)) return {};
+    throw result.error;
+  }
+  return mapSettings(result.data || []);
+}
+
+function isMissingSettingsTable(error) {
+  const message = String(error?.message || "");
+  return error?.code === "42P01" || error?.code === "PGRST205" || message.includes("site_settings");
+}
+
+function mapSettings(rows = []) {
+  const settings = {};
+  rows.forEach((row) => {
+    if (row.key === "ticker") Object.assign(settings, row.value || {});
+  });
+  return settings;
 }
 
 async function uploadFile(bucket, file, baseName) {

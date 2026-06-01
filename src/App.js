@@ -6,8 +6,8 @@ import {
   setContent,
   setState,
   subscribe,
-} from "./state/store.js?v=34";
-import { Shell } from "./components/Shell.js?v=16";
+} from "./state/store.js?v=35";
+import { Shell } from "./components/Shell.js?v=17";
 import { HomePage } from "./pages/HomePage.js?v=25";
 import { BlogPage } from "./pages/BlogPage.js?v=8";
 import { AboutPage } from "./pages/AboutPage.js?v=2";
@@ -16,7 +16,7 @@ import { ContactPage } from "./pages/ContactPage.js?v=6";
 import { UpsellPage } from "./pages/UpsellPage.js?v=4";
 import { CheckoutPage } from "./pages/CheckoutPage.js?v=7";
 import { ThanksPage } from "./pages/ThanksPage.js?v=6";
-import { AdminPage } from "./pages/AdminPage.js?v=1";
+import { AdminPage } from "./pages/AdminPage.js?v=2";
 import { TestFeedbackPage } from "./pages/TestFeedbackPage.js?v=3";
 import { getFeaturedBeat } from "./utils/featured.js?v=3";
 import {
@@ -25,10 +25,11 @@ import {
   loadPublishedContent,
   saveBeat,
   savePost,
+  saveSiteSettings,
   saveTestFeedback,
   signInAdmin,
   signOutAdmin,
-} from "./services/cms.js?v=5";
+} from "./services/cms.js?v=6";
 import { createCheckoutSession } from "./services/orders.js?v=3";
 import { buildCatalogSearchReply, buildChatReply } from "./services/chatbot.js?v=1";
 import { askAiChatbot } from "./services/aiChat.js?v=1";
@@ -598,6 +599,18 @@ function bindPageActions() {
     }
   });
 
+  rootNode.querySelector("[data-admin-settings-form]")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    try {
+      await saveSiteSettings(new FormData(event.currentTarget));
+      setState({ cmsMessage: "Banner updated." });
+      await refreshAdminContent();
+      await hydrateCms();
+    } catch (error) {
+      setState({ cmsMessage: error.message || "Banner save failed." });
+    }
+  });
+
   rootNode.querySelector("[data-feedback-form]")?.addEventListener("submit", async (event) => {
     event.preventDefault();
     const state = getState();
@@ -1031,7 +1044,7 @@ async function hydrateCms() {
 
 async function refreshAdminContent() {
   const content = await loadAdminContent();
-  setState({ adminBeats: content.beats, adminPosts: content.posts });
+  setState({ adminBeats: content.beats, adminPosts: content.posts, adminSettings: content.settings || {} });
 }
 
 function toast(message) {

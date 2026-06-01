@@ -15,6 +15,10 @@ const state = {
   adminEditingBeatId: null,
   adminBeats: [],
   adminPosts: [],
+  adminSettings: {},
+  siteSettings: {
+    tickerText: "MP3 / WAV / STEMS INSTANT DELIVERY | NEW DROP: SHADOW OF THE SP | REAL SAMPLES. RAW SOUL. TIMELESS BANGERS. SP-1200 MPC3000 LICENSING OPTIONS BUILT FOR ARTISTS",
+  },
   cart: [],
   filter: "all",
   currentTrackId: null,
@@ -58,10 +62,11 @@ export function setState(patch) {
   listeners.forEach((listener) => listener(state, patch));
 }
 
-export function setContent({ beats: nextBeats, posts: nextPosts }) {
+export function setContent({ beats: nextBeats, posts: nextPosts, settings: nextSettings }) {
   setState({
     beats: nextBeats?.length ? nextBeats : state.beats,
     posts: nextPosts?.length ? nextPosts : state.posts,
+    siteSettings: nextSettings ? { ...state.siteSettings, ...nextSettings } : state.siteSettings,
     cmsReady: Boolean(nextBeats?.length || nextPosts?.length),
   });
 }

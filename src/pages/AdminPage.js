@@ -1,10 +1,11 @@
-import { isCmsConfigured } from "../services/cms.js";
+import { isCmsConfigured } from "../services/cms.js?v=6";
 
 export function AdminPage(state) {
   if (!isCmsConfigured()) return AdminSetup();
   if (!state.adminSession) return AdminLogin(state);
 
   const editingBeat = state.adminBeats.find((beat) => String(beat.id) === String(state.adminEditingBeatId));
+  const tickerText = state.adminSettings?.tickerText || state.siteSettings?.tickerText || "";
 
   return `
     <section class="admin-wrap">
@@ -17,6 +18,17 @@ export function AdminPage(state) {
         <button class="admin-ghost" data-admin-logout type="button">Sign out</button>
       </div>
       ${state.cmsMessage ? `<div class="admin-message">${state.cmsMessage}</div>` : ""}
+      <form class="admin-panel admin-wide" data-admin-settings-form>
+        <div class="admin-panel-head">
+          <span>Bandeau défilant</span>
+          <strong>Site header</strong>
+        </div>
+        <label>Texte du bandeau
+          <textarea name="tickerText" rows="3" placeholder="MP3 / WAV / STEMS INSTANT DELIVERY | NEW DROP: SHADOW OF THE SP">${text(tickerText)}</textarea>
+          <small>Utilise le caractère | pour séparer les blocs. Un bloc sur deux sera affiché en rouge.</small>
+        </label>
+        <button class="admin-submit" type="submit">Save banner</button>
+      </form>
       <div class="admin-grid">
         <form class="admin-panel" data-admin-beat-form>
           <div class="admin-panel-head">

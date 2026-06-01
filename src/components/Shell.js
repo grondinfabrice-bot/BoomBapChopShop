@@ -5,7 +5,7 @@ import { DemoBanner } from "./layout/DemoBanner.js";
 import { Nav } from "./layout/Nav.js?v=4";
 import { LicensePicker } from "./shop/LicensePicker.js?v=2";
 import { ServiceTargetPicker } from "./shop/ServiceTargetPicker.js?v=3";
-import { Ticker } from "./layout/Ticker.js";
+import { Ticker } from "./layout/Ticker.js?v=1";
 import { Toast } from "./feedback/Toast.js?v=2";
 import { Chatbot } from "./chat/Chatbot.js?v=1";
 
@@ -13,7 +13,7 @@ export function Shell(pageHtml, state) {
   return `
     ${DemoBanner()}
     ${Nav(state)}
-    ${Ticker()}
+    ${Ticker(state)}
     <main data-page-root>${pageHtml}</main>
     ${CartDrawer(state)}
     ${LicensePicker(state)}
