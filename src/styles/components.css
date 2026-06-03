@@ -136,12 +136,22 @@
   border: 1px solid transparent;
   border-radius: 50%;
   color: var(--off-white);
-  font-size: 1.35rem;
+  transition: border-color 0.18s ease, color 0.18s ease, background 0.18s ease;
 }
 
 .icon-btn:hover {
   border-color: var(--line);
   color: var(--muted-gold);
+}
+
+.nav-icon {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
 }
 
 .cart-btn {
@@ -166,17 +176,26 @@
 }
 
 .cart-icon {
-  font-size: 1.1rem;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+}
+
+.cart-icon .nav-icon {
+  width: 24px;
+  height: 24px;
 }
 
 .cart-badge {
   position: absolute;
-  top: -8px;
-  right: -8px;
+  top: -7px;
+  right: -7px;
   display: grid;
   place-items: center;
-  width: 22px;
-  height: 22px;
+  min-width: 20px;
+  height: 20px;
+  padding-inline: 5px;
   border: 1px solid var(--black);
   border-radius: 50%;
   background: var(--muted-gold);
@@ -975,8 +994,10 @@ input[type="range"] {
   font-size: 0.82rem;
   line-height: 1.35;
   text-transform: uppercase;
+  opacity: 0;
+  pointer-events: none;
   transform: translateX(130%);
-  transition: transform 0.24s ease;
+  transition: opacity 0.18s ease, transform 0.24s ease;
 }
 
 .chatbot {
@@ -1212,6 +1233,8 @@ input[type="range"] {
 }
 
 .toast.show {
+  opacity: 1;
+  pointer-events: auto;
   transform: translateX(0);
 }
 

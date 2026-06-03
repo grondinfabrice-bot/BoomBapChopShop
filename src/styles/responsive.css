@@ -57,18 +57,18 @@
   }
 
   .beat-row {
-    grid-template-columns: 40px minmax(148px, 176px) minmax(0, 1fr);
-    gap: 0.9rem;
-    min-height: 210px;
+    grid-template-columns: 36px minmax(142px, 158px) minmax(0, 1fr) 76px 70px minmax(132px, 148px);
+    gap: 0.75rem;
+    min-height: 176px;
   }
 
   .beat-art {
     justify-self: center;
-    width: clamp(142px, 20vw, 172px);
+    width: clamp(136px, 18vw, 152px);
   }
 
   .beat-cover {
-    width: min(82%, 142px);
+    width: min(82%, 128px);
   }
 
   .beat-vinyl {
@@ -78,22 +78,39 @@
   }
 
   .beat-info h3 {
+    font-size: clamp(1.25rem, 2.6vw, 1.62rem);
     white-space: normal;
   }
 
-  .beat-wave,
-  .beat-meta-stack,
-  .beat-price {
+  .beat-info p {
+    white-space: normal;
+  }
+
+  .beat-wave {
     display: none;
   }
 
+  .beat-meta-stack {
+    display: grid;
+    gap: 0.3rem;
+    font-size: 0.78rem;
+    line-height: 1.08;
+  }
+
+  .beat-price {
+    display: block;
+    font-size: 1.32rem;
+    line-height: 1;
+  }
+
   .beat-buy {
-    grid-column: 3;
-    justify-self: start;
-    width: fit-content;
-    min-width: 204px;
-    margin-top: 0.65rem;
-    padding: 1rem 1.2rem;
+    grid-column: auto;
+    justify-self: stretch;
+    width: 100%;
+    min-width: 0;
+    margin-top: 0;
+    padding: 0.9rem 0.78rem;
+    font-size: 0.86rem;
   }
 
   .sp1200-graphic {
