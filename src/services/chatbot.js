@@ -69,6 +69,7 @@ export function buildChatReply(message, state = {}) {
   if (isProducerQuestion(text)) return producerReply(language);
   if (isFileSendingQuestion(text)) return fileSendingReply(language);
   const serviceOffer = findSpecificService(text);
+  if (isFastestServiceQuestion(text)) return specificServiceReply(serviceOffers.find((offer) => normalize(offer.name).includes("express")), language);
   if (isDeliveryQuestion(text)) return faqReply(customerFaq.find((item) => item.id === "delivery"), language);
   if (serviceOffer) return specificServiceReply(serviceOffer, language);
   if (isPriceQuestion(text)) return priceReply(language);
@@ -144,29 +145,40 @@ function serviceReply(language) {
   if (language === "en") {
     return {
       text: `Mix + Master Essential and Premium are delivered within ${businessFacts.essentialDelay}. Mix + Master Express is priority and delivered within ${businessFacts.expressDelay}.\n\nFor the session, send vocal WAV stems, the beat WAV or trackouts, a rough mix, 1 or 2 references, artist name, song title, notes, and any deadline.`,
-      actions: [{ label: "View services", scroll: "#services" }, { label: "Contact", route: "contact" }],
+      actions: serviceOfferActions("en"),
     };
   }
 
   return {
     text: `Mix + Master Essential et Premium sont livres sous ${businessFacts.essentialDelayFr}. Mix + Master Express est prioritaire et livre sous ${businessFacts.expressDelayFr}.\n\nPour la session, il faut envoyer les pistes vocales WAV, le beat WAV ou les trackouts, un rough mix, 1 ou 2 references, le nom d'artiste, le titre du morceau, les notes et la deadline si besoin.`,
-    actions: [{ label: "Voir les services", scroll: "#services" }, { label: "Contact", route: "contact" }],
+    actions: serviceOfferActions("fr"),
   };
 }
 
 function specificServiceReply(offer, language) {
   const details = serviceDetails(offer.name);
+  const actions = [
+    { label: language === "en" ? `View / add ${offer.name}` : `Voir / ajouter ${offer.name}`, serviceName: offer.name },
+    { label: language === "en" ? "View services" : "Voir les services", scroll: "#services" },
+  ];
   if (language === "en") {
     return {
       text: `${offer.name}\n\n- Price: ${formatMoney(offer.price)}\n- Turnaround: ${details.delayEn}\n- Includes: ${details.includesEn.join(", ")}`,
-      actions: [{ label: "View services", scroll: "#services" }, { label: "Contact", route: "contact" }],
+      actions,
     };
   }
 
   return {
     text: `${offer.name}\n\n- Prix : ${formatMoney(offer.price)}\n- Delai : ${details.delayFr}\n- Inclus : ${details.includesFr.join(", ")}`,
-    actions: [{ label: "Voir les services", scroll: "#services" }, { label: "Contact", route: "contact" }],
+    actions,
   };
+}
+
+function serviceOfferActions(language) {
+  return serviceOffers.map((offer) => ({
+    label: language === "en" ? `View / add ${offer.name}` : `Voir / ajouter ${offer.name}`,
+    serviceName: offer.name,
+  })).concat([{ label: language === "en" ? "View services" : "Voir les services", scroll: "#services" }]);
 }
 
 function fileSendingReply(language) {
@@ -487,7 +499,13 @@ function serviceDetails(name) {
 function isDeliveryQuestion(text) {
   const deliveryIntent = includesAny(text, ["receive", "delivery", "deliver", "download", "get my files", "recois", "recevoir", "livraison", "telechargement", "fichiers", "temps pour recevoir", "delai pour recevoir"]);
   const serviceFilePrep = includesAny(text, ["envoyer", "send", "vocal", "rough", "reference", "mix master", "mix/master"]);
-  return deliveryIntent && !serviceFilePrep;
+  return deliveryIntent && !serviceFilePrep && !isFastestServiceQuestion(text);
+}
+
+function isFastestServiceQuestion(text) {
+  const serviceIntent = includesAny(text, ["mix", "master", "mastering", "offre", "service"]);
+  const speedIntent = includesAny(text, ["plus vite", "rapide", "express", "urgent", "priority", "fastest", "quickest"]);
+  return serviceIntent && speedIntent;
 }
 
 function isFileSendingQuestion(text) {

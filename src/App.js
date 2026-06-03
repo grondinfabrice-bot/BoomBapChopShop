@@ -7,7 +7,7 @@ import {
   setState,
   subscribe,
 } from "./state/store.js?v=35";
-import { Shell } from "./components/Shell.js?v=17";
+import { Shell } from "./components/Shell.js?v=18";
 import { HomePage } from "./pages/HomePage.js?v=25";
 import { BlogPage } from "./pages/BlogPage.js?v=8";
 import { AboutPage } from "./pages/AboutPage.js?v=2";
@@ -31,8 +31,9 @@ import {
   signOutAdmin,
 } from "./services/cms.js?v=6";
 import { createCheckoutSession } from "./services/orders.js?v=3";
-import { buildCatalogSearchReply, buildChatReply } from "./services/chatbot.js?v=1";
+import { buildCatalogSearchReply, buildChatReply } from "./services/chatbot.js?v=2";
 import { askAiChatbot } from "./services/aiChat.js?v=1";
+import { serviceOffers } from "./data/content.js?v=5";
 import { time } from "./utils/format.js";
 
 let rootNode;
@@ -362,6 +363,12 @@ function bindGlobalActions() {
   rootNode.querySelectorAll("[data-chat-play-track]").forEach((button) => {
     button.addEventListener("click", () => {
       playChatTrack(button.dataset.chatPlayTrack);
+    });
+  });
+
+  rootNode.querySelectorAll("[data-chat-service]").forEach((button) => {
+    button.addEventListener("click", () => {
+      openChatService(button.dataset.chatService);
     });
   });
 
@@ -793,11 +800,12 @@ async function submitChatMessage(rawMessage) {
       language: state.chatLanguage || "auto",
       history: state.chatMessages || [],
     });
+    const actions = serviceActionsForChat(`${resolvedMessage}\n${ai.reply}`, state.chatLanguage || "auto");
     setState({
       chatMessages: [...pendingMessages, {
         role: "assistant",
         text: ai.reply,
-        actions: [],
+        actions,
       }].slice(-12),
     });
   } catch (error) {
@@ -856,6 +864,48 @@ function playChatTrack(trackId) {
     setState({ page: "home" });
     setTimeout(() => requestFeaturedTrack(), 80);
   }
+}
+
+function openChatService(serviceName) {
+  const offer = serviceOffers.find((item) => item.name === serviceName);
+  if (!offer) return;
+  setState({ page: "home" });
+  setTimeout(() => {
+    document.querySelector("#services")?.scrollIntoView({ behavior: "smooth" });
+    openServicePicker({
+      name: offer.name,
+      price: Number(offer.price),
+      summary: offer.summary,
+      includes: offer.includes,
+    });
+  }, 80);
+}
+
+function serviceActionsForChat(text, language = "auto") {
+  const normalized = normalizeText(text);
+  const isEnglish = language === "en";
+  const matched = serviceOffers.filter((offer) => {
+    const offerText = normalizeText(offer.name);
+    if (normalized.includes(offerText)) return true;
+    if (offerText.includes("express") && includesAnyText(normalized, ["plus vite", "le plus vite", "rapide", "fastest", "priority", "urgent"])) return true;
+    return false;
+  });
+
+  return matched.map((offer) => ({
+    label: isEnglish ? `View / add ${offer.name}` : `Voir / ajouter ${offer.name}`,
+    serviceName: offer.name,
+  }));
+}
+
+function normalizeText(value) {
+  return String(value || "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
+
+function includesAnyText(text, words) {
+  return words.some((word) => text.includes(word));
 }
 
 function resetPageScroll() {

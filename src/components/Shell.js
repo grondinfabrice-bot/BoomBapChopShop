@@ -7,7 +7,7 @@ import { LicensePicker } from "./shop/LicensePicker.js?v=2";
 import { ServiceTargetPicker } from "./shop/ServiceTargetPicker.js?v=3";
 import { Ticker } from "./layout/Ticker.js?v=1";
 import { Toast } from "./feedback/Toast.js?v=2";
-import { Chatbot } from "./chat/Chatbot.js?v=1";
+import { Chatbot } from "./chat/Chatbot.js?v=2";
 
 export function Shell(pageHtml, state) {
   return `

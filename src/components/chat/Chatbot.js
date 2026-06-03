@@ -1,4 +1,4 @@
-import { chatSuggestions } from "../../services/chatbot.js?v=1";
+import { chatSuggestions } from "../../services/chatbot.js?v=2";
 
 export function Chatbot(state) {
   const open = Boolean(state.chatOpen);
@@ -61,6 +61,7 @@ function ChatMessage(message) {
               ${action.route ? `data-route="${attr(action.route)}"` : ""}
               ${action.scroll ? `data-scroll="${attr(action.scroll)}"` : ""}
               ${action.playTrack !== undefined ? `data-chat-play-track="${attr(action.playTrack)}"` : ""}
+              ${action.serviceName ? `data-chat-service="${attr(action.serviceName)}"` : ""}
             >${attr(action.label)}</button>
           `).join("")}
         </div>
