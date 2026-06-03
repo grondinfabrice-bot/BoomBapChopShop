@@ -1,4 +1,4 @@
-import { isCmsConfigured } from "../services/cms.js?v=6";
+import { isCmsConfigured } from "../services/cms.js?v=7";
 
 export function AdminPage(state) {
   if (!isCmsConfigured()) return AdminSetup();
@@ -54,6 +54,9 @@ export function AdminPage(state) {
           <label>Description<textarea name="description" rows="4" placeholder="Short mood and production notes">${text(editingBeat?.description)}</textarea></label>
           <label>Cover image<input name="cover" type="file" accept="image/*" />${editingBeat ? "<small>Leave empty to keep the current cover.</small>" : ""}</label>
           <label>Preview audio<input name="preview" type="file" accept="audio/*" />${editingBeat ? "<small>Leave empty to keep the current preview.</small>" : ""}</label>
+          <label>Final MP3<input name="deliveryMp3" type="file" accept="audio/mpeg,audio/mp3,.mp3" />${deliveryStatus(editingBeat, "mp3")}</label>
+          <label>Final WAV<input name="deliveryWav" type="file" accept="audio/wav,audio/x-wav,.wav" />${deliveryStatus(editingBeat, "wav")}</label>
+          <label>Stems / trackouts ZIP<input name="deliveryStems" type="file" accept=".zip,.rar,.7z,audio/*" />${deliveryStatus(editingBeat, "stems")}</label>
           <label class="admin-check"><input name="stemsAvailable" type="checkbox" ${editingBeat?.stemsAvailable === false ? "" : "checked"} /> Stems available</label>
           <label class="admin-check"><input name="published" type="checkbox" ${editingBeat?.published === false ? "" : "checked"} /> Published</label>
           <button class="admin-submit" type="submit">${editingBeat ? "Update beat" : "Save beat"}</button>
@@ -93,7 +96,7 @@ export function AdminPage(state) {
           <article>
             <span>${beat.published ? "Live" : "Draft"}</span>
             <strong>${beat.name}</strong>
-            <small>${beat.bpm || "-"} BPM · ${beat.stemsAvailable === false ? "No stems" : "Stems"} · ${(beat.tags || []).join(", ")}</small>
+            <small>${beat.bpm || "-"} BPM · ${beat.stemsAvailable === false ? "No stems" : "Stems"} · ${deliveryFormats(beat)} · ${(beat.tags || []).join(", ")}</small>
             <button class="admin-ghost" data-admin-edit-beat="${beat.id}" type="button">Edit</button>
           </article>
         `).join("") || `<p>No beats saved yet.</p>`}
@@ -115,6 +118,17 @@ function text(value = "") {
     .replaceAll("&", "&amp;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;");
+}
+
+function deliveryStatus(beat, format) {
+  if (!beat) return "";
+  const file = (beat.deliveryFiles || []).find((item) => item.format === format);
+  return file ? `<small>Current: ${text(file.filename || file.path || format)}</small>` : "<small>No private file yet.</small>";
+}
+
+function deliveryFormats(beat) {
+  const formats = (beat.deliveryFiles || []).map((file) => String(file.format || "").toUpperCase()).filter(Boolean);
+  return formats.length ? `Private: ${formats.join("/")}` : "No private delivery";
 }
 
 function AdminSetup() {

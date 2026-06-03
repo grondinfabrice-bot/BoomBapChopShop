@@ -119,13 +119,34 @@ export function addCartItem({
 function buildDemoDeliveryFiles(name, license) {
   if (!license) return [];
   const beat = state.beats.find((item) => item.name === name);
-  if (!beat?.previewUrl) return [];
-  const formatLabel = license.id === "mp3-basic" ? "MP3 demo delivery" : `${license.label} demo delivery`;
-  return [{
-    label: formatLabel,
-    url: beat.previewUrl,
-    note: "Demo audio file. Replace with private final deliverables before real sales.",
-  }];
+  if (!beat?.deliveryFiles?.length) return [];
+  const allowedFormats = getDeliveryFormatsForLicense(license.id);
+  return beat.deliveryFiles
+    .filter((file) => allowedFormats.includes(file.format))
+    .map((file) => ({
+      label: file.label || getDeliveryLabel(file.format),
+      bucket: file.bucket || "deliverables",
+      path: file.path || "",
+      filename: file.filename || "",
+      format: file.format || "",
+      note: file.note || "",
+    }))
+    .filter((file) => file.path);
+}
+
+function getDeliveryFormatsForLicense(licenseId) {
+  if (licenseId === "mp3-basic") return ["mp3"];
+  if (licenseId === "wav") return ["mp3", "wav"];
+  if (licenseId === "wav-stems") return ["mp3", "wav", "stems"];
+  if (licenseId === "exclusive") return ["mp3", "wav", "stems"];
+  return [];
+}
+
+function getDeliveryLabel(format) {
+  if (format === "mp3") return "Download MP3";
+  if (format === "wav") return "Download WAV";
+  if (format === "stems") return "Download stems";
+  return "Download audio file";
 }
 
 export function removeCartItem(id) {

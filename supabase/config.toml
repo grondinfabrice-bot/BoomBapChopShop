@@ -7,5 +7,8 @@ verify_jwt = false
 [functions.stripe-webhook]
 verify_jwt = false
 
+[functions.download-file]
+verify_jwt = false
+
 [functions.chatbot]
 verify_jwt = false

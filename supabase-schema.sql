@@ -12,6 +12,7 @@ create table if not exists public.beats (
   tags text[] default '{}',
   description text,
   stems_available boolean default true,
+  delivery_files jsonb not null default '[]'::jsonb,
   published boolean default false,
   sort_order integer default 100,
   created_at timestamptz default now()
@@ -283,7 +284,7 @@ with check (
 );
 
 insert into storage.buckets (id, name, public)
-values ('covers', 'covers', true), ('previews', 'previews', true), ('contracts', 'contracts', false)
+values ('covers', 'covers', true), ('previews', 'previews', true), ('contracts', 'contracts', false), ('deliverables', 'deliverables', false)
 on conflict (id) do nothing;
 
 drop policy if exists "Public covers are readable" on storage.objects;
@@ -312,6 +313,17 @@ create policy "Admin can upload previews"
 on storage.objects for insert
 with check (
   bucket_id = 'previews'
+  and exists (
+    select 1 from public.admin_users
+    where admin_users.user_id = auth.uid()
+  )
+);
+
+drop policy if exists "Admin can upload deliverables" on storage.objects;
+create policy "Admin can upload deliverables"
+on storage.objects for insert
+with check (
+  bucket_id = 'deliverables'
   and exists (
     select 1 from public.admin_users
     where admin_users.user_id = auth.uid()

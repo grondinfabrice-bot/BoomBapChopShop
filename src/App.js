@@ -6,7 +6,7 @@ import {
   setContent,
   setState,
   subscribe,
-} from "./state/store.js?v=35";
+} from "./state/store.js?v=36";
 import { Shell } from "./components/Shell.js?v=18";
 import { HomePage } from "./pages/HomePage.js?v=25";
 import { BlogPage } from "./pages/BlogPage.js?v=8";
@@ -29,7 +29,7 @@ import {
   saveTestFeedback,
   signInAdmin,
   signOutAdmin,
-} from "./services/cms.js?v=6";
+} from "./services/cms.js?v=7";
 import { createCheckoutSession } from "./services/orders.js?v=3";
 import { buildCatalogSearchReply, buildChatReply } from "./services/chatbot.js?v=2";
 import { askAiChatbot } from "./services/aiChat.js?v=1";

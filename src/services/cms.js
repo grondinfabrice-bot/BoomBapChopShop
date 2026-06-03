@@ -98,6 +98,7 @@ export async function saveBeat(form) {
   const slug = slugify(form.get("name"));
   const coverUrl = await uploadFile("covers", form.get("cover"), `${slug}-cover`);
   const previewUrl = await uploadFile("previews", form.get("preview"), `${slug}-preview`);
+  const deliveryFiles = await buildDeliveryFilesPayload(form, slug, beatId);
 
   const payload = compact({
     name: form.get("name"),
@@ -112,6 +113,7 @@ export async function saveBeat(form) {
     tags: splitTags(form.get("tags")),
     description: form.get("description"),
     stems_available: form.get("stemsAvailable") === "on",
+    delivery_files: deliveryFiles,
     published: form.get("published") === "on",
     sort_order: numberOrNull(form.get("sortOrder")),
   });
@@ -225,6 +227,43 @@ async function uploadFile(bucket, file, baseName) {
   return data.publicUrl;
 }
 
+async function buildDeliveryFilesPayload(form, slug, beatId) {
+  const uploads = await Promise.all([
+    uploadDeliverable(form.get("deliveryMp3"), `${slug}/mp3-${Date.now()}`, "mp3", "Download MP3"),
+    uploadDeliverable(form.get("deliveryWav"), `${slug}/wav-${Date.now()}`, "wav", "Download WAV"),
+    uploadDeliverable(form.get("deliveryStems"), `${slug}/stems-${Date.now()}`, "stems", "Download stems"),
+  ]);
+  const newFiles = uploads.filter(Boolean);
+  if (!newFiles.length) return "";
+  if (!beatId) return newFiles;
+
+  const supabase = await getSupabase();
+  const { data, error } = await supabase.from("beats").select("delivery_files").eq("id", beatId).single();
+  if (error) throw error;
+  const byFormat = new Map((Array.isArray(data?.delivery_files) ? data.delivery_files : []).map((file) => [file.format, file]));
+  newFiles.forEach((file) => byFormat.set(file.format, file));
+  return [...byFormat.values()];
+}
+
+async function uploadDeliverable(file, basePath, format, label) {
+  if (!file || !file.name) return null;
+  const supabase = await getSupabase();
+  const extension = file.name.split(".").pop();
+  const path = `${basePath}.${extension}`;
+  const { error } = await supabase.storage.from("deliverables").upload(path, file, {
+    contentType: file.type || undefined,
+    upsert: false,
+  });
+  if (error) throw error;
+  return {
+    label,
+    bucket: "deliverables",
+    path,
+    filename: file.name,
+    format,
+  };
+}
+
 function mapBeat(beat) {
   return {
     id: beat.id,
@@ -240,6 +279,7 @@ function mapBeat(beat) {
     tags: beat.tags || [],
     description: beat.description || "",
     stemsAvailable: beat.stems_available !== false,
+    deliveryFiles: Array.isArray(beat.delivery_files) ? beat.delivery_files : [],
     published: beat.published,
     sortOrder: beat.sort_order,
   };

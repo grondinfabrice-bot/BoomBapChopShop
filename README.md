@@ -92,9 +92,34 @@ window.BBCS_CONFIG = {
 
 La page admin n'apparait pas dans la navigation publique. Les donnees restent protegees par l'authentification Supabase et les regles RLS du schema. Seuls les utilisateurs ajoutes dans `admin_users` peuvent ecrire dans le catalogue et le blog.
 
-## Prochaine etape conseillee
+## Livraison privee des fichiers achetes
 
-Quand l'admin Supabase est valide, la prochaine etape sera de brancher le paiement et la livraison automatique des fichiers achetes.
+Les vrais fichiers vendus doivent etre stockes dans le bucket prive `deliverables`.
+L'admin permet d'ajouter un MP3 final, un WAV final et un ZIP de stems/trackouts sur chaque beat.
+Apres paiement Stripe, l'email client recoit des liens temporaires qui passent par la fonction `download-file`.
+Cette fonction verifie le lien, lit le fichier prive avec la cle serveur, puis force le telechargement sur disque avec `Content-Disposition: attachment`.
+
+Migration a appliquer:
+
+```bash
+supabase db query --linked --file supabase-private-deliverables-migration.sql
+```
+
+Si ta version de Supabase CLI ne supporte pas `db query --linked --file`, ouvre Supabase > SQL Editor et colle le contenu de `supabase-private-deliverables-migration.sql`.
+
+Secret conseille pour signer les liens de telechargement:
+
+```bash
+supabase secrets set DOWNLOAD_LINK_SECRET="UNE_LONGUE_VALEUR_ALEATOIRE"
+```
+
+Deploiement:
+
+```bash
+supabase functions deploy download-file
+supabase functions deploy create-checkout-session
+supabase functions deploy stripe-webhook
+```
 
 ## Test email de commande
 
@@ -153,7 +178,7 @@ L'email client contient un lien signe temporaire vers ce PDF personnalise.
 Pour l'ajouter a Supabase sans relancer tout le schema:
 
 ```bash
-supabase db execute --file supabase-orders-schema.sql
+supabase db query --linked --file supabase-orders-schema.sql
 ```
 
 Si ta version de Supabase CLI ne supporte pas `db execute`, ouvre Supabase > SQL Editor et colle le contenu de `supabase-orders-schema.sql`.

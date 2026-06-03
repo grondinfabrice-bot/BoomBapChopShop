@@ -25,6 +25,10 @@ type OrderItem = {
 type DeliveryFile = {
   label?: string;
   url?: string;
+  bucket?: string;
+  path?: string;
+  filename?: string;
+  format?: string;
   note?: string;
 };
 
@@ -379,20 +383,58 @@ async function attachPersonalizedContracts({
       ...item,
       personalizedContractUrl: signedUrl,
       personalizedContractPath: path,
-      deliveryLinks: buildDeliveryLinks(item),
+      deliveryLinks: await buildDeliveryLinks({
+        item,
+        supabaseUrl,
+        serviceRoleKey,
+        orderNumber,
+      }),
     });
   }
   return deliveryItems;
 }
 
-function buildDeliveryLinks(item: OrderItem): DeliveryLink[] {
-  return (item.deliveryFiles || [])
-    .filter((file) => file.url)
-    .map((file) => ({
-      label: file.label || "Download audio file",
-      url: file.url || "",
-      note: file.note || "",
-    }));
+async function buildDeliveryLinks({
+  item,
+  supabaseUrl,
+  serviceRoleKey,
+  orderNumber,
+}: {
+  item: OrderItem;
+  supabaseUrl: string;
+  serviceRoleKey: string;
+  orderNumber: string;
+}): Promise<DeliveryLink[]> {
+  const links: DeliveryLink[] = [];
+  for (const file of item.deliveryFiles || []) {
+    if (file.path) {
+      const token = await createDownloadToken({
+        bucket: file.bucket || "deliverables",
+        path: file.path,
+        filename: file.filename || makeDeliveryFilename(item, file),
+        orderNumber,
+        expiresIn: 60 * 60 * 24 * 7,
+        secret: getDownloadSecret(serviceRoleKey),
+      });
+      if (token) {
+        links.push({
+          label: file.label || "Download audio file",
+          url: `${supabaseUrl}/functions/v1/download-file?token=${encodeURIComponent(token)}`,
+          note: file.note || "Secure download link. It may expire for security reasons.",
+        });
+      }
+      continue;
+    }
+
+    if (file.url) {
+      links.push({
+        label: file.label || "Download audio file",
+        url: file.url,
+        note: file.note || "",
+      });
+    }
+  }
+  return links;
 }
 
 function buildDeliveryLinksHtml(links: DeliveryLink[], siteUrl: string) {
@@ -404,6 +446,64 @@ function buildDeliveryLinksHtml(links: DeliveryLink[], siteUrl: string) {
       `).join("")}
     </div>
   `;
+}
+
+async function createDownloadToken({
+  bucket,
+  path,
+  filename,
+  orderNumber,
+  expiresIn,
+  secret,
+}: {
+  bucket: string;
+  path: string;
+  filename: string;
+  orderNumber: string;
+  expiresIn: number;
+  secret: string;
+}) {
+  if (!secret || !path) return "";
+  const payload = {
+    bucket,
+    path,
+    filename,
+    orderNumber,
+    expiresAt: Date.now() + expiresIn * 1000,
+  };
+  const payloadPart = base64UrlEncode(new TextEncoder().encode(JSON.stringify(payload)));
+  const signature = await signDownloadPayload(payloadPart, secret);
+  return `${payloadPart}.${signature}`;
+}
+
+function getDownloadSecret(serviceRoleKey: string) {
+  return Deno.env.get("DOWNLOAD_LINK_SECRET") || serviceRoleKey;
+}
+
+async function signDownloadPayload(value: string, secret: string) {
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    "raw",
+    encoder.encode(secret),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const digest = await crypto.subtle.sign("HMAC", key, encoder.encode(value));
+  return base64UrlEncode(new Uint8Array(digest));
+}
+
+function base64UrlEncode(bytes: Uint8Array) {
+  let binary = "";
+  bytes.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
+function makeDeliveryFilename(item: OrderItem, file: DeliveryFile) {
+  const extension = String(file.path || "").split(".").pop() || String(file.format || "download");
+  return `${slugify(item.name || "beat")}-${slugify(item.license || file.format || "audio")}.${extension}`;
 }
 
 async function buildPersonalizedContractPdf({
