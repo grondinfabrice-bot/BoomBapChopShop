@@ -18,6 +18,9 @@ type OrderItem = {
   personalizedContractPath?: string;
   deliveryFiles?: DeliveryFile[];
   deliveryLinks?: DeliveryLink[];
+  missingDeliveryFormats?: string[];
+  deliveryStatus?: string;
+  deliveryNote?: string;
   serviceFor?: string;
   type?: string;
 };
@@ -161,6 +164,9 @@ function buildEmailHtml({ orderId, email, items, total, currency, siteUrl }: {
       ? `<a href="${escapeHtml(absoluteUrl(contractUrl, siteUrl))}" style="display:inline-block;margin-top:10px;padding:11px 13px;background:#8e3b2e;color:#f3eee6;text-decoration:none;font-weight:800;text-transform:uppercase;letter-spacing:.04em;border:1px solid #8e3b2e;">${contractLabel}</a>`
       : "Contract will be confirmed by email.";
     const serviceFor = item.serviceFor ? `<br><small style="color:#6b6256;">For: ${escapeHtml(item.serviceFor)}</small>` : "";
+    const manualDelivery = item.missingDeliveryFormats?.length
+      ? `<p style="margin:12px 0 0;color:#8e3b2e;font-weight:800;">Manual delivery needed: ${escapeHtml(item.missingDeliveryFormats.join(", ").toUpperCase())}. We will send the missing files separately.</p>`
+      : "";
     return `
       <tr>
         <td style="padding:18px;border-bottom:1px solid rgba(176,141,87,.32);">
@@ -168,6 +174,7 @@ function buildEmailHtml({ orderId, email, items, total, currency, siteUrl }: {
           <span style="color:#9b9180;">${escapeHtml(item.license || item.type || "License")}</span><br>
           ${contractLink}
           ${buildDeliveryLinksHtml(item.deliveryLinks || [], siteUrl)}
+          ${manualDelivery}
         </td>
         <td style="padding:18px;border-bottom:1px solid rgba(176,141,87,.32);text-align:right;white-space:nowrap;font-weight:800;color:#1e1e1e;">${formatMoney(item.price || 0, currency)}</td>
       </tr>
@@ -326,8 +333,11 @@ function buildEmailText({ orderId, items, total, currency, siteUrl }: {
     const delivery = (item.deliveryLinks || [])
       .map((link) => `\n${link.label}: ${absoluteUrl(link.url, siteUrl)}`)
       .join("");
+    const manualDelivery = item.missingDeliveryFormats?.length
+      ? `\nManual delivery needed: ${item.missingDeliveryFormats.join(", ").toUpperCase()} will be sent separately.`
+      : "";
     const serviceFor = item.serviceFor ? `\nFor: ${item.serviceFor}` : "";
-    return `- ${item.name || "Order item"} / ${item.license || item.type || "License"} / ${formatMoney(item.price || 0, currency)}${serviceFor}${contract}${delivery}`;
+    return `- ${item.name || "Order item"} / ${item.license || item.type || "License"} / ${formatMoney(item.price || 0, currency)}${serviceFor}${contract}${delivery}${manualDelivery}`;
   }).join("\n\n");
 
   return `BOOM BAP CHOP SHOP\nRespect for the support.\nOrder confirmed: ${orderId}\n\n${lines}\n\nTotal: ${formatMoney(total, currency)}${serviceProcess}\n\nKeep this email and contract with your release records.\nMake the record. Let the drums talk.`;

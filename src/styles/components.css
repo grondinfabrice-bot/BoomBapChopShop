@@ -144,6 +144,12 @@
   color: var(--muted-gold);
 }
 
+.icon-btn.active {
+  border-color: var(--muted-gold);
+  background: rgba(176, 141, 87, 0.12);
+  color: var(--muted-gold);
+}
+
 .nav-icon {
   width: 20px;
   height: 20px;

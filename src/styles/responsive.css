@@ -180,6 +180,10 @@
     display: none;
   }
 
+  .account-nav-btn {
+    display: grid;
+  }
+
   .cart-btn {
     min-width: auto;
     padding-inline: 0.72rem;
@@ -281,6 +285,15 @@
   .contact-info,
   .cgrid {
     grid-template-columns: 1fr;
+  }
+
+  .account-order-top,
+  .account-order-lines > div {
+    display: grid;
+  }
+
+  .account-order-top > div:last-child {
+    text-align: left;
   }
 
   .footer-grid {

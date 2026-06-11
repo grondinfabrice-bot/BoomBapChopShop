@@ -12,6 +12,10 @@ const state = {
   feedbackMessage: "",
   feedbackStatus: "",
   adminSession: null,
+  customerSession: null,
+  customerOrders: [],
+  accountMode: "signin",
+  accountMessage: "",
   adminEditingBeatId: null,
   adminBeats: [],
   adminPosts: [],
@@ -31,6 +35,8 @@ const state = {
   checkoutEmail: "",
   checkoutOrder: "",
   checkoutHasService: false,
+  checkoutPromo: null,
+  checkoutPromoCode: "",
   chatOpen: false,
   chatLanguage: "auto",
   chatMessages: [],
@@ -112,7 +118,7 @@ export function addCartItem({
     serviceTargetId,
     serviceTargetType,
   });
-  setState({ cart: state.cart });
+  setState({ cart: state.cart, checkoutPromo: null, checkoutPromoCode: "" });
   return true;
 }
 
@@ -150,11 +156,11 @@ function getDeliveryLabel(format) {
 }
 
 export function removeCartItem(id) {
-  setState({ cart: state.cart.filter((item) => item.id !== id) });
+  setState({ cart: state.cart.filter((item) => item.id !== id), checkoutPromo: null, checkoutPromoCode: "" });
 }
 
 export function clearCart() {
-  setState({ cart: [] });
+  setState({ cart: [], checkoutPromo: null, checkoutPromoCode: "" });
 }
 
 export function getCartTotal() {

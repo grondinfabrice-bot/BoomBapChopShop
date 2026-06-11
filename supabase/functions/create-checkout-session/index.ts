@@ -15,6 +15,9 @@ type OrderItem = {
   includes?: string[];
   contractUrl?: string;
   deliveryFiles?: unknown[];
+  missingDeliveryFormats?: string[];
+  deliveryStatus?: string;
+  deliveryNote?: string;
   serviceFor?: string;
   type?: string;
 };
@@ -24,9 +27,34 @@ type CheckoutPayload = {
   firstName?: string;
   lastName?: string;
   total?: number;
+  promoCode?: string;
   currency?: string;
   siteUrl?: string;
   items?: OrderItem[];
+};
+
+type PromoCode = {
+  code?: string;
+  label?: string;
+  discount_type?: string;
+  discount_value?: number;
+  active?: boolean;
+  min_order_total?: number;
+  max_uses?: number | null;
+  used_count?: number;
+  starts_at?: string | null;
+  ends_at?: string | null;
+  applies_to?: string;
+};
+
+type PromoDiscount = {
+  valid: boolean;
+  code: string;
+  label: string;
+  subtotal: number;
+  discountAmount: number;
+  total: number;
+  error?: string;
 };
 
 Deno.serve(async (request) => {
@@ -54,7 +82,16 @@ Deno.serve(async (request) => {
     const siteUrl = Deno.env.get("SITE_URL") || payload.siteUrl || "";
     const currency = String(payload.currency || "EUR").toLowerCase();
     const orderNumber = makeOrderNumber();
-    const total = orderItems.reduce((sum, item) => sum + Number(item.price || 0), 0);
+    const subtotal = orderItems.reduce((sum, item) => sum + Number(item.price || 0), 0);
+    const promoCode = normalizePromoCode(payload.promoCode || "");
+    const promo = await validatePromoCode({
+      supabaseUrl,
+      serviceRoleKey,
+      code: promoCode,
+      items: orderItems,
+    });
+    if (promoCode && !promo.valid) return json({ error: promo.error || "Promo code is not valid." }, 400);
+    const total = promo.valid ? promo.total : subtotal;
     const firstName = String(payload.firstName || "").trim();
     const lastName = String(payload.lastName || "").trim();
 
@@ -66,6 +103,8 @@ Deno.serve(async (request) => {
       firstName,
       lastName,
       items: orderItems,
+      subtotal,
+      discount: promo.valid ? promo : null,
       total,
       currency: currency.toUpperCase(),
     });
@@ -78,13 +117,18 @@ Deno.serve(async (request) => {
     form.set("cancel_url", `${siteUrl.replace(/\/$/, "")}/?checkout=cancel&order=${encodeURIComponent(orderNumber)}`);
     form.set("metadata[order_number]", orderNumber);
     form.set("metadata[customer_email]", email);
+    if (promo.valid) {
+      form.set("metadata[promo_code]", promo.code);
+      form.set("metadata[promo_discount_amount]", String(promo.discountAmount));
+    }
 
-    orderItems.forEach((item, index) => {
+    const stripeLineItems = buildStripeLineItems(orderItems, promo.valid ? promo.discountAmount : 0);
+    stripeLineItems.forEach(({ item, unitAmount }, index) => {
       const name = `${item.name || "Order item"} - ${item.license || "License"}`;
       const description = item.serviceFor ? `For: ${item.serviceFor}` : "BOOM BAP CHOP SHOP digital order";
       form.set(`line_items[${index}][quantity]`, "1");
       form.set(`line_items[${index}][price_data][currency]`, currency);
-      form.set(`line_items[${index}][price_data][unit_amount]`, String(Math.round(Number(item.price || 0) * 100)));
+      form.set(`line_items[${index}][price_data][unit_amount]`, String(unitAmount));
       form.set(`line_items[${index}][price_data][product_data][name]`, name);
       form.set(`line_items[${index}][price_data][product_data][description]`, description);
     });
@@ -125,6 +169,8 @@ async function createPendingOrder({
   firstName,
   lastName,
   items,
+  subtotal,
+  discount,
   total,
   currency,
 }: {
@@ -135,6 +181,8 @@ async function createPendingOrder({
   firstName: string;
   lastName: string;
   items: OrderItem[];
+  subtotal: number;
+  discount: PromoDiscount | null;
   total: number;
   currency: string;
 }) {
@@ -154,6 +202,8 @@ async function createPendingOrder({
       customer_last_name: lastName,
       items,
       contract_urls: unique(items.map((item) => item.contractUrl || "").filter(Boolean)),
+      subtotal,
+      discount: discount || {},
       total,
       currency,
       status: "pending_payment",
@@ -166,6 +216,120 @@ async function createPendingOrder({
     }),
   });
   if (!response.ok) throw new Error(`Order insert failed: ${await response.text()}`);
+}
+
+async function validatePromoCode({
+  supabaseUrl,
+  serviceRoleKey,
+  code,
+  items,
+}: {
+  supabaseUrl: string;
+  serviceRoleKey: string;
+  code: string;
+  items: OrderItem[];
+}): Promise<PromoDiscount> {
+  const normalized = normalizePromoCode(code);
+  const subtotal = roundMoney(items.reduce((sum, item) => sum + Number(item.price || 0), 0));
+  if (!normalized) return invalidPromo("", subtotal, "");
+  if (!supabaseUrl || !serviceRoleKey) return invalidPromo(normalized, subtotal, "Promo codes are not configured yet.");
+
+  const response = await fetch(
+    `${supabaseUrl}/rest/v1/promo_codes?code=eq.${encodeURIComponent(normalized)}&active=eq.true&select=*`,
+    {
+      headers: {
+        apikey: serviceRoleKey,
+        Authorization: `Bearer ${serviceRoleKey}`,
+      },
+    },
+  );
+  if (!response.ok) throw new Error(`Promo code fetch failed: ${await response.text()}`);
+
+  const rows = await response.json();
+  const promo = Array.isArray(rows) && rows.length ? rows[0] as PromoCode : null;
+  if (!promo) return invalidPromo(normalized, subtotal, "Promo code not found.");
+
+  const now = Date.now();
+  if (promo.starts_at && Date.parse(promo.starts_at) > now) return invalidPromo(normalized, subtotal, "Promo code is not active yet.");
+  if (promo.ends_at && Date.parse(promo.ends_at) < now) return invalidPromo(normalized, subtotal, "Promo code has expired.");
+  if (promo.max_uses !== null && promo.max_uses !== undefined && Number(promo.used_count || 0) >= Number(promo.max_uses)) {
+    return invalidPromo(normalized, subtotal, "Promo code has reached its usage limit.");
+  }
+
+  const eligibleSubtotal = getEligibleSubtotal(items, promo.applies_to || "all");
+  const minOrderTotal = Number(promo.min_order_total || 0);
+  if (subtotal < minOrderTotal) return invalidPromo(normalized, subtotal, `Minimum order is ${minOrderTotal.toFixed(2)}€.`);
+  if (eligibleSubtotal <= 0) return invalidPromo(normalized, subtotal, "Promo code does not apply to these items.");
+
+  const discountValue = Number(promo.discount_value || 0);
+  const discountType = String(promo.discount_type || "").toLowerCase();
+  const rawDiscount = discountType === "percent"
+    ? eligibleSubtotal * (Math.max(0, Math.min(100, discountValue)) / 100)
+    : discountValue;
+  const discountAmount = roundMoney(Math.min(eligibleSubtotal, Math.max(0, rawDiscount)));
+  if (discountAmount <= 0) return invalidPromo(normalized, subtotal, "Promo code has no discount value.");
+
+  return {
+    valid: true,
+    code: normalized,
+    label: promo.label || normalized,
+    subtotal,
+    discountAmount,
+    total: roundMoney(Math.max(0, subtotal - discountAmount)),
+  };
+}
+
+function invalidPromo(code: string, subtotal: number, error: string): PromoDiscount {
+  return {
+    valid: false,
+    code,
+    label: code,
+    subtotal,
+    discountAmount: 0,
+    total: subtotal,
+    error,
+  };
+}
+
+function getEligibleSubtotal(items: OrderItem[], appliesTo: string) {
+  return items
+    .filter((item) => {
+      if (appliesTo === "beats") return item.type !== "service";
+      if (appliesTo === "services") return item.type === "service";
+      return true;
+    })
+    .reduce((sum, item) => sum + Number(item.price || 0), 0);
+}
+
+function buildStripeLineItems(items: OrderItem[], discountAmount: number) {
+  const amounts = items.map((item) => Math.max(0, Math.round(Number(item.price || 0) * 100)));
+  const discountCents = Math.min(amounts.reduce((sum, amount) => sum + amount, 0), Math.round(discountAmount * 100));
+  const discountedAmounts = allocateDiscount(amounts, discountCents);
+  return items.map((item, index) => ({
+    item,
+    unitAmount: discountedAmounts[index],
+  }));
+}
+
+function allocateDiscount(amounts: number[], discountCents: number) {
+  const subtotal = amounts.reduce((sum, amount) => sum + amount, 0);
+  if (!subtotal || !discountCents) return amounts;
+  let remainingDiscount = discountCents;
+  const discountedAmounts = amounts.map((amount, index) => {
+    if (index === amounts.length - 1) return Math.max(0, amount - remainingDiscount);
+    const itemDiscount = Math.min(amount, Math.floor((amount / subtotal) * discountCents));
+    remainingDiscount -= itemDiscount;
+    return Math.max(0, amount - itemDiscount);
+  });
+  return discountedAmounts;
+}
+
+function normalizePromoCode(code: string) {
+  return String(code || "").trim().toUpperCase().replace(/\s+/g, "");
+}
+
+function roundMoney(value: number) {
+  return Math.round(Number(value || 0) * 100) / 100;
 }
 
 async function attachStripeSession({
@@ -236,9 +400,6 @@ async function buildTrustedOrderItems({
     if (!license || !beat) throw new Error("Invalid beat or license in checkout.");
     const deliveryFiles = filterDeliveryFiles(beat.delivery_files, license.id);
     const missingFormats = getMissingRequiredFormats(deliveryFiles, license.id);
-    if (missingFormats.length) {
-      throw new Error(`Missing private ${missingFormats.join(", ")} delivery for ${beat.name}.`);
-    }
 
     trustedItems.push({
       beatId: beat.id,
@@ -249,6 +410,11 @@ async function buildTrustedOrderItems({
       includes: license.includes,
       contractUrl: license.contractUrl,
       deliveryFiles,
+      missingDeliveryFormats: missingFormats,
+      deliveryStatus: missingFormats.length ? "manual_delivery_required" : "instant_delivery_ready",
+      deliveryNote: missingFormats.length
+        ? `Missing ${missingFormats.join(", ")} private delivery files. Fulfill this order manually after payment.`
+        : "",
       type: "beat",
     });
   }

@@ -54,6 +54,8 @@ create table if not exists public.orders (
   customer_last_name text,
   items jsonb not null default '[]'::jsonb,
   contract_urls text[] not null default '{}',
+  subtotal numeric(10, 2) not null default 0,
+  discount jsonb not null default '{}'::jsonb,
   total numeric(10, 2) not null default 0,
   currency text not null default 'EUR',
   status text not null default 'demo',
@@ -71,6 +73,37 @@ create table if not exists public.orders (
   constraint orders_total_check check (total >= 0),
   constraint orders_items_array_check check (jsonb_typeof(items) = 'array')
 );
+
+alter table public.orders
+add column if not exists subtotal numeric(10, 2) not null default 0,
+add column if not exists discount jsonb not null default '{}'::jsonb;
+
+create table if not exists public.promo_codes (
+  id uuid primary key default gen_random_uuid(),
+  code text unique not null,
+  label text,
+  discount_type text not null default 'percent',
+  discount_value numeric(10, 2) not null,
+  applies_to text not null default 'all',
+  min_order_total numeric(10, 2) not null default 0,
+  max_uses integer,
+  used_count integer not null default 0,
+  starts_at timestamptz,
+  ends_at timestamptz,
+  active boolean not null default true,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint promo_codes_code_upper_check check (code = upper(code)),
+  constraint promo_codes_discount_type_check check (discount_type in ('percent', 'fixed')),
+  constraint promo_codes_applies_to_check check (applies_to in ('all', 'beats', 'services')),
+  constraint promo_codes_discount_value_check check (discount_value > 0),
+  constraint promo_codes_min_order_total_check check (min_order_total >= 0),
+  constraint promo_codes_used_count_check check (used_count >= 0),
+  constraint promo_codes_max_uses_check check (max_uses is null or max_uses > 0)
+);
+
+create index if not exists promo_codes_code_idx on public.promo_codes (code);
+create index if not exists promo_codes_active_idx on public.promo_codes (active);
 
 create table if not exists public.test_feedback (
   id uuid primary key default gen_random_uuid(),
@@ -148,6 +181,7 @@ alter table public.posts enable row level security;
 alter table public.admin_users enable row level security;
 alter table public.site_settings enable row level security;
 alter table public.orders enable row level security;
+alter table public.promo_codes enable row level security;
 alter table public.test_feedback enable row level security;
 
 drop policy if exists "Published beats are readable" on public.beats;
@@ -261,6 +295,32 @@ with check (
     where admin_users.user_id = auth.uid()
   )
 );
+
+drop policy if exists "Customers can read their own orders" on public.orders;
+create policy "Customers can read their own orders"
+on public.orders for select
+using (lower(customer_email) = lower(coalesce(auth.jwt() ->> 'email', '')));
+
+drop policy if exists "Admin promo codes access" on public.promo_codes;
+create policy "Admin promo codes access"
+on public.promo_codes for all
+using (
+  exists (
+    select 1 from public.admin_users
+    where admin_users.user_id = auth.uid()
+  )
+)
+with check (
+  exists (
+    select 1 from public.admin_users
+    where admin_users.user_id = auth.uid()
+  )
+);
+
+drop trigger if exists set_promo_codes_updated_at on public.promo_codes;
+create trigger set_promo_codes_updated_at
+before update on public.promo_codes
+for each row execute function public.set_updated_at();
 
 drop policy if exists "Public can create test feedback" on public.test_feedback;
 create policy "Public can create test feedback"

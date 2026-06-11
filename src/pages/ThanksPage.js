@@ -39,6 +39,7 @@ export function ThanksPage(state) {
       ${serviceSteps}
       <div class="thanks-actions">
         <button class="btn-hero primary" data-route="home" type="button">Back to beats</button>
+        <button class="btn-hero outline" data-route="account" type="button">My account</button>
         <button class="btn-hero outline" data-route="contact" type="button">Contact the shop</button>
       </div>
     </section>

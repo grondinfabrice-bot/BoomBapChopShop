@@ -13,6 +13,12 @@ export function Nav(state) {
       <path d="m5.5 8 6.5 5 6.5-5"></path>
     </svg>
   `;
+  const accountIcon = `
+    <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="8" r="3.25"></circle>
+      <path d="M5.75 19.25c.85-3.4 3-5.1 6.25-5.1s5.4 1.7 6.25 5.1"></path>
+    </svg>
+  `;
   const cartIcon = `
     <svg class="nav-icon cart-crate-icon" viewBox="0 0 24 24" aria-hidden="true">
       <path d="M5.25 8.25h13.5l-1.45 9.5H6.7z"></path>
@@ -38,6 +44,7 @@ export function Nav(state) {
       <div class="nav-right">
         <button class="icon-btn" data-catalogue type="button" aria-label="Search beats">${searchIcon}</button>
         <button class="icon-btn" data-route="contact" type="button" aria-label="Contact">${contactIcon}</button>
+        <button class="icon-btn account-nav-btn ${state.customerSession ? "active" : ""}" data-route="account" type="button" aria-label="My account">${accountIcon}</button>
         <button class="cart-btn" data-cart-open type="button">
           <span class="cart-icon" aria-hidden="true">${cartIcon}</span>
           <span>Cart</span>

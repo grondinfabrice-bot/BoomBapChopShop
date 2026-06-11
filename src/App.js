@@ -6,21 +6,21 @@ import {
   setContent,
   setState,
   subscribe,
-} from "./state/store.js?v=36";
-import { Shell } from "./components/Shell.js?v=18";
+} from "./state/store.js?v=37";
+import { Shell } from "./components/Shell.js?v=19";
 import { HomePage } from "./pages/HomePage.js?v=25";
 import { BlogPage } from "./pages/BlogPage.js?v=8";
 import { AboutPage } from "./pages/AboutPage.js?v=2";
 import { LicensingPage } from "./pages/LicensingPage.js?v=5";
 import { ContactPage } from "./pages/ContactPage.js?v=6";
 import { UpsellPage } from "./pages/UpsellPage.js?v=4";
-import { CheckoutPage } from "./pages/CheckoutPage.js?v=7";
+import { CheckoutPage } from "./pages/CheckoutPage.js?v=9";
 import { ThanksPage } from "./pages/ThanksPage.js?v=6";
+import { AccountPage } from "./pages/AccountPage.js?v=2";
 import { AdminPage } from "./pages/AdminPage.js?v=2";
 import { TestFeedbackPage } from "./pages/TestFeedbackPage.js?v=3";
 import { getFeaturedBeat } from "./utils/featured.js?v=3";
 import {
-  getAdminSession,
   loadAdminContent,
   loadPublishedContent,
   saveBeat,
@@ -30,7 +30,14 @@ import {
   signInAdmin,
   signOutAdmin,
 } from "./services/cms.js?v=7";
-import { createCheckoutSession } from "./services/orders.js?v=3";
+import { createCheckoutSession, validatePromoCode } from "./services/orders.js?v=6";
+import {
+  getCustomerSession,
+  loadCustomerOrders,
+  signInCustomer,
+  signOutCustomer,
+  signUpCustomer,
+} from "./services/account.js?v=2";
 import { buildCatalogSearchReply, buildChatReply } from "./services/chatbot.js?v=2";
 import { askAiChatbot } from "./services/aiChat.js?v=1";
 import { serviceOffers } from "./data/content.js?v=5";
@@ -56,6 +63,7 @@ const pages = {
   upsell: UpsellPage,
   checkout: CheckoutPage,
   thanks: ThanksPage,
+  account: AccountPage,
   admin: AdminPage,
   feedback: TestFeedbackPage,
 };
@@ -78,6 +86,7 @@ function hydrateHashRoute() {
   const hash = window.location.hash.replace("#", "");
   if (hash === "admin") route("admin");
   if (hash === "test-feedback") route("feedback");
+  if (hash === "account") route("account");
 }
 
 function hydrateCheckoutReturn() {
@@ -205,6 +214,7 @@ function setupPageMotion(page, pageChanged) {
     ".admin-wrap > *",
     ".checkout-wrap > *",
     ".thanks-wrap > *",
+    ".account-wrap > *",
     ".upsell-wrap > *",
   ];
 
@@ -491,6 +501,27 @@ function bindPageActions() {
 
   rootNode.querySelector("[data-skip-upsell]")?.addEventListener("click", () => route("checkout"));
 
+  rootNode.querySelector("[data-promo-form]")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const code = rootNode.querySelector("[data-promo-code]")?.value.trim() || "";
+    const state = getState();
+    const cart = [...state.cart];
+    const total = cart.reduce((sum, item) => sum + item.price, 0);
+    if (!code) {
+      setState({ checkoutPromo: null, checkoutPromoCode: "" });
+      return;
+    }
+    try {
+      const promo = await validatePromoCode({ code, items: cart, total });
+      setState({ checkoutPromo: promo?.valid ? promo : { code, error: promo?.error || "Promo code unavailable." }, checkoutPromoCode: code });
+      toast(promo?.valid ? "Promo code applied" : promo?.error || "Promo code unavailable.");
+    } catch (error) {
+      console.error(error);
+      setState({ checkoutPromo: { code, error: "Promo code unavailable right now." }, checkoutPromoCode: code });
+      toast("Promo code unavailable right now.");
+    }
+  });
+
   rootNode.querySelector("[data-pay]")?.addEventListener("click", async () => {
     const email = rootNode.querySelector("[data-email]")?.value.trim() || "";
     const firstName = rootNode.querySelector("[data-first-name]")?.value.trim() || "";
@@ -500,15 +531,16 @@ function bindPageActions() {
     const state = getState();
     const cart = [...state.cart];
     const total = cart.reduce((sum, item) => sum + item.price, 0);
+    const promoCode = state.checkoutPromo?.valid ? state.checkoutPromo.code : "";
     const hasService = cart.some((item) => item.type === "service");
     try {
-      const checkout = await createCheckoutSession({ email, firstName, lastName, items: cart, total });
+      const checkout = await createCheckoutSession({ email, firstName, lastName, items: cart, total, promoCode });
       saveCheckoutReturn(checkout.orderNumber, email, hasService);
       window.location.href = checkout.checkoutUrl;
       return;
     } catch (error) {
       console.error(error);
-      toast("Stripe payment is not available right now. Please try again in a moment.");
+      toast(getCheckoutErrorMessage(error));
       return;
     }
   });
@@ -563,9 +595,47 @@ function bindPageActions() {
     }
   });
 
+  rootNode.querySelectorAll("[data-account-mode]").forEach((button) => {
+    button.addEventListener("click", () => {
+      setState({ accountMode: button.dataset.accountMode, accountMessage: "" });
+    });
+  });
+
+  rootNode.querySelector("[data-account-auth]")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const mode = form.get("mode");
+    const email = String(form.get("email") || "").trim();
+    const password = String(form.get("password") || "");
+    if (!email.includes("@")) return toast("Enter a valid email");
+    if (password.length < 6) return toast("Password must be at least 6 characters");
+    try {
+      if (mode === "signup") {
+        const data = await signUpCustomer(email, password);
+        const session = data.session || await getCustomerSession();
+        setState({
+          customerSession: session,
+          accountMode: "signin",
+          accountMessage: session ? "Account created." : "Account created. Check your email to confirm it, then sign in.",
+        });
+      } else {
+        const session = await signInCustomer(email, password);
+        setState({ customerSession: session, accountMessage: "Signed in." });
+      }
+      if (getState().customerSession) await refreshCustomerOrders();
+    } catch (error) {
+      setState({ accountMessage: error.message || "Account action failed." });
+    }
+  });
+
+  rootNode.querySelector("[data-account-logout]")?.addEventListener("click", async () => {
+    await signOutCustomer();
+    setState({ customerSession: null, adminSession: null, customerOrders: [], accountMessage: "Signed out." });
+  });
+
   rootNode.querySelector("[data-admin-logout]")?.addEventListener("click", async () => {
     await signOutAdmin();
-    setState({ adminSession: null, adminEditingBeatId: null, cmsMessage: "Signed out." });
+    setState({ adminSession: null, customerSession: null, customerOrders: [], adminEditingBeatId: null, cmsMessage: "Signed out." });
   });
 
   rootNode.querySelectorAll("[data-admin-edit-beat]").forEach((button) => {
@@ -757,7 +827,8 @@ function numberOrNull(value) {
 function route(page) {
   if (page === "admin" && window.location.hash !== "#admin") window.location.hash = "admin";
   if (page === "feedback" && window.location.hash !== "#test-feedback") window.location.hash = "test-feedback";
-  if (!["admin", "feedback"].includes(page) && ["#admin", "#test-feedback"].includes(window.location.hash)) history.replaceState(null, "", window.location.pathname);
+  if (page === "account" && window.location.hash !== "#account") window.location.hash = "account";
+  if (!["admin", "feedback", "account"].includes(page) && ["#admin", "#test-feedback", "#account"].includes(window.location.hash)) history.replaceState(null, "", window.location.pathname);
   setState({
     page,
     activePostId: "",
@@ -766,6 +837,11 @@ function route(page) {
     licensePickerBeatId: null,
   });
   resetPageScroll();
+  if (page === "account" && getState().customerSession) {
+    refreshCustomerOrders().catch((error) => {
+      setState({ accountMessage: error.message || "Orders unavailable right now." });
+    });
+  }
 }
 
 async function submitChatMessage(rawMessage) {
@@ -1082,10 +1158,14 @@ async function hydrateCms() {
   try {
     const content = await loadPublishedContent();
     setContent(content);
-    const session = await getAdminSession();
+    const session = await getCustomerSession();
     if (session) {
-      setState({ adminSession: session });
-      if (getState().page === "admin") await refreshAdminContent();
+      setState({ customerSession: session });
+      if (getState().page === "admin") {
+        await refreshAdminContent();
+        setState({ adminSession: session });
+      }
+      if (getState().page === "account") await refreshCustomerOrders();
     }
   } catch (error) {
     setState({ cmsMessage: error.message || "CMS unavailable. Local content is still loaded." });
@@ -1097,11 +1177,30 @@ async function refreshAdminContent() {
   setState({ adminBeats: content.beats, adminPosts: content.posts, adminSettings: content.settings || {} });
 }
 
+async function refreshCustomerOrders() {
+  const orders = await loadCustomerOrders();
+  setState({ customerOrders: orders });
+}
+
 function toast(message) {
   setState({ toast: message });
   setTimeout(() => {
     if (getState().toast === message) setState({ toast: "" });
   }, 2600);
+}
+
+function getCheckoutErrorMessage(error) {
+  const message = [
+    error?.message,
+    error?.context?.error,
+    error?.details,
+    error?.hint,
+  ].filter(Boolean).join(" ");
+  if (message.includes("subtotal") || message.includes("discount")) return "Checkout setup missing: run the orders schema update.";
+  if (message.includes("STRIPE_SECRET_KEY")) return "Stripe secret key is missing in Supabase.";
+  if (message.includes("Invalid beat or license")) return "Checkout item data is stale. Refresh the page and try again.";
+  if (message) return message.slice(0, 140);
+  return "Stripe payment is not available right now. Please try again in a moment.";
 }
 
 function clamp(value) {

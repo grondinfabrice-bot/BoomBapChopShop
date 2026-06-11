@@ -1,8 +1,13 @@
 import { money } from "../utils/format.js";
 
 export function CheckoutPage(state) {
-  const total = state.cart.reduce((sum, item) => sum + item.price, 0);
+  const subtotal = state.cart.reduce((sum, item) => sum + item.price, 0);
+  const promo = state.checkoutPromo;
+  const discountAmount = promo?.valid ? Number(promo.discountAmount || 0) : 0;
+  const total = Math.max(0, subtotal - discountAmount);
   const hasService = state.cart.some((item) => item.type === "service");
+  const promoCode = state.checkoutPromoCode || promo?.code || "";
+  const customerEmail = state.customerSession?.user?.email || "";
   const contractLinks = state.cart
     .filter((item) => item.contractUrl)
     .map((item) => `<a href="${item.contractUrl}" target="_blank" rel="noreferrer">${item.license}</a>`)
@@ -24,8 +29,25 @@ export function CheckoutPage(state) {
             <span>${money(item.price)}</span>
           </div>
         `).join("")}
+        ${discountAmount > 0 ? `
+          <div class="os-line os-discount">
+            <span>Promo code · ${promo.code}</span>
+            <span>-${money(discountAmount)}</span>
+          </div>
+        ` : ""}
         <div class="os-total"><span>Total</span><strong>${money(total)}</strong></div>
       </div>
+      <form class="promo-box" data-promo-form>
+        <label class="fg">
+          <span class="fl">Promo code</span>
+          <span class="promo-row">
+            <input class="fi" data-promo-code type="text" placeholder="BOOMBAP20" value="${escapeAttr(promoCode)}" />
+            <button class="promo-apply" type="submit">${promo?.valid ? "Update" : "Apply"}</button>
+          </span>
+        </label>
+        ${promo?.valid ? `<p class="promo-message success">${promo.label || `${promo.code} applied`} · You save ${money(discountAmount)}.</p>` : ""}
+        ${promo?.error ? `<p class="promo-message error">${promo.error}</p>` : ""}
+      </form>
       <div class="checkout-license-note">
         <h2>You will receive</h2>
         <ul>
@@ -38,7 +60,7 @@ export function CheckoutPage(state) {
       <div class="cgrid">
         <label class="fg"><span class="fl">First name</span><input class="fi" data-first-name type="text" placeholder="Jay" /></label>
         <label class="fg"><span class="fl">Last name</span><input class="fi" data-last-name type="text" placeholder="Z" /></label>
-        <label class="fg full"><span class="fl">Email</span><input class="fi" data-email type="text" inputmode="email" placeholder="contact@example.com" /></label>
+        <label class="fg full"><span class="fl">Email</span><input class="fi" data-email type="text" inputmode="email" placeholder="contact@example.com" value="${escapeAttr(customerEmail)}" /></label>
       </div>
       <div class="cdivider">Payment</div>
       <div class="stripe-handoff">
@@ -60,4 +82,12 @@ export function CheckoutPage(state) {
       <p class="pay-secure">Payment handled by Stripe. Card data is never stored by BOOM BAP CHOP SHOP.</p>
     </section>
   `;
+}
+
+function escapeAttr(value) {
+  return String(value || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
 }

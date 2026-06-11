@@ -18,6 +18,9 @@ type OrderItem = {
   personalizedContractPath?: string;
   deliveryFiles?: DeliveryFile[];
   deliveryLinks?: DeliveryLink[];
+  missingDeliveryFormats?: string[];
+  deliveryStatus?: string;
+  deliveryNote?: string;
   serviceFor?: string;
   type?: string;
 };
@@ -44,8 +47,13 @@ type OrderRow = {
   customer_first_name?: string;
   customer_last_name?: string;
   items?: OrderItem[];
+  discount?: {
+    code?: string;
+    discountAmount?: number;
+  };
   total?: number;
   currency?: string;
+  status?: string;
   email_sent_at?: string | null;
 };
 
@@ -131,6 +139,13 @@ Deno.serve(async (request) => {
       contractUrls,
       paymentReference: session.id || "",
     });
+    if (!["paid", "email_sent", "delivered"].includes(String(order.status || ""))) {
+      await incrementPromoUsage({
+        supabaseUrl,
+        serviceRoleKey,
+        code: String(order.discount?.code || ""),
+      });
+    }
 
     if (!resendApiKey) {
       return json({ sent: false, orderId, mode: "missing_resend_key", message: "RESEND_API_KEY is not configured." }, 200);
@@ -180,7 +195,7 @@ async function getOrderByNumber({
 }) {
   if (!supabaseUrl || !serviceRoleKey) return null;
   const response = await fetch(
-    `${supabaseUrl}/rest/v1/orders?order_number=eq.${encodeURIComponent(orderNumber)}&select=order_number,customer_email,customer_first_name,customer_last_name,items,total,currency,email_sent_at`,
+    `${supabaseUrl}/rest/v1/orders?order_number=eq.${encodeURIComponent(orderNumber)}&select=order_number,customer_email,customer_first_name,customer_last_name,items,discount,total,currency,status,email_sent_at`,
     {
       headers: {
         apikey: serviceRoleKey,
@@ -226,6 +241,43 @@ async function markOrderPaid({
     }),
   });
   if (!response.ok) throw new Error(`Order paid update failed: ${await response.text()}`);
+}
+
+async function incrementPromoUsage({
+  supabaseUrl,
+  serviceRoleKey,
+  code,
+}: {
+  supabaseUrl: string;
+  serviceRoleKey: string;
+  code: string;
+}) {
+  if (!supabaseUrl || !serviceRoleKey || !code) return;
+  const currentResponse = await fetch(
+    `${supabaseUrl}/rest/v1/promo_codes?code=eq.${encodeURIComponent(code)}&select=used_count`,
+    {
+      headers: {
+        apikey: serviceRoleKey,
+        Authorization: `Bearer ${serviceRoleKey}`,
+      },
+    },
+  );
+  if (!currentResponse.ok) throw new Error(`Promo code usage fetch failed: ${await currentResponse.text()}`);
+  const rows = await currentResponse.json();
+  const usedCount = Array.isArray(rows) && rows.length ? Number(rows[0].used_count || 0) : 0;
+  const updateResponse = await fetch(`${supabaseUrl}/rest/v1/promo_codes?code=eq.${encodeURIComponent(code)}`, {
+    method: "PATCH",
+    headers: {
+      apikey: serviceRoleKey,
+      Authorization: `Bearer ${serviceRoleKey}`,
+      "Content-Type": "application/json",
+      Prefer: "return=minimal",
+    },
+    body: JSON.stringify({
+      used_count: usedCount + 1,
+    }),
+  });
+  if (!updateResponse.ok) throw new Error(`Promo code usage update failed: ${await updateResponse.text()}`);
 }
 
 async function verifyStripeSignature(rawBody: string, signatureHeader: string, secret: string) {
@@ -281,6 +333,9 @@ function buildEmailHtml({ orderId, email, items, total, currency, siteUrl }: {
       ? `<a href="${escapeHtml(absoluteUrl(contractUrl, siteUrl))}" style="display:inline-block;margin-top:10px;padding:11px 13px;background:#8e3b2e;color:#f3eee6;text-decoration:none;font-weight:800;text-transform:uppercase;letter-spacing:.04em;border:1px solid #8e3b2e;">${contractLabel}</a>`
       : "Contract will be confirmed by email.";
     const serviceFor = item.serviceFor ? `<br><small style="color:#6b6256;">For: ${escapeHtml(item.serviceFor)}</small>` : "";
+    const manualDelivery = item.missingDeliveryFormats?.length
+      ? `<p style="margin:12px 0 0;color:#8e3b2e;font-weight:800;">Manual delivery needed: ${escapeHtml(item.missingDeliveryFormats.join(", ").toUpperCase())}. We will send the missing files separately.</p>`
+      : "";
     return `
       <tr>
         <td style="padding:18px;border-bottom:1px solid rgba(176,141,87,.32);">
@@ -288,6 +343,7 @@ function buildEmailHtml({ orderId, email, items, total, currency, siteUrl }: {
           <span style="color:#9b9180;">${escapeHtml(item.license || item.type || "License")}</span><br>
           ${contractLink}
           ${buildDeliveryLinksHtml(item.deliveryLinks || [], siteUrl)}
+          ${manualDelivery}
         </td>
         <td style="padding:18px;border-bottom:1px solid rgba(176,141,87,.32);text-align:right;white-space:nowrap;font-weight:800;color:#1e1e1e;">${formatMoney(item.price || 0, currency)}</td>
       </tr>
@@ -446,8 +502,11 @@ function buildEmailText({ orderId, items, total, currency, siteUrl }: {
     const delivery = (item.deliveryLinks || [])
       .map((link) => `\n${link.label}: ${absoluteUrl(link.url, siteUrl)}`)
       .join("");
+    const manualDelivery = item.missingDeliveryFormats?.length
+      ? `\nManual delivery needed: ${item.missingDeliveryFormats.join(", ").toUpperCase()} will be sent separately.`
+      : "";
     const serviceFor = item.serviceFor ? `\nFor: ${item.serviceFor}` : "";
-    return `- ${item.name || "Order item"} / ${item.license || item.type || "License"} / ${formatMoney(item.price || 0, currency)}${serviceFor}${contract}${delivery}`;
+    return `- ${item.name || "Order item"} / ${item.license || item.type || "License"} / ${formatMoney(item.price || 0, currency)}${serviceFor}${contract}${delivery}${manualDelivery}`;
   }).join("\n\n");
 
   return `BOOM BAP CHOP SHOP\nRespect for the support.\nOrder confirmed: ${orderId}\n\n${lines}\n\nTotal: ${formatMoney(total, currency)}${serviceProcess}\n\nKeep this email and contract with your release records.\nMake the record. Let the drums talk.`;
