@@ -733,11 +733,11 @@
 .beat-row {
   position: relative;
   display: grid;
-  grid-template-columns: 42px minmax(190px, 220px) minmax(0, 1fr) 120px 95px 122px;
-  gap: 1rem;
+  grid-template-columns: 42px minmax(144px, 160px) minmax(0, 1fr) 112px 90px 118px;
+  gap: 0.78rem;
   align-items: center;
-  min-height: 194px;
-  padding: 1rem;
+  min-height: 150px;
+  padding: 0.66rem;
   overflow: hidden;
   border: 1px solid var(--line);
   border-radius: 6px;
@@ -765,7 +765,7 @@
   position: relative;
   display: flex;
   align-items: center;
-  width: min(194px, 100%);
+  width: min(144px, 100%);
   aspect-ratio: 1;
 }
 
@@ -777,10 +777,10 @@
   grid-template-rows: 1fr auto;
   align-items: center;
   justify-items: center;
-  width: min(82%, 160px);
+  width: min(82%, 118px);
   aspect-ratio: 1;
   height: auto;
-  padding: 1.05rem 0.8rem 0.72rem;
+  padding: 0.76rem 0.6rem 0.52rem;
   border: 1px solid rgba(30, 30, 30, 0.42);
   border-radius: 3px;
   background:
@@ -862,8 +862,8 @@
   z-index: 1;
   top: 50%;
   right: 0;
-  width: 78%;
-  height: 78%;
+  width: 76%;
+  height: 76%;
   transform: translateY(-50%);
 }
 
@@ -879,7 +879,7 @@
 
 .beat-info {
   display: grid;
-  gap: 0.46rem;
+  gap: 0.38rem;
   min-width: 0;
 }
 
@@ -888,7 +888,7 @@
   overflow: hidden;
   color: var(--off-white);
   font-family: var(--font-condensed);
-  font-size: clamp(1.35rem, 3vw, 1.9rem);
+  font-size: clamp(1.28rem, 2.55vw, 1.72rem);
   line-height: 1;
   text-overflow: ellipsis;
   text-transform: uppercase;
@@ -911,7 +911,7 @@
 }
 
 .beat-tags span {
-  padding: 0.24rem 0.55rem;
+  padding: 0.2rem 0.5rem;
   border: 1px solid rgba(243, 238, 230, 0.16);
   border-radius: 999px;
   color: var(--dusty-beige);
@@ -927,7 +927,7 @@
 }
 
 .beat-wave .player-waveform {
-  height: 36px;
+  height: 28px;
   border: 0;
   background: transparent;
 }
@@ -950,7 +950,7 @@
 
 .beat-meta-stack {
   display: grid;
-  gap: 0.38rem;
+  gap: 0.3rem;
   color: var(--dusty-beige);
   font-family: var(--font-display);
   font-size: 0.95rem;
@@ -960,7 +960,7 @@
 .beat-price {
   color: var(--off-white);
   font-family: var(--font-display);
-  font-size: 1.7rem;
+  font-size: 1.54rem;
 }
 
 .beat-price span {
@@ -972,7 +972,7 @@
 }
 
 .beat-buy {
-  padding: 0.78rem 0.9rem;
+  padding: 0.68rem 0.82rem;
   background: var(--muted-gold);
   color: var(--black);
   white-space: nowrap;
