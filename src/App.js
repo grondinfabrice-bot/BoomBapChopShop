@@ -8,7 +8,7 @@ import {
   subscribe,
 } from "./state/store.js?v=39";
 import { Shell } from "./components/Shell.js?v=20";
-import { HomePage } from "./pages/HomePage.js?v=26";
+import { HomePage } from "./pages/HomePage.js?v=27";
 import { BlogPage } from "./pages/BlogPage.js?v=8";
 import { AboutPage } from "./pages/AboutPage.js?v=2";
 import { LicensingPage } from "./pages/LicensingPage.js?v=5";
@@ -133,12 +133,20 @@ function handleStateChange(state, patch = {}) {
     updatePlaybackProgress(state, patch);
     return;
   }
+  if (isCataloguePatch(patch) && state.page === "home" && updateCatalogueDom(state)) {
+    return;
+  }
   render();
 }
 
 function isPlaybackProgressPatch(patch) {
   const keys = Object.keys(patch);
   return keys.length === 1 && (keys[0] === "trackProgress" || keys[0] === "featuredProgress");
+}
+
+function isCataloguePatch(patch) {
+  const keys = Object.keys(patch);
+  return keys.length > 0 && keys.every((key) => ["catalogQuery", "catalogSort", "filter"].includes(key));
 }
 
 function updatePlaybackProgress(state, patch) {
@@ -458,7 +466,7 @@ function bindPageActions() {
   });
 
   rootNode.querySelector("[data-catalog-reset]")?.addEventListener("click", () => {
-    setState({ catalogQuery: "", filter: "all", catalogSort: "recent" });
+    updateCatalogueView({ catalogQuery: "", filter: "all", catalogSort: "recent" });
     setTimeout(() => document.querySelector("#catalogue")?.scrollIntoView({ behavior: "smooth" }), 40);
   });
 
@@ -1219,6 +1227,68 @@ function requestNextTrack(direction = 1, options = {}) {
 
 function getCatalogueQueue(state) {
   return getVisibleBeats(state.beats, state);
+}
+
+function updateCatalogueDom(state) {
+  const catalogue = rootNode.querySelector("#catalogue");
+  const list = catalogue?.querySelector(".playlist-container");
+  if (!catalogue || !list) return false;
+
+  const visibleBeats = getVisibleBeats(state.beats, state);
+  const visibleIds = new Set(visibleBeats.map((beat) => String(beat.id)));
+  const rowById = new Map([...list.querySelectorAll("[data-beat-id]")].map((row) => [String(row.dataset.beatId), row]));
+
+  visibleBeats.forEach((beat, index) => {
+    const row = rowById.get(String(beat.id));
+    if (!row) return;
+    row.classList.remove("catalog-hidden");
+    row.querySelector(".beat-num")?.replaceChildren(document.createTextNode(getBeatNumberLabel(beat, index, state)));
+    list.appendChild(row);
+  });
+
+  rowById.forEach((row, id) => {
+    if (visibleIds.has(id)) return;
+    row.classList.add("catalog-hidden");
+    list.appendChild(row);
+  });
+
+  catalogue.querySelector(".section-subtitle")?.replaceChildren(
+    document.createTextNode(getCatalogueResultLabel(visibleBeats.length, state.beats.length, state))
+  );
+  catalogue.querySelector("[data-catalog-search]")?.setAttribute("value", state.catalogQuery || "");
+  const search = catalogue.querySelector("[data-catalog-search]");
+  if (search && search.value !== (state.catalogQuery || "")) search.value = state.catalogQuery || "";
+  const sort = catalogue.querySelector("[data-catalog-sort]");
+  if (sort && sort.value !== state.catalogSort) sort.value = state.catalogSort || "recent";
+  catalogue.querySelectorAll("[data-filter]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.filter === state.filter);
+  });
+  updateCatalogueEmpty(catalogue, state, visibleBeats.length > 0);
+  return true;
+}
+
+function getBeatNumberLabel(beat, index, state) {
+  return state.currentTrackId === beat.id ? "PLAY" : String(index + 1).padStart(2, "0");
+}
+
+function getCatalogueResultLabel(visibleCount, totalCount, state) {
+  if (state.catalogStatus !== "ready") return "Loading";
+  const hasSearch = String(state.catalogQuery || "").trim();
+  const hasFilter = state.filter && state.filter !== "all";
+  if (hasSearch || hasFilter) return `${visibleCount} / ${totalCount} tracks`;
+  return `${totalCount} tracks`;
+}
+
+function updateCatalogueEmpty(catalogue, state, hasResults) {
+  const empty = catalogue.querySelector(".catalogue-empty");
+  if (!empty) return;
+  empty.classList.toggle("is-hidden", hasResults);
+  const query = String(state.catalogQuery || "").trim();
+  const filter = state.filter && state.filter !== "all" ? state.filter : "";
+  const detail = [query ? `search "${query}"` : "", filter ? `tag "${filter}"` : ""].filter(Boolean).join(" and ");
+  empty.querySelector("p")?.replaceChildren(
+    document.createTextNode(detail ? `No tracks match ${detail}.` : "No tracks match the current catalogue view.")
+  );
 }
 
 function scheduleCatalogueSearch(value) {

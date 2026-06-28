@@ -2,7 +2,7 @@ import { money } from "../../utils/format.js";
 import { licenseOptions } from "../../data/licenses.js?v=3";
 import { Waveform } from "../player/Waveform.js";
 
-export function BeatRow(beat, index, state) {
+export function BeatRow(beat, index, state, options = {}) {
   const playing = state.currentTrackId === beat.id;
   const entryPrice = licenseOptions[0].price;
   const tags = beat.tags.map((tag) => `<span>${tag}</span>`).join("");
@@ -15,7 +15,7 @@ export function BeatRow(beat, index, state) {
     : `<img class="beat-cover-logo" src="./src/assets/boom-bap-chop-shop-logo.png?v=2" alt="" aria-hidden="true" loading="lazy" decoding="async" />`;
 
   return `
-    <article class="beat-row ${playing ? "playing" : ""}" data-play-track="${beat.id}">
+    <article class="beat-row ${playing ? "playing" : ""} ${options.hidden ? "catalog-hidden" : ""}" data-beat-id="${beat.id}" data-play-track="${beat.id}">
       <div class="beat-num">${playing ? "PLAY" : String(index + 1).padStart(2, "0")}</div>
       <div class="beat-art">
         <div class="beat-cover ${beat.coverUrl ? "has-cover" : ""}">

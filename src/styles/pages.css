@@ -730,6 +730,11 @@
   gap: 1rem;
 }
 
+.beat-row.catalog-hidden,
+.catalogue-empty.is-hidden {
+  display: none;
+}
+
 .catalogue-fallback {
   display: grid;
   gap: 0.9rem;

@@ -2,7 +2,7 @@ import { serviceOffers } from "../data/content.js?v=5";
 import { SectionHeader } from "../components/common/SectionHeader.js";
 import { Waveform } from "../components/player/Waveform.js";
 import { LicenseButtons } from "../components/shop/LicenseButtons.js?v=4";
-import { BeatRow } from "../components/shop/BeatRow.js?v=6";
+import { BeatRow } from "../components/shop/BeatRow.js?v=7";
 import { Sp1200Panel } from "../components/studio/Sp1200Panel.js?v=2";
 import { time } from "../utils/format.js";
 import { getFeaturedBeat } from "../utils/featured.js?v=3";
@@ -15,6 +15,8 @@ export function HomePage(state) {
   const filters = ["all", ...new Set(beats.flatMap((beat) => beat.tags || []))];
   const priorityFilters = ["all", "jazzy", "soul", "drums", "freestyle", "guitare"];
   const visibleBeats = getVisibleBeats(beats, state);
+  const orderedBeats = getVisibleBeats(beats, { ...state, catalogQuery: "", filter: "all" });
+  const visibleBeatIds = new Set(visibleBeats.map((beat) => String(beat.id)));
   const resultLabel = getResultLabel(visibleBeats.length, beats.length, state);
   const currentSeconds = Math.floor(featuredBeat.durationSeconds * state.featuredProgress);
   const featuredCover = featuredBeat.coverUrl || beats.find((beat) => beat.id === featuredBeat.storeBeatId)?.coverUrl;
@@ -108,11 +110,10 @@ export function HomePage(state) {
             </button>
           `).join("")}
         </div>
-        ${visibleBeats.length ? `
-          <div class="playlist-container">
-            ${visibleBeats.map((beat, index) => BeatRow(beat, index, state)).join("")}
-          </div>
-        ` : EmptyCatalogueResults(state)}
+        <div class="playlist-container">
+          ${orderedBeats.map((beat, index) => BeatRow(beat, index, state, { hidden: !visibleBeatIds.has(String(beat.id)) })).join("")}
+        </div>
+        ${EmptyCatalogueResults(state, visibleBeats.length > 0)}
       ` : CatalogFallback(state.catalogStatus, state.catalogMessage)}
     </section>
     <section class="shop-info-section" id="services">
@@ -164,7 +165,7 @@ function getResultLabel(visibleCount, totalCount, state) {
   return `${totalCount} tracks`;
 }
 
-function EmptyCatalogueResults(state) {
+function EmptyCatalogueResults(state, hidden = false) {
   const query = String(state.catalogQuery || "").trim();
   const filter = state.filter && state.filter !== "all" ? state.filter : "";
   const detail = [query ? `search "${escapeHtml(query)}"` : "", filter ? `tag "${escapeHtml(filter)}"` : ""]
@@ -172,7 +173,7 @@ function EmptyCatalogueResults(state) {
     .join(" and ");
 
   return `
-    <div class="catalogue-empty" role="status">
+    <div class="catalogue-empty ${hidden ? "is-hidden" : ""}" role="status">
       <span>No matching beats</span>
       <p>${detail ? `No tracks match ${detail}.` : "No tracks match the current catalogue view."}</p>
       <button class="licensing-cta" data-catalog-reset type="button">Reset search</button>
