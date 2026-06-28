@@ -8,7 +8,7 @@ export function UpsellPage(state) {
     <section class="upsell-wrap">
       <header class="upsell-hero">
         <p>Before checkout</p>
-        <h1>Need It<span>Release Ready?</span></h1>
+        <h1 aria-label="Need It Release Ready?">Need It <span>Release Ready?</span></h1>
         <small>${hasMultipleBeats ? "Planning to record on these beats? Add studio support before payment." : "Buying a beat? Add mix/mastering support for the final song."}</small>
         <div class="upsell-timer">Offer expires in <strong>${time(state.upsellSeconds)}</strong></div>
       </header>

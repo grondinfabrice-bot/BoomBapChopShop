@@ -6,13 +6,16 @@ import { BeatRow } from "../components/shop/BeatRow.js?v=6";
 import { Sp1200Panel } from "../components/studio/Sp1200Panel.js?v=2";
 import { time } from "../utils/format.js";
 import { getFeaturedBeat } from "../utils/featured.js?v=3";
+import { catalogSortOptions, getVisibleBeats } from "../utils/catalog.js";
 
 export function HomePage(state) {
-  const beats = state.beats;
+  const beats = state.beats || [];
+  const catalogReady = state.catalogStatus === "ready" && beats.length > 0;
   const featuredBeat = getFeaturedBeat(state);
   const filters = ["all", ...new Set(beats.flatMap((beat) => beat.tags || []))];
   const priorityFilters = ["all", "jazzy", "soul", "drums", "freestyle", "guitare"];
-  const visibleBeats = state.filter === "all" ? beats : beats.filter((beat) => (beat.tags || []).includes(state.filter));
+  const visibleBeats = getVisibleBeats(beats, state);
+  const resultLabel = getResultLabel(visibleBeats.length, beats.length, state);
   const currentSeconds = Math.floor(featuredBeat.durationSeconds * state.featuredProgress);
   const featuredCover = featuredBeat.coverUrl || beats.find((beat) => beat.id === featuredBeat.storeBeatId)?.coverUrl;
 
@@ -65,16 +68,18 @@ export function HomePage(state) {
             </div>
           </div>
           <p class="beat-desc">${featuredBeat.description}</p>
-          <div class="player-wrap">
-            ${Waveform(state.featuredProgress, "data-featured-wave")}
-            <div class="player-controls">
-              <button class="btn-play" data-featured-toggle type="button">${state.featuredPlaying ? "Pause" : "Play"}</button>
-              <span class="time-display">${time(currentSeconds)} / ${featuredBeat.duration}</span>
-              <label class="volume-wrap">VOL <input data-volume-control type="range" min="0" max="100" value="${Math.round(state.audioVolume * 100)}" /></label>
+          ${catalogReady ? `
+            <div class="player-wrap">
+              ${Waveform(state.featuredProgress, "data-featured-wave")}
+              <div class="player-controls">
+                <button class="btn-play" data-featured-toggle type="button">${state.featuredPlaying ? "Pause" : "Play"}</button>
+                <span class="time-display">${time(currentSeconds)} / ${featuredBeat.duration}</span>
+                <label class="volume-wrap">VOL <input data-volume-control type="range" min="0" max="100" value="${Math.round(state.audioVolume * 100)}" /></label>
+              </div>
             </div>
-          </div>
-          ${LicenseButtons(featuredBeat)}
-          <div class="price-note">Instant delivery after checkout · License included</div>
+            ${LicenseButtons(featuredBeat)}
+            <div class="price-note">Instant delivery after checkout · License included</div>
+          ` : CatalogFallback(state.catalogStatus)}
         </div>
       </div>
     </section>
@@ -82,29 +87,33 @@ export function HomePage(state) {
     ${CrateSeparator()}
     ${TestimonialsSection()}
     <section class="playlist-section" id="catalogue">
-      ${SectionHeader("Browse", "Beats", `${visibleBeats.length} tracks`)}
-      <div class="catalogue-toolbar">
-        <label class="search-box">
-          <span aria-hidden="true">⌕</span>
-          <input type="search" placeholder="Search beats, tags, moods..." />
-        </label>
-        <select aria-label="Sort catalogue">
-          <option>Most Recent</option>
-          <option>Highest BPM</option>
-          <option>Lowest Price</option>
-        </select>
-      </div>
-      <div class="filter-row">
-        <span>Tags</span>
-        ${filters.map((filter) => `
-          <button class="filter-tag ${state.filter === filter ? "active" : ""} ${priorityFilters.includes(filter) ? "" : "mobile-hidden"}" data-filter="${filter}" type="button">
-            ${filter === "all" ? "All" : filter}
-          </button>
-        `).join("")}
-      </div>
-      <div class="playlist-container">
-        ${visibleBeats.map((beat, index) => BeatRow(beat, index, state)).join("")}
-      </div>
+      ${SectionHeader("Browse", "Beats", resultLabel)}
+      ${catalogReady ? `
+        <div class="catalogue-toolbar">
+          <label class="search-box">
+            <span aria-hidden="true">⌕</span>
+            <input data-catalog-search type="search" placeholder="Search beats, tags, moods..." value="${escapeAttr(state.catalogQuery || "")}" />
+          </label>
+          <select data-catalog-sort aria-label="Sort catalogue">
+            ${catalogSortOptions.map((option) => `
+              <option value="${option.value}" ${state.catalogSort === option.value ? "selected" : ""}>${option.label}</option>
+            `).join("")}
+          </select>
+        </div>
+        <div class="filter-row">
+          <span>Tags</span>
+          ${filters.map((filter) => `
+            <button class="filter-tag ${state.filter === filter ? "active" : ""} ${priorityFilters.includes(filter) ? "" : "mobile-hidden"}" data-filter="${filter}" type="button">
+              ${filter === "all" ? "All" : filter}
+            </button>
+          `).join("")}
+        </div>
+        ${visibleBeats.length ? `
+          <div class="playlist-container">
+            ${visibleBeats.map((beat, index) => BeatRow(beat, index, state)).join("")}
+          </div>
+        ` : EmptyCatalogueResults(state)}
+      ` : CatalogFallback(state.catalogStatus, state.catalogMessage)}
     </section>
     <section class="shop-info-section" id="services">
       <div class="service-intro">
@@ -145,6 +154,56 @@ export function HomePage(state) {
       </div>
     </section>
   `;
+}
+
+function getResultLabel(visibleCount, totalCount, state) {
+  if (state.catalogStatus !== "ready") return "Loading";
+  const hasSearch = String(state.catalogQuery || "").trim();
+  const hasFilter = state.filter && state.filter !== "all";
+  if (hasSearch || hasFilter) return `${visibleCount} / ${totalCount} tracks`;
+  return `${totalCount} tracks`;
+}
+
+function EmptyCatalogueResults(state) {
+  const query = String(state.catalogQuery || "").trim();
+  const filter = state.filter && state.filter !== "all" ? state.filter : "";
+  const detail = [query ? `search "${escapeHtml(query)}"` : "", filter ? `tag "${escapeHtml(filter)}"` : ""]
+    .filter(Boolean)
+    .join(" and ");
+
+  return `
+    <div class="catalogue-empty" role="status">
+      <span>No matching beats</span>
+      <p>${detail ? `No tracks match ${detail}.` : "No tracks match the current catalogue view."}</p>
+      <button class="licensing-cta" data-catalog-reset type="button">Reset search</button>
+    </div>
+  `;
+}
+
+function CatalogFallback(status, message = "") {
+  const isLoading = status === "loading";
+  return `
+    <div class="catalogue-fallback" role="status">
+      <span>${isLoading ? "Loading catalogue" : "Catalogue unavailable"}</span>
+      <p>${message || (isLoading
+        ? "The latest beats are loading from the shop catalogue."
+        : "The beat catalogue is temporarily unavailable. Please try again in a moment or contact the shop.")}</p>
+      ${isLoading ? `<div class="catalogue-loading-bars" aria-hidden="true"><i></i><i></i><i></i></div>` : `
+        <button class="licensing-cta" data-route="contact" type="button">Contact the shop</button>
+      `}
+    </div>
+  `;
+}
+
+function escapeAttr(value = "") {
+  return escapeHtml(value).replaceAll('"', "&quot;");
+}
+
+function escapeHtml(value = "") {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
 }
 
 function CrateSeparator() {

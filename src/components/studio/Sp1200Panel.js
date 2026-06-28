@@ -3,10 +3,10 @@ export function Sp1200Panel(state) {
   const current = beats.find((beat) => beat.id === state.currentTrackId);
   const display = current
     ? [`NOW PLAYING`, current.name, `${current.bpm} BPM · ${current.key}`]
-    : [`BOOM BAP CHOP SHOP`, `CAT LOADED: ${beats.length} TRACKS`, `STATUS: READY`];
+    : [`BOOM BAP CHOP SHOP`, `CAT LOADED: ${beats.length} TRACKS`, `STATUS: ${state.catalogStatus === "ready" ? "READY" : "LOADING"}`];
 
   return `
-    <section class="sp1200-graphic" aria-label="Controleur SP-1200">
+    <section class="sp1200-graphic" aria-label="SP-1200 controller">
       <div class="sp-display">
         ${display.map((line) => `&gt; ${line}`).join("<br>")}_ 
       </div>

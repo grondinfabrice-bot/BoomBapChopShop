@@ -1,14 +1,15 @@
-import { beats } from "../data/beats.js?v=9";
 import { posts } from "../data/content.js?v=19";
 import { getLicenseById, licenseOptions } from "../data/licenses.js?v=3";
 import { uid } from "../utils/format.js";
 
 const state = {
   page: "home",
-  beats,
+  beats: [],
   posts,
   cmsReady: false,
   cmsMessage: "",
+  catalogStatus: "loading",
+  catalogMessage: "Loading the beat catalogue...",
   feedbackMessage: "",
   feedbackStatus: "",
   adminSession: null,
@@ -25,6 +26,8 @@ const state = {
   },
   cart: [],
   filter: "all",
+  catalogQuery: "",
+  catalogSort: "recent",
   currentTrackId: null,
   isPlaying: false,
   trackProgress: 0,
@@ -38,7 +41,7 @@ const state = {
   checkoutPromo: null,
   checkoutPromoCode: "",
   chatOpen: false,
-  chatLanguage: "auto",
+  chatLanguage: "en",
   chatMessages: [],
   upsellSeconds: 599,
   activePostId: "",
@@ -69,11 +72,16 @@ export function setState(patch) {
 }
 
 export function setContent({ beats: nextBeats, posts: nextPosts, settings: nextSettings }) {
+  const hasBeats = Boolean(nextBeats?.length);
   setState({
-    beats: nextBeats?.length ? nextBeats : state.beats,
+    beats: hasBeats ? nextBeats : [],
     posts: nextPosts?.length ? nextPosts : state.posts,
     siteSettings: nextSettings ? { ...state.siteSettings, ...nextSettings } : state.siteSettings,
-    cmsReady: Boolean(nextBeats?.length || nextPosts?.length),
+    cmsReady: Boolean(hasBeats || nextPosts?.length),
+    catalogStatus: hasBeats ? "ready" : "unavailable",
+    catalogMessage: hasBeats
+      ? ""
+      : "The beat catalogue is temporarily unavailable. Please try again in a moment or contact the shop.",
   });
 }
 

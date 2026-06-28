@@ -1,14 +1,14 @@
 const ratingFields = [
-  ["style", "Style visuel"],
-  ["clarity", "Clarte"],
+  ["style", "Visual style"],
+  ["clarity", "Clarity"],
   ["navigation", "Navigation"],
-  ["listening", "Ecoute des beats"],
+  ["listening", "Beat listening"],
   ["checkout", "Checkout"],
-  ["licenses", "Licences"],
+  ["licenses", "Licenses"],
   ["mobile", "Mobile"],
-  ["trust", "Confiance"],
-  ["speed", "Vitesse"],
-  ["global", "Impression globale"],
+  ["trust", "Trust"],
+  ["speed", "Speed"],
+  ["global", "Overall impression"],
 ];
 
 export function TestFeedbackPage(state) {
@@ -21,20 +21,20 @@ export function TestFeedbackPage(state) {
       <div class="feedback-head">
         <p class="feedback-kicker">Private beta test</p>
         <h1>Rate the shop</h1>
-        <p>Entre tes notes, tes bugs, et ce qui t'a bloque. Ces retours servent directement a ameliorer BOOM BAP CHOP SHOP.</p>
+        <p>Share your scores, bugs, and blockers. This feedback directly helps improve BOOM BAP CHOP SHOP.</p>
       </div>
       <form class="feedback-form ${isSending ? "is-sending" : ""} ${isSent ? "is-sent" : ""}" data-feedback-form>
         <div class="feedback-panel">
           <h2>Tester</h2>
           <div class="cgrid">
-            <label class="fg"><span class="fl">Name</span><input class="fi" name="testerName" type="text" placeholder="Ton nom" /></label>
-            <label class="fg"><span class="fl">Email</span><input class="fi" name="testerEmail" type="email" placeholder="ton@email.com" /></label>
+            <label class="fg"><span class="fl">Name</span><input class="fi" name="testerName" type="text" placeholder="Your name" /></label>
+            <label class="fg"><span class="fl">Email</span><input class="fi" name="testerEmail" type="email" placeholder="you@email.com" /></label>
             <label class="fg full"><span class="fl">Device</span><input class="fi" name="device" type="text" placeholder="iPhone 15, Samsung, laptop..." /></label>
           </div>
         </div>
 
         <div class="feedback-panel">
-          <h2>Notes /20</h2>
+          <h2>Scores /20</h2>
           <div class="feedback-ratings">
             ${ratingFields.map(([key, label]) => `
               <label>
@@ -48,18 +48,18 @@ export function TestFeedbackPage(state) {
         <div class="feedback-panel">
           <h2>Questions</h2>
           <div class="cgrid">
-            <label class="fg full"><span class="fl">Qu'est-ce qui t'a donne envie de cliquer ?</span><textarea class="fta" name="clicked"></textarea></label>
-            <label class="fg full"><span class="fl">Qu'est-ce qui t'a freine ou semble flou ?</span><textarea class="fta" name="blocked"></textarea></label>
-            <label class="fg full"><span class="fl">A quel moment tu t'es demande quoi faire ensuite ?</span><textarea class="fta" name="unclearStep"></textarea></label>
-            <label class="fg full"><span class="fl">Confiance / achat</span><textarea class="fta" name="trustNotes" placeholder="Est-ce que tu aurais confiance pour acheter ou contacter ? Pourquoi ?"></textarea></label>
-            <label class="fg full"><span class="fl">Bugs / boutons / textes bizarres</span><textarea class="fta" name="bugs"></textarea></label>
-            <label class="fg full"><span class="fl">Priorite</span><textarea class="fta" name="priority" placeholder="La chose a ameliorer en premier selon toi"></textarea></label>
-            <label class="fg full"><span class="fl">Tu acheterais un beat ici ?</span>
+            <label class="fg full"><span class="fl">What made you want to click?</span><textarea class="fta" name="clicked"></textarea></label>
+            <label class="fg full"><span class="fl">What slowed you down or felt unclear?</span><textarea class="fta" name="blocked"></textarea></label>
+            <label class="fg full"><span class="fl">When did you wonder what to do next?</span><textarea class="fta" name="unclearStep"></textarea></label>
+            <label class="fg full"><span class="fl">Trust / purchase intent</span><textarea class="fta" name="trustNotes" placeholder="Would you trust this shop enough to buy or contact? Why?"></textarea></label>
+            <label class="fg full"><span class="fl">Bugs / buttons / awkward copy</span><textarea class="fta" name="bugs"></textarea></label>
+            <label class="fg full"><span class="fl">Priority</span><textarea class="fta" name="priority" placeholder="The first thing you would improve"></textarea></label>
+            <label class="fg full"><span class="fl">Would you buy a beat here?</span>
               <select class="fse" name="wouldBuy">
-                <option value="">Choisir</option>
-                <option value="yes">Oui</option>
-                <option value="maybe">Peut-etre</option>
-                <option value="no">Non</option>
+                <option value="">Choose</option>
+                <option value="yes">Yes</option>
+                <option value="maybe">Maybe</option>
+                <option value="no">No</option>
               </select>
             </label>
           </div>

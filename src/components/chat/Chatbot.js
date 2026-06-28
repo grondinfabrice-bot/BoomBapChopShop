@@ -3,8 +3,8 @@ import { chatSuggestions } from "../../services/chatbot.js?v=2";
 export function Chatbot(state) {
   const open = Boolean(state.chatOpen);
   const messages = state.chatMessages || [];
-  const language = state.chatLanguage || "auto";
-  const suggestions = chatSuggestions.map((item) => language === "en" ? item.en : item.fr);
+  const language = "en";
+  const suggestions = chatSuggestions.map((item) => item.en);
   const iconSrc = "./src/assets/images/chop-shop-guide-icon.png?v=1";
 
   return `
@@ -18,14 +18,12 @@ export function Chatbot(state) {
           <img class="chatbot-avatar" src="${iconSrc}" alt="" aria-hidden="true" loading="lazy" decoding="async" />
           <div>
             <span>Chop Shop Guide</span>
-            <h2>${language === "en" ? "Licenses, files, support" : "Licences, fichiers, support"}</h2>
+            <h2>Licenses, files, support</h2>
           </div>
           <button data-chat-close type="button" aria-label="Close chat">x</button>
         </header>
         <div class="chatbot-tools" aria-label="Chat language">
-          <button class="${language === "auto" ? "active" : ""}" data-chat-language="auto" type="button">Auto</button>
-          <button class="${language === "fr" ? "active" : ""}" data-chat-language="fr" type="button">FR</button>
-          <button class="${language === "en" ? "active" : ""}" data-chat-language="en" type="button">EN</button>
+          <button class="active" data-chat-language="en" type="button">EN</button>
         </div>
         <div class="chatbot-log" data-chat-log>
           ${messages.length ? messages.map(ChatMessage).join("") : WelcomeMessage(language)}
@@ -34,7 +32,7 @@ export function Chatbot(state) {
           ${suggestions.map((suggestion) => `<button data-chat-suggest="${attr(suggestion)}" type="button">${suggestion}</button>`).join("")}
         </div>
         <form class="chatbot-form" data-chat-form>
-          <input data-chat-input type="text" placeholder="${language === "en" ? "Ask about licenses, delivery..." : "Pose ta question sur les licences, livraison..."}" autocomplete="off" />
+          <input data-chat-input type="text" placeholder="Ask about licenses, delivery..." autocomplete="off" />
           <button type="submit">Send</button>
         </form>
       </div>
@@ -43,9 +41,7 @@ export function Chatbot(state) {
 }
 
 function WelcomeMessage(language) {
-  const text = language === "en"
-    ? "Hi, I am the Chop Shop Guide. Ask me about licenses, prices, instant delivery, refunds, stems, exclusives, Content ID, or mix/mastering."
-    : "Salut, je suis Chop Shop Guide. Pose-moi une question sur les licences, prix, livraison instantanee, remboursements, stems, exclusives, Content ID ou mix/mastering.";
+  const text = "Hi, I am the Chop Shop Guide. Ask me about licenses, prices, instant delivery, refunds, stems, exclusives, Content ID, or mix/mastering.";
   return ChatMessage({ role: "assistant", text, actions: [] });
 }
 

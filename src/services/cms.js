@@ -282,6 +282,7 @@ function mapBeat(beat) {
     deliveryFiles: Array.isArray(beat.delivery_files) ? beat.delivery_files : [],
     published: beat.published,
     sortOrder: beat.sort_order,
+    createdAt: beat.created_at || "",
   };
 }
 
@@ -331,7 +332,7 @@ function slugify(value) {
 }
 
 function formatDate(value) {
-  return new Intl.DateTimeFormat("fr-FR", {
+  return new Intl.DateTimeFormat("en-US", {
     day: "numeric",
     month: "short",
     year: "numeric",

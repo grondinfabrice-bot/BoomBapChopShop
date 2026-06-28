@@ -20,12 +20,12 @@ export function AdminPage(state) {
       ${state.cmsMessage ? `<div class="admin-message">${state.cmsMessage}</div>` : ""}
       <form class="admin-panel admin-wide" data-admin-settings-form>
         <div class="admin-panel-head">
-          <span>Bandeau défilant</span>
+          <span>Scrolling banner</span>
           <strong>Site header</strong>
         </div>
-        <label>Texte du bandeau
+        <label>Banner text
           <textarea name="tickerText" rows="3" placeholder="MP3 / WAV / STEMS INSTANT DELIVERY | NEW DROP: SHADOW OF THE SP">${text(tickerText)}</textarea>
-          <small>Utilise le caractère | pour séparer les blocs. Un bloc sur deux sera affiché en rouge.</small>
+          <small>Use the | character to separate blocks. Every other block is displayed in red.</small>
         </label>
         <button class="admin-submit" type="submit">Save banner</button>
       </form>

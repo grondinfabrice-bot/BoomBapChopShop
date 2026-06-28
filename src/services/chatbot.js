@@ -121,7 +121,7 @@ export function detectLanguage(message = "", preferred = "auto") {
   const enSignals = ["hello", "hi", "license", "delivery", "refund", "how", "when", "what", "can", "should", "my", "files", "purchase"];
   const frScore = frSignals.filter((word) => text.includes(word)).length;
   const enScore = enSignals.filter((word) => text.includes(word)).length;
-  return enScore > frScore ? "en" : "fr";
+  return enScore >= frScore ? "en" : "fr";
 }
 
 function priceReply(language) {
@@ -535,7 +535,7 @@ function normalize(value) {
 }
 
 function formatMoney(value) {
-  return new Intl.NumberFormat("fr-FR", {
+  return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "EUR",
   }).format(value);

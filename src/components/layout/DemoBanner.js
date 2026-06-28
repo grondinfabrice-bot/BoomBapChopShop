@@ -1,8 +1,8 @@
 export function DemoBanner() {
   return `
-    <div class="demo-banner" role="status" aria-label="Site en construction">
-      <span class="demo-banner-label">Mode demo</span>
-      <span>Site en construction - catalogue, paiement et livraison en cours de finalisation.</span>
+    <div class="demo-banner" role="status" aria-label="Site in progress">
+      <span class="demo-banner-label">Demo mode</span>
+      <span>Site in progress - catalogue, payment, and delivery are being finalized.</span>
     </div>
   `;
 }

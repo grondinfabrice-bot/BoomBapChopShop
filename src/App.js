@@ -20,6 +20,7 @@ import { AccountPage } from "./pages/AccountPage.js?v=2";
 import { AdminPage } from "./pages/AdminPage.js?v=2";
 import { TestFeedbackPage } from "./pages/TestFeedbackPage.js?v=3";
 import { getFeaturedBeat } from "./utils/featured.js?v=3";
+import { getVisibleBeats } from "./utils/catalog.js";
 import {
   loadAdminContent,
   loadPublishedContent,
@@ -424,6 +425,20 @@ function bindPageActions() {
 
   rootNode.querySelectorAll("[data-filter]").forEach((button) => {
     button.addEventListener("click", () => setState({ filter: button.dataset.filter }));
+  });
+
+  rootNode.querySelector("[data-catalog-search]")?.addEventListener("input", (event) => {
+    setState({ catalogQuery: event.target.value });
+    restoreCatalogSearchFocus();
+  });
+
+  rootNode.querySelector("[data-catalog-sort]")?.addEventListener("change", (event) => {
+    setState({ catalogSort: event.target.value });
+  });
+
+  rootNode.querySelector("[data-catalog-reset]")?.addEventListener("click", () => {
+    setState({ catalogQuery: "", filter: "all", catalogSort: "recent" });
+    setTimeout(() => document.querySelector("#catalogue")?.scrollIntoView({ behavior: "smooth" }), 40);
   });
 
   rootNode.querySelectorAll("[data-play-track]").forEach((row) => {
@@ -906,10 +921,10 @@ function resolveChatShortcut(message, messages = []) {
   const menuText = String(lastAssistant).toLowerCase();
   if (!menuText.includes("tu cherches") && !menuText.includes("you looking")) return value;
   const choices = {
-    1: "Je choisis l'option 1 : licence de beat.",
-    2: "Je choisis l'option 2 : mix et mastering.",
-    3: "Je choisis l'option 3 : informations sur stems, Content ID ou exclusivite.",
-    4: "Je choisis l'option 4 : livraison ou remboursement.",
+    1: "I choose option 1: beat license.",
+    2: "I choose option 2: mix and mastering.",
+    3: "I choose option 3: stems, Content ID, or exclusivity information.",
+    4: "I choose option 4: delivery or refund.",
   };
   return choices[value] || value;
 }
@@ -959,7 +974,7 @@ function openChatService(serviceName) {
 
 function serviceActionsForChat(text, language = "auto") {
   const normalized = normalizeText(text);
-  const isEnglish = language === "en";
+  const isEnglish = language !== "fr";
   const matched = serviceOffers.filter((offer) => {
     const offerText = normalizeText(offer.name);
     if (normalized.includes(offerText)) return true;
@@ -1150,8 +1165,16 @@ function requestNextTrack(direction = 1, options = {}) {
 }
 
 function getCatalogueQueue(state) {
-  if (state.filter === "all") return state.beats;
-  return state.beats.filter((beat) => (beat.tags || []).includes(state.filter));
+  return getVisibleBeats(state.beats, state);
+}
+
+function restoreCatalogSearchFocus() {
+  const queryLength = String(getState().catalogQuery || "").length;
+  setTimeout(() => {
+    const input = rootNode.querySelector("[data-catalog-search]");
+    input?.focus();
+    input?.setSelectionRange?.(queryLength, queryLength);
+  }, 0);
 }
 
 async function hydrateCms() {
@@ -1168,7 +1191,12 @@ async function hydrateCms() {
       if (getState().page === "account") await refreshCustomerOrders();
     }
   } catch (error) {
-    setState({ cmsMessage: error.message || "CMS unavailable. Local content is still loaded." });
+    setState({
+      beats: [],
+      catalogStatus: "unavailable",
+      catalogMessage: "The beat catalogue is temporarily unavailable. Please try again in a moment or contact the shop.",
+      cmsMessage: error.message || "CMS unavailable.",
+    });
   }
 }
 

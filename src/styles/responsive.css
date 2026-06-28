@@ -324,10 +324,6 @@
     justify-self: stretch;
   }
 
-  .catalogue-toolbar select {
-    display: none;
-  }
-
   .filter-row {
     display: flex;
     flex-wrap: wrap;

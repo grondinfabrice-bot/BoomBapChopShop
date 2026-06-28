@@ -53,7 +53,7 @@ function AccountOrders(state) {
 
 function OrderCard(order) {
   const discountAmount = Number(order.discount?.discountAmount || 0);
-  const created = order.createdAt ? new Date(order.createdAt).toLocaleDateString("fr-FR") : "Recent";
+  const created = order.createdAt ? new Date(order.createdAt).toLocaleDateString("en-US") : "Recent";
   return `
     <article class="account-order">
       <div class="account-order-top">

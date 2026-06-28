@@ -1,7 +1,8 @@
 import { featuredBeat as fallbackFeaturedBeat } from "../data/beats.js?v=9";
 
 export function getFeaturedBeat(state) {
-  const beat = (state.beats || []).find((item) => (item.tags || []).includes("featured"));
+  const beats = state.beats || [];
+  const beat = beats.find((item) => (item.tags || []).includes("featured")) || beats[0];
   if (!beat) return fallbackFeaturedBeat;
 
   return {

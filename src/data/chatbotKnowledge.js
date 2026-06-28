@@ -1,7 +1,7 @@
 export const chatbotKnowledge = {
   version: "2026-06-01",
   brand: "BOOM BAP CHOP SHOP",
-  languages: ["fr", "en"],
+  languages: ["en"],
   contact: {
     email: "contact@boombapchopshop.art",
     replyTime: {
@@ -17,8 +17,8 @@ export const chatbotKnowledge = {
     en: "The beats are produced by El padre ultra instinct, with 30 years of practice and strong command of audio techniques, from beatmaking to mix/mastering workflow.",
   },
   botRules: [
-    "Answer in the customer's language when possible.",
-    "Default to French if the language is unclear.",
+    "Answer in English by default.",
+    "If the customer writes in another language, keep the answer simple and guide them back in English when possible.",
     "Do not invent prices, deadlines, legal rights, discounts, approvals, or custom terms.",
     "Do not give definitive legal advice.",
     "Do not approve special uses unless explicitly allowed.",

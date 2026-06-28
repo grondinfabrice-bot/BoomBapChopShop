@@ -20,7 +20,7 @@ type ChatPayload = {
 const SYSTEM_PROMPT = `
 You are the BOOM BAP CHOP SHOP customer support assistant.
 Help visitors understand beat licenses, prices, delivery, refunds, stems, Content ID, exclusives, and mix/mastering services.
-Answer in the customer's language when possible. If unclear, default to French.
+Answer in English by default. If the customer writes in another language, keep the answer simple and guide them back in English when possible.
 Use only the approved knowledge base below. Do not invent prices, terms, deadlines, rights, discounts, approvals, or custom exceptions.
 You are not a lawyer and must not give definitive legal advice.
 Keep answers concise, useful, and artist-friendly.
@@ -83,11 +83,6 @@ Mix + Master Express
 - Price: 199 EUR
 - Turnaround: 2 days
 - Includes: full mix + master, priority turnaround, release export check, 2 revision rounds
-In French:
-Mix + Master Express
-- Prix : 199 EUR
-- Delai : 2 jours
-- Inclus : mix + mastering complet, traitement prioritaire, release export check, 2 rounds de revision
 If asked about Premium, answer only Premium in the same list format. If asked about Essential, answer only Essential in the same list format. Only list all prices when the customer asks for all prices or pricing generally.
 Files needed for mix/mastering: vocal WAV stems, beat WAV or trackouts if available, rough mix, 1 or 2 reference tracks, artist name, song title, notes, and deadline if needed. All exported WAV files must start at bar 1 / 00:00.
 File sending process for mix/mastering: the customer should send a private download link. Recommended free option: SwissTransfer. Also accepted: WeTransfer, Google Drive, or Dropbox. The customer should send the link by replying to the order email or to contact@boombapchopshop.art. Folder checklist: vocal WAV stems, beat WAV or trackouts if available, rough mix, 1 or 2 reference tracks, artist name, song title, notes, and deadline if needed. All WAV exports must start at 00:00 / bar 1, even if there is silence before the vocal starts. Do not trim each vocal to its first word. Turnaround starts only after BOOM BAP CHOP SHOP receives and validates all usable files. If files are missing, incomplete, or unusable, the customer may be asked to resend/correct them before the clock starts.
@@ -178,10 +173,7 @@ function extractText(data: any): string {
 }
 
 function fallback(language = "auto") {
-  if (language === "en") {
-    return "I do not want to invent an unconfirmed term. For this case, contact BOOM BAP CHOP SHOP at contact@boombapchopshop.art with the details of your project.";
-  }
-  return "Je ne veux pas inventer une condition qui n'est pas confirmee. Pour ce cas, contacte BOOM BAP CHOP SHOP a contact@boombapchopshop.art avec le detail de ton projet.";
+  return "I do not want to invent an unconfirmed term. For this case, contact BOOM BAP CHOP SHOP at contact@boombapchopshop.art with the details of your project.";
 }
 
 function json(body: unknown, status = 200) {
