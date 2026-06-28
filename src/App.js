@@ -53,6 +53,7 @@ let previousPage;
 let motionObserver;
 let motionPage = "";
 let lastAudioProgressRender = 0;
+let catalogSearchTimer;
 const revealedMotionKeys = new Set();
 const audioPlayer = new Audio();
 audioPlayer.preload = "metadata";
@@ -449,7 +450,7 @@ function bindPageActions() {
   });
 
   rootNode.querySelector("[data-catalog-search]")?.addEventListener("input", (event) => {
-    updateCatalogueView({ catalogQuery: event.target.value }, { restoreSearchFocus: true });
+    scheduleCatalogueSearch(event.target.value);
   });
 
   rootNode.querySelector("[data-catalog-sort]")?.addEventListener("change", (event) => {
@@ -1218,6 +1219,14 @@ function requestNextTrack(direction = 1, options = {}) {
 
 function getCatalogueQueue(state) {
   return getVisibleBeats(state.beats, state);
+}
+
+function scheduleCatalogueSearch(value) {
+  clearTimeout(catalogSearchTimer);
+  catalogSearchTimer = setTimeout(() => {
+    if (getState().catalogQuery === value) return;
+    updateCatalogueView({ catalogQuery: value }, { restoreSearchFocus: true });
+  }, 160);
 }
 
 function updateCatalogueView(patch, options = {}) {
