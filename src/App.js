@@ -445,16 +445,15 @@ function bindPageActions() {
   });
 
   rootNode.querySelectorAll("[data-filter]").forEach((button) => {
-    button.addEventListener("click", () => setState({ filter: button.dataset.filter }));
+    button.addEventListener("click", () => updateCatalogueView({ filter: button.dataset.filter }));
   });
 
   rootNode.querySelector("[data-catalog-search]")?.addEventListener("input", (event) => {
-    setState({ catalogQuery: event.target.value });
-    restoreCatalogSearchFocus();
+    updateCatalogueView({ catalogQuery: event.target.value }, { restoreSearchFocus: true });
   });
 
   rootNode.querySelector("[data-catalog-sort]")?.addEventListener("change", (event) => {
-    setState({ catalogSort: event.target.value });
+    updateCatalogueView({ catalogSort: event.target.value });
   });
 
   rootNode.querySelector("[data-catalog-reset]")?.addEventListener("click", () => {
@@ -1221,12 +1220,31 @@ function getCatalogueQueue(state) {
   return getVisibleBeats(state.beats, state);
 }
 
-function restoreCatalogSearchFocus() {
+function updateCatalogueView(patch, options = {}) {
+  const scrollX = window.scrollX || document.documentElement.scrollLeft || 0;
+  const scrollY = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+  setState(patch);
+  restoreScrollPosition(scrollX, scrollY);
+  if (options.restoreSearchFocus) restoreCatalogSearchFocus(scrollX, scrollY);
+}
+
+function restoreScrollPosition(scrollX, scrollY) {
+  setTimeout(() => {
+    window.scrollTo?.(scrollX, scrollY);
+  }, 0);
+}
+
+function restoreCatalogSearchFocus(scrollX = window.scrollX || 0, scrollY = window.scrollY || 0) {
   const queryLength = String(getState().catalogQuery || "").length;
   setTimeout(() => {
     const input = rootNode.querySelector("[data-catalog-search]");
-    input?.focus();
+    try {
+      input?.focus?.({ preventScroll: true });
+    } catch {
+      input?.focus?.();
+    }
     input?.setSelectionRange?.(queryLength, queryLength);
+    window.scrollTo?.(scrollX, scrollY);
   }, 0);
 }
 
