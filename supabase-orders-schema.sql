@@ -90,13 +90,6 @@ alter table public.orders enable row level security;
 alter table public.promo_codes enable row level security;
 
 drop policy if exists "Public can create demo orders" on public.orders;
-create policy "Public can create demo orders"
-on public.orders for insert
-with check (
-  status = 'demo'
-  and customer_email is not null
-  and jsonb_array_length(items) > 0
-);
 
 drop policy if exists "Admin orders access" on public.orders;
 create policy "Admin orders access"

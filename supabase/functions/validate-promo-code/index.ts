@@ -140,12 +140,14 @@ async function buildTrustedOrderItems({
 
   for (const item of items) {
     if (item.type === "service") {
+      const service = getServiceOffer(item.name || "");
+      if (!service) throw new Error("Invalid studio service in promo check.");
       trustedItems.push({
-        name: item.name || "Studio service",
-        license: item.license || "Mix + Mastering",
-        price: Number(item.price || 0),
-        includes: item.includes || [],
-        serviceFor: item.serviceFor || "",
+        name: service.name,
+        license: "Mix + Mastering",
+        price: service.price,
+        includes: service.includes,
+        serviceFor: String(item.serviceFor || "").trim().slice(0, 160),
         type: "service",
       });
       continue;
@@ -216,6 +218,15 @@ function getLicense(id: string) {
   return LICENSES.find((license) => license.id === id) || null;
 }
 
+function getServiceOffer(name: string) {
+  const normalized = normalizeServiceName(name);
+  return SERVICE_OFFERS.find((offer) => normalizeServiceName(offer.name) === normalized) || null;
+}
+
+function normalizeServiceName(value: string) {
+  return String(value || "").toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+}
+
 function unique(values: string[]) {
   return [...new Set(values)];
 }
@@ -254,5 +265,23 @@ const LICENSES = [
     name: "Exclusive",
     price: 199,
     includes: ["WAV and MP3", "Stems if available", "Exclusive license agreement", "Beat marked as sold"],
+  },
+];
+
+const SERVICE_OFFERS = [
+  {
+    name: "Mix + Master Essential",
+    price: 99,
+    includes: ["Vocal mix", "EQ / compression / space", "Final master WAV + MP3", "1 revision round"],
+  },
+  {
+    name: "Mix + Master Premium",
+    price: 149,
+    includes: ["Full vocal mix", "Streaming-ready master", "Clean + performance versions", "2 revision rounds"],
+  },
+  {
+    name: "Mix + Master Express",
+    price: 199,
+    includes: ["Priority turnaround", "Full mix + master", "Release export check", "2 revision rounds"],
   },
 ];
