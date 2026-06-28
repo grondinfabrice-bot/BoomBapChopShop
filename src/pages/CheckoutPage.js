@@ -16,7 +16,7 @@ export function CheckoutPage(state) {
   return `
     <section class="checkout-wrap">
       <h1 class="checkout-title">Check<span>Out</span></h1>
-      <p class="checkout-sub">Secure checkout · Instant delivery</p>
+      <p class="checkout-sub">Secure checkout · Verified order total · Email delivery</p>
       <div class="order-summary">
         <h2>Order summary</h2>
         ${state.cart.map((item) => `
@@ -53,7 +53,7 @@ export function CheckoutPage(state) {
         <ul>
           <li>${hasService ? "Mix + mastering order details and file preparation instructions" : "Audio files matching each selected license"}</li>
           <li>${hasService ? "A clear follow-up to send vocal stems, references, and release notes" : "License agreement summary and final contract document"}</li>
-          <li>${hasService ? "Final WAV + MP3 exports after the session is completed" : "Instant download link after payment"}</li>
+          <li>${hasService ? "Final WAV + MP3 exports after the session is completed" : "Private download links after payment"}</li>
           <li>Receipt sent to your email</li>
         </ul>
       </div>
@@ -67,7 +67,7 @@ export function CheckoutPage(state) {
         <div>
           <span>Secure Stripe checkout</span>
           <strong>Card details are entered on Stripe's encrypted payment page.</strong>
-          <p>After payment, you will return here and receive your delivery email automatically.</p>
+          <p>Your order total is verified before Stripe opens. After payment, the delivery email is sent automatically.</p>
         </div>
         <div class="card-icons" aria-label="Accepted payment methods"><span>VISA</span><span>MC</span><span>AMEX</span></div>
       </div>
@@ -79,7 +79,7 @@ export function CheckoutPage(state) {
         </span>
       </label>
       <button class="btn-pay" data-pay type="button">Continue to secure payment</button>
-      <p class="pay-secure">Payment handled by Stripe. Card data is never stored by BOOM BAP CHOP SHOP.</p>
+      <p class="pay-secure">Payment handled by Stripe. Card data is never stored by BOOM BAP CHOP SHOP. Support replies within 24-48 business hours.</p>
     </section>
   `;
 }

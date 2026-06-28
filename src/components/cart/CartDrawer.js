@@ -20,7 +20,7 @@ export function CartDrawer(state) {
             <strong>${money(total)}</strong>
           </div>
           <button class="btn-checkout" data-checkout type="button">Checkout</button>
-          <div class="cart-secure">Order summary · Delivery details · Final files included</div>
+          <div class="cart-secure">Secure Stripe payment · License included · Email delivery</div>
         </footer>
       </aside>
     </div>

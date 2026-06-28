@@ -78,7 +78,7 @@ export function HomePage(state) {
               </div>
             </div>
             ${LicenseButtons(featuredBeat)}
-            <div class="price-note">Instant delivery after checkout · License included</div>
+            <div class="price-note">Secure Stripe checkout · License included · Private delivery links</div>
           ` : CatalogFallback(state.catalogStatus)}
         </div>
       </div>
@@ -143,7 +143,7 @@ export function HomePage(state) {
         <h2>Clear options for every release.</h2>
       </div>
       <div class="licensing-copy">
-        <p>Start with MP3 Basic, upgrade to WAV + stems when you need more control, or lock an exclusive for your campaign. Every purchase keeps the checkout simple and delivery immediate.</p>
+        <p>Start with MP3 Basic, upgrade to WAV + stems when you need more control, or lock an exclusive for your campaign. Every purchase keeps the checkout simple, the license documented, and the delivery email clear.</p>
         <div class="licensing-mini-list" aria-label="License options">
           <span>MP3 Basic</span>
           <span>WAV Lease</span>

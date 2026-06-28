@@ -7,14 +7,14 @@ import {
   setState,
   subscribe,
 } from "./state/store.js?v=39";
-import { Shell } from "./components/Shell.js?v=19";
-import { HomePage } from "./pages/HomePage.js?v=25";
+import { Shell } from "./components/Shell.js?v=20";
+import { HomePage } from "./pages/HomePage.js?v=26";
 import { BlogPage } from "./pages/BlogPage.js?v=8";
 import { AboutPage } from "./pages/AboutPage.js?v=2";
 import { LicensingPage } from "./pages/LicensingPage.js?v=5";
 import { ContactPage } from "./pages/ContactPage.js?v=7";
 import { UpsellPage } from "./pages/UpsellPage.js?v=4";
-import { CheckoutPage } from "./pages/CheckoutPage.js?v=9";
+import { CheckoutPage } from "./pages/CheckoutPage.js?v=10";
 import { ThanksPage } from "./pages/ThanksPage.js?v=6";
 import { AccountPage } from "./pages/AccountPage.js?v=2";
 import { AdminPage } from "./pages/AdminPage.js?v=2";

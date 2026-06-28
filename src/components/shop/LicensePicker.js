@@ -41,6 +41,7 @@ export function LicensePicker(state) {
             </article>
           `).join("")}
         </div>
+        <p class="license-picker-note">Each beat license covers one final song. Checkout includes the license document and delivery details by email.</p>
         <button class="license-learn-more" data-route="licensing" type="button">Compare all licenses</button>
       </aside>
     </div>
