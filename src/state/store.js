@@ -1,4 +1,4 @@
-import { posts } from "../data/content.js?v=19";
+import { posts } from "../data/content.js?v=20";
 import { getLicenseById, licenseOptions } from "../data/licenses.js?v=3";
 import { uid } from "../utils/format.js";
 

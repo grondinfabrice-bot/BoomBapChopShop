@@ -60,7 +60,6 @@ export const posts = [
     category: "Production",
     tags: ["drums", "vocal space", "arrangement"],
     title: "Drums that knock without eating the vocal",
-    imageUrl: "./images/blog/drums-that-knock-vocal-space.jpg",
     excerpt:
       "A boom bap beat needs weight, but the artist still needs room. Kick, snare, bass, and vocal space have to move together.",
     body: [
@@ -82,7 +81,6 @@ export const posts = [
     category: "Mixage",
     tags: ["mixing", "mastering", "grit"],
     title: "Mixing and mastering rap without losing the grit",
-    imageUrl: "./images/blog/mixing-mastering-rap-grit.jpg",
     excerpt: "Clean does not have to mean sterile. The right finish should translate everywhere and still keep the dirt.",
     body: [
       "A lot of underground rap loses its feeling when the final mix gets too polished. The problem is not clarity. Clarity is useful. The problem is cleaning so much that the record forgets where it came from. A dusty sample, a rough drum break, a little noise before the loop drops: those details can be part of the emotion, not mistakes to erase.",
@@ -104,7 +102,6 @@ export const posts = [
     category: "Culture",
     tags: ["breakbeats", "drums", "sampling"],
     title: "Three drum breaks that shaped boom bap",
-    imageUrl: "./images/blog/three-drum-breaks-boom-bap.jpg",
     excerpt:
       "Funky Drummer, Impeach the President, and Synthetic Substitution are not just famous breaks. They helped define how rap drums move.",
     body: [
@@ -128,7 +125,6 @@ export const posts = [
     category: "Culture",
     tags: ["samples", "vinyl", "texture"],
     title: "Why sample-based beats still feel different",
-    imageUrl: "./images/blog/sample-based-beats-feel-different.jpg",
     excerpt: "The imperfections, air, timing, and tone of a sample can give a track a memory before the first verse starts.",
     body: [
       "Sample-based production is not only about nostalgia. It is about finding a moment that already has emotion inside it: a chord, a room sound, a breath before the band comes in, a crackle between notes, a strange pocket that no grid would naturally create. Before the drums even enter, the record already carries a little history.",
@@ -150,7 +146,6 @@ export const posts = [
     category: "Business",
     tags: ["licensing", "release", "artist prep"],
     title: "What to check before releasing on a leased beat",
-    imageUrl: "./images/blog/leased-beat-release-checklist.jpg",
     excerpt: "A simple pre-release checklist: license terms, files, credits, artwork, split notes, and version control.",
     body: [
       "Before a track leaves the studio, the boring details can save the project. A leased beat can be simple to use, but the artist still needs to know what was bought, what is allowed, and what files are ready. The goal is not to slow the release down. The goal is to avoid problems after the song is already online.",
@@ -172,7 +167,6 @@ export const posts = [
     category: "Technique",
     tags: ["references", "custom beats", "mix notes"],
     title: "How reference tracks help a custom beat or mix",
-    imageUrl: "./images/blog/reference-tracks-custom-beat-mix.jpg",
     excerpt: "References are not about copying. They help define energy, tone, space, and the kind of record you want to finish.",
     body: [
       "A reference track gives direction faster than a long paragraph. In a few seconds, it can explain drum swing, vocal level, bass weight, sample mood, brightness, darkness, space, and energy. The point is not to copy another record. The point is to stop guessing what words like gritty, warm, dark, clean, aggressive, or smooth mean to each person in the room.",
@@ -194,7 +188,6 @@ export const posts = [
     category: "Production",
     tags: ["arrangement", "hooks", "song structure"],
     title: "Beat arrangement: leaving space for the song",
-    imageUrl: "./images/blog/beat-arrangement-song-space.jpg",
     excerpt: "Loops are the foundation, but arrangement turns the beat into a record artists can actually write to.",
     body: [
       "A strong loop can make someone start writing immediately, but a full song needs more than a loop. It needs movement, tension, release, and small changes that tell the artist where to breathe. Arrangement is the difference between a beat that sounds good for thirty seconds and a record that can carry verses, hooks, ad-libs, and emotion.",

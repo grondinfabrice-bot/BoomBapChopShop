@@ -6,7 +6,7 @@ import {
   setContent,
   setState,
   subscribe,
-} from "./state/store.js?v=38";
+} from "./state/store.js?v=39";
 import { Shell } from "./components/Shell.js?v=19";
 import { HomePage } from "./pages/HomePage.js?v=25";
 import { BlogPage } from "./pages/BlogPage.js?v=8";
