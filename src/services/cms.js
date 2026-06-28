@@ -194,6 +194,59 @@ export async function saveTestFeedback(payload) {
   if (!response.ok) throw new Error(await response.text());
 }
 
+export async function saveNewsletterSignup(email) {
+  if (!isCmsConfigured()) throw new Error("Supabase is not configured yet.");
+  const normalizedEmail = String(email || "").trim().toLowerCase();
+  if (!isValidEmail(normalizedEmail)) throw new Error("Enter a valid email.");
+
+  const config = window.BBCS_CONFIG;
+  const response = await fetch(`${config.supabaseUrl}/rest/v1/newsletter_subscribers`, {
+    method: "POST",
+    headers: {
+      apikey: config.supabaseAnonKey,
+      Authorization: `Bearer ${config.supabaseAnonKey}`,
+      "Content-Type": "application/json",
+      Prefer: "return=minimal",
+    },
+    body: JSON.stringify({
+      email: normalizedEmail,
+      source: "footer",
+      page_url: window.location.href,
+      user_agent: navigator.userAgent || "",
+    }),
+  });
+
+  if (response.ok) return { saved: true, duplicate: false };
+
+  const message = await response.text();
+  if (response.status === 409 || message.includes("23505") || message.toLowerCase().includes("duplicate")) {
+    return { saved: true, duplicate: true };
+  }
+
+  throw new Error(message || "Newsletter signup unavailable.");
+}
+
+export async function sendContactMessage(payload) {
+  if (!isCmsConfigured()) throw new Error("Supabase is not configured yet.");
+
+  const supabase = await getSupabase();
+  if (!supabase?.functions) throw new Error("Supabase functions are not available.");
+
+  const { data, error } = await supabase.functions.invoke("send-contact-email", {
+    body: {
+      artistName: String(payload.artistName || "").trim(),
+      email: String(payload.email || "").trim().toLowerCase(),
+      subject: String(payload.subject || "").trim(),
+      message: String(payload.message || "").trim(),
+      website: String(payload.website || "").trim(),
+      pageUrl: window.location.href,
+    },
+  });
+
+  if (error) throw await enrichFunctionError(error);
+  return data || { sent: true };
+}
+
 async function loadSettingsSafe(supabase) {
   const result = await supabase.from("site_settings").select("key,value");
   if (result.error) {
@@ -206,6 +259,23 @@ async function loadSettingsSafe(supabase) {
 function isMissingSettingsTable(error) {
   const message = String(error?.message || "");
   return error?.code === "42P01" || error?.code === "PGRST205" || message.includes("site_settings");
+}
+
+async function enrichFunctionError(error) {
+  const response = error?.context;
+  if (!response?.clone) return error;
+  try {
+    const payload = await response.clone().json();
+    const message = typeof payload?.error === "string"
+      ? payload.error
+      : JSON.stringify(payload?.error || payload);
+    const enriched = new Error(message || error.message || "Contact email unavailable.");
+    enriched.originalError = error;
+    enriched.status = response.status;
+    return enriched;
+  } catch {
+    return error;
+  }
 }
 
 function mapSettings(rows = []) {
@@ -320,6 +390,10 @@ function compact(object) {
 function emptyToNull(value) {
   const text = String(value || "").trim();
   return text || null;
+}
+
+function isValidEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || ""));
 }
 
 function slugify(value) {

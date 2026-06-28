@@ -1,5 +1,9 @@
-export function Footer() {
+export function Footer(state = {}) {
   const logoSrc = "./src/assets/boom-bap-chop-shop-logo.png?v=2";
+  const newsletterSending = state.newsletterStatus === "sending";
+  const newsletterSent = state.newsletterStatus === "sent";
+  const newsletterMessage = state.newsletterMessage || "";
+  const newsletterClass = state.newsletterStatus ? ` ${state.newsletterStatus}` : "";
 
   return `
     <footer class="site-footer">
@@ -30,9 +34,10 @@ export function Footer() {
           <span>Join the Chop List</span>
           <p>New beats, crate notes, and studio offers. No spam.</p>
           <div>
-            <input data-newsletter-email type="email" placeholder="Email address" aria-label="Email address" />
-            <button type="submit">Subscribe</button>
+            <input data-newsletter-email type="email" placeholder="Email address" aria-label="Email address" ${newsletterSent ? "disabled" : ""} />
+            <button type="submit" ${newsletterSending || newsletterSent ? "disabled" : ""}>${newsletterSending ? "Joining..." : newsletterSent ? "Joined" : "Subscribe"}</button>
           </div>
+          ${newsletterMessage ? `<small class="newsletter-message${newsletterClass}" aria-live="polite">${newsletterMessage}</small>` : ""}
         </form>
       </div>
       <p class="footer-bottom">© 2026 <span>BOOM BAP CHOP SHOP</span> · AUTHENTIC SOUNDS · CLASSIC VIBES · BUILT TO LAST</p>

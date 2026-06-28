@@ -1,4 +1,4 @@
-import { getSupabase, isCmsConfigured } from "./cms.js?v=6";
+import { getSupabase, isCmsConfigured } from "./cms.js";
 
 export async function askAiChatbot({ message, language = "auto", history = [] }) {
   if (!isCmsConfigured()) throw new Error("Supabase is not configured.");

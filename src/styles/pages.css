@@ -2135,12 +2135,48 @@
   resize: vertical;
 }
 
+.contact-honeypot {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
 .form-submit,
 .btn-back {
   justify-self: start;
   padding: 0.9rem 2.4rem;
   background: var(--muted-gold);
   color: var(--black);
+}
+
+.form-submit:disabled,
+.contact-form input:disabled,
+.contact-form select:disabled,
+.contact-form textarea:disabled {
+  cursor: not-allowed;
+  opacity: 0.68;
+}
+
+.contact-message {
+  margin: 0;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(30, 30, 30, 0.16);
+  border-radius: 6px;
+  background: rgba(243, 238, 230, 0.72);
+  color: var(--charcoal);
+  font-weight: 800;
+}
+
+.contact-message.sent {
+  border-color: rgba(73, 126, 91, 0.36);
+  color: #2f6f42;
+}
+
+.contact-message.error {
+  border-color: rgba(142, 59, 46, 0.34);
+  color: var(--deep-brick);
 }
 
 .contact-info {

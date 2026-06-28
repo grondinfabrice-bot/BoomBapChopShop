@@ -1,4 +1,4 @@
-import { isCmsConfigured } from "../services/cms.js?v=7";
+import { isCmsConfigured } from "../services/cms.js";
 
 export function AdminPage(state) {
   if (!isCmsConfigured()) return AdminSetup();

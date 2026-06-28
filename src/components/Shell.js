@@ -21,6 +21,6 @@ export function Shell(pageHtml, state) {
     ${MiniPlayer(state)}
     ${Chatbot(state)}
     ${Toast(state.toast, state)}
-    ${Footer()}
+    ${Footer(state)}
   `;
 }

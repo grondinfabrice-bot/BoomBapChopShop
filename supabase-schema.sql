@@ -132,6 +132,28 @@ create table if not exists public.test_feedback (
 
 create index if not exists test_feedback_created_at_idx on public.test_feedback (created_at desc);
 
+create table if not exists public.newsletter_subscribers (
+  id uuid primary key default gen_random_uuid(),
+  email text not null unique,
+  source text not null default 'footer',
+  status text not null default 'subscribed',
+  page_url text,
+  user_agent text,
+  subscribed_at timestamptz not null default now(),
+  updated_at timestamptz not null default now(),
+  constraint newsletter_subscribers_email_check check (
+    email = lower(email)
+    and position('@' in email) > 1
+    and position('.' in split_part(email, '@', 2)) > 1
+  ),
+  constraint newsletter_subscribers_status_check check (
+    status in ('subscribed', 'unsubscribed')
+  )
+);
+
+create index if not exists newsletter_subscribers_created_at_idx
+on public.newsletter_subscribers (subscribed_at desc);
+
 alter table public.test_feedback alter column tester_name drop not null;
 alter table public.test_feedback alter column tester_email drop not null;
 alter table public.test_feedback alter column device drop not null;
@@ -158,6 +180,9 @@ end $$;
 grant insert on public.test_feedback to anon;
 grant insert on public.test_feedback to authenticated;
 grant select, update, delete on public.test_feedback to authenticated;
+grant insert on public.newsletter_subscribers to anon;
+grant insert on public.newsletter_subscribers to authenticated;
+grant select, update, delete on public.newsletter_subscribers to authenticated;
 
 create index if not exists orders_customer_email_idx on public.orders (customer_email);
 create index if not exists orders_status_idx on public.orders (status);
@@ -183,6 +208,7 @@ alter table public.site_settings enable row level security;
 alter table public.orders enable row level security;
 alter table public.promo_codes enable row level security;
 alter table public.test_feedback enable row level security;
+alter table public.newsletter_subscribers enable row level security;
 
 drop policy if exists "Published beats are readable" on public.beats;
 create policy "Published beats are readable"
@@ -330,6 +356,31 @@ with check (jsonb_typeof(ratings) = 'object');
 drop policy if exists "Admin test feedback access" on public.test_feedback;
 create policy "Admin test feedback access"
 on public.test_feedback for all
+using (
+  exists (
+    select 1 from public.admin_users
+    where admin_users.user_id = auth.uid()
+  )
+)
+with check (
+  exists (
+    select 1 from public.admin_users
+    where admin_users.user_id = auth.uid()
+  )
+);
+
+drop policy if exists "Public can subscribe to newsletter" on public.newsletter_subscribers;
+create policy "Public can subscribe to newsletter"
+on public.newsletter_subscribers for insert
+with check (
+  status = 'subscribed'
+  and email = lower(email)
+  and position('@' in email) > 1
+);
+
+drop policy if exists "Admin newsletter subscribers access" on public.newsletter_subscribers;
+create policy "Admin newsletter subscribers access"
+on public.newsletter_subscribers for all
 using (
   exists (
     select 1 from public.admin_users

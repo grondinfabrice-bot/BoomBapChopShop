@@ -1,4 +1,4 @@
-import { isCmsConfigured } from "../services/cms.js?v=7";
+import { isCmsConfigured } from "../services/cms.js";
 import { money } from "../utils/format.js";
 
 export function AccountPage(state) {

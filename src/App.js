@@ -6,13 +6,13 @@ import {
   setContent,
   setState,
   subscribe,
-} from "./state/store.js?v=37";
+} from "./state/store.js?v=38";
 import { Shell } from "./components/Shell.js?v=19";
 import { HomePage } from "./pages/HomePage.js?v=25";
 import { BlogPage } from "./pages/BlogPage.js?v=8";
 import { AboutPage } from "./pages/AboutPage.js?v=2";
 import { LicensingPage } from "./pages/LicensingPage.js?v=5";
-import { ContactPage } from "./pages/ContactPage.js?v=6";
+import { ContactPage } from "./pages/ContactPage.js?v=7";
 import { UpsellPage } from "./pages/UpsellPage.js?v=4";
 import { CheckoutPage } from "./pages/CheckoutPage.js?v=9";
 import { ThanksPage } from "./pages/ThanksPage.js?v=6";
@@ -25,12 +25,14 @@ import {
   loadAdminContent,
   loadPublishedContent,
   saveBeat,
+  saveNewsletterSignup,
   savePost,
   saveSiteSettings,
   saveTestFeedback,
+  sendContactMessage,
   signInAdmin,
   signOutAdmin,
-} from "./services/cms.js?v=7";
+} from "./services/cms.js";
 import { createCheckoutSession, validatePromoCode } from "./services/orders.js?v=6";
 import {
   getCustomerSession,
@@ -343,11 +345,30 @@ function bindGlobalActions() {
     restartCurrentTrack();
   });
 
-  rootNode.querySelector("[data-newsletter]")?.addEventListener("submit", (event) => {
+  rootNode.querySelector("[data-newsletter]")?.addEventListener("submit", async (event) => {
     event.preventDefault();
     const email = rootNode.querySelector("[data-newsletter-email]")?.value.trim() || "";
-    if (!email.includes("@")) return toast("Enter a valid email");
-    toast("Welcome to the Chop List");
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setState({ newsletterStatus: "error", newsletterMessage: "Enter a valid email." });
+      return toast("Enter a valid email");
+    }
+
+    setState({ newsletterStatus: "sending", newsletterMessage: "Joining the Chop List..." });
+    try {
+      const result = await saveNewsletterSignup(email);
+      setState({
+        newsletterStatus: "sent",
+        newsletterMessage: result.duplicate ? "You are already on the Chop List." : "Welcome to the Chop List.",
+      });
+      toast(result.duplicate ? "Already on the Chop List" : "Welcome to the Chop List");
+    } catch (error) {
+      console.error(error);
+      setState({
+        newsletterStatus: "error",
+        newsletterMessage: "Signup unavailable right now. Contact contact@boombapchopshop.art.",
+      });
+      toast("Newsletter signup unavailable");
+    }
   });
 
   rootNode.querySelector("[data-chat-toggle]")?.addEventListener("click", () => {
@@ -560,8 +581,40 @@ function bindPageActions() {
     }
   });
 
-  rootNode.querySelector("[data-contact-send]")?.addEventListener("click", () => {
-    toast("Message sent. Reply within 48h.");
+  rootNode.querySelector("[data-contact-form]")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const payload = {
+      artistName: formData.get("artistName"),
+      email: formData.get("email"),
+      subject: formData.get("subject"),
+      message: formData.get("message"),
+      website: formData.get("website"),
+    };
+
+    const email = String(payload.email || "").trim();
+    const message = String(payload.message || "").trim();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      setState({ contactStatus: "error", contactMessage: "Enter a valid email address." });
+      return;
+    }
+    if (message.length < 10) {
+      setState({ contactStatus: "error", contactMessage: "Add a few more details so I can answer properly." });
+      return;
+    }
+
+    setState({ contactStatus: "sending", contactMessage: "Sending your message..." });
+    try {
+      await sendContactMessage(payload);
+      form.reset();
+      setState({ contactStatus: "sent", contactMessage: "Message sent. Reply within 24-48 business hours." });
+      toast("Message sent.");
+    } catch (error) {
+      console.error(error);
+      setState({ contactStatus: "error", contactMessage: "Message unavailable right now. Email contact@boombapchopshop.art directly." });
+      toast("Message unavailable right now.");
+    }
   });
 
   rootNode.querySelectorAll("[data-blog-post]").forEach((item) => {
