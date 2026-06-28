@@ -16,7 +16,7 @@ import { ContactPage } from "./pages/ContactPage.js?v=7";
 import { UpsellPage } from "./pages/UpsellPage.js?v=4";
 import { CheckoutPage } from "./pages/CheckoutPage.js?v=10";
 import { ThanksPage } from "./pages/ThanksPage.js?v=6";
-import { AccountPage } from "./pages/AccountPage.js?v=2";
+import { AccountPage } from "./pages/AccountPage.js?v=3";
 import { AdminPage } from "./pages/AdminPage.js?v=2";
 import { TestFeedbackPage } from "./pages/TestFeedbackPage.js?v=3";
 import { getFeaturedBeat } from "./utils/featured.js?v=3";
@@ -37,10 +37,13 @@ import { createCheckoutSession, validatePromoCode } from "./services/orders.js?v
 import {
   getCustomerSession,
   loadCustomerOrders,
+  onCustomerAuthStateChange,
+  sendPasswordReset,
   signInCustomer,
   signOutCustomer,
   signUpCustomer,
-} from "./services/account.js?v=2";
+  updateCustomerPassword,
+} from "./services/account.js?v=4";
 import { buildCatalogSearchReply, buildChatReply } from "./services/chatbot.js?v=2";
 import { askAiChatbot } from "./services/aiChat.js?v=1";
 import { serviceOffers } from "./data/content.js?v=5";
@@ -54,6 +57,7 @@ let motionObserver;
 let motionPage = "";
 let lastAudioProgressRender = 0;
 let catalogSearchTimer;
+let accountAuthUnsubscribe;
 const revealedMotionKeys = new Set();
 const audioPlayer = new Audio();
 audioPlayer.preload = "metadata";
@@ -75,15 +79,31 @@ const pages = {
 export function App(root) {
   rootNode = root;
   hydrateCheckoutReturn();
+  hydratePasswordRecoveryRoute();
   hydrateHashRoute();
   if (window.location.hash === "#admin") setState({ page: "admin" });
   window.addEventListener("hashchange", () => {
     hydrateHashRoute();
   });
+  listenForPasswordRecovery();
   subscribe(handleStateChange);
   render();
   startClock();
   hydrateCms();
+}
+
+function hydratePasswordRecoveryRoute() {
+  if (!isPasswordRecoveryUrl()) return;
+  setState({
+    page: "account",
+    accountMode: "new-password",
+    accountMessage: "Choose a new password.",
+  });
+}
+
+function isPasswordRecoveryUrl() {
+  const currentUrl = `${window.location.search || ""}&${window.location.hash || ""}`;
+  return currentUrl.includes("type=recovery") || currentUrl.includes("auth=recovery");
 }
 
 function hydrateHashRoute() {
@@ -107,6 +127,30 @@ function hydrateCheckoutReturn() {
       cart: [],
       cartOpen: false,
     });
+  }
+}
+
+async function listenForPasswordRecovery() {
+  if (accountAuthUnsubscribe) return;
+  try {
+    accountAuthUnsubscribe = await onCustomerAuthStateChange((event, session) => {
+      if (event === "PASSWORD_RECOVERY") {
+        setState({
+          page: "account",
+          accountMode: "new-password",
+          customerSession: session,
+          accountMessage: "Choose a new password.",
+        });
+        if (window.location.hash !== "#account") {
+          history.replaceState(null, "", `${window.location.pathname}${window.location.search}#account`);
+        }
+      }
+      if (event === "SIGNED_IN" && session) {
+        setState({ customerSession: session });
+      }
+    });
+  } catch (error) {
+    console.warn("Password recovery listener unavailable.", error);
   }
 }
 
@@ -701,6 +745,47 @@ function bindPageActions() {
       if (getState().customerSession) await refreshCustomerOrders();
     } catch (error) {
       setState({ accountMessage: error.message || "Account action failed." });
+    }
+  });
+
+  rootNode.querySelector("[data-account-reset]")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const email = String(form.get("email") || "").trim();
+    if (!email.includes("@")) return toast("Enter a valid email");
+    try {
+      await sendPasswordReset(email);
+      setState({
+        accountMode: "signin",
+        accountMessage: "Reset link sent. Check your email, then come back here to set a new password.",
+      });
+      toast("Reset link sent");
+    } catch (error) {
+      setState({ accountMessage: error.message || "Password reset unavailable." });
+      toast("Password reset unavailable");
+    }
+  });
+
+  rootNode.querySelector("[data-account-new-password]")?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const form = new FormData(event.currentTarget);
+    const password = String(form.get("password") || "");
+    const confirmation = String(form.get("passwordConfirm") || "");
+    if (password.length < 6) return toast("Password must be at least 6 characters");
+    if (password !== confirmation) {
+      setState({ accountMessage: "Passwords do not match." });
+      return toast("Passwords do not match");
+    }
+    try {
+      await updateCustomerPassword(password);
+      setState({
+        accountMode: "signin",
+        accountMessage: "Password updated. You can now sign in.",
+      });
+      toast("Password updated");
+    } catch (error) {
+      setState({ accountMessage: error.message || "Password update failed." });
+      toast("Password update failed");
     }
   });
 

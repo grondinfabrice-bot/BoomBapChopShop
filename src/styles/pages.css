@@ -3140,7 +3140,8 @@
 }
 
 .account-submit,
-.account-ghost {
+.account-ghost,
+.account-link {
   border: 1px solid var(--muted-gold);
   border-radius: 4px;
   background: var(--muted-gold);
@@ -3155,6 +3156,17 @@
 .account-ghost {
   background: transparent;
   color: var(--muted-gold);
+}
+
+.account-link {
+  justify-self: center;
+  border: 0;
+  background: transparent;
+  color: var(--dusty-beige);
+  font-size: 0.92rem;
+  padding: 0.25rem;
+  text-decoration: underline;
+  text-underline-offset: 0.18rem;
 }
 
 .account-message {

@@ -29,6 +29,37 @@ export async function signInCustomer(email, password) {
   return data.session;
 }
 
+export async function sendPasswordReset(email) {
+  if (!isCmsConfigured()) throw new Error("Supabase is not configured.");
+  const normalizedEmail = String(email || "").trim().toLowerCase();
+  if (!normalizedEmail.includes("@")) throw new Error("Enter a valid email.");
+
+  const supabase = await getSupabase();
+  const { data, error } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
+    redirectTo: `${window.location.origin}${window.location.pathname}#account`,
+  });
+  if (error) throw error;
+  return data;
+}
+
+export async function updateCustomerPassword(password) {
+  if (!isCmsConfigured()) throw new Error("Supabase is not configured.");
+  const nextPassword = String(password || "");
+  if (nextPassword.length < 6) throw new Error("Password must be at least 6 characters.");
+
+  const supabase = await getSupabase();
+  const { data, error } = await supabase.auth.updateUser({ password: nextPassword });
+  if (error) throw error;
+  return data;
+}
+
+export async function onCustomerAuthStateChange(callback) {
+  const supabase = await getSupabase();
+  if (!supabase) return () => {};
+  const { data } = supabase.auth.onAuthStateChange((event, session) => callback(event, session));
+  return () => data.subscription?.unsubscribe?.();
+}
+
 export async function signOutCustomer() {
   const supabase = await getSupabase();
   if (!supabase) return;

@@ -10,6 +10,9 @@ export function AccountPage(state) {
 function AccountAuth(state) {
   const mode = state.accountMode || "signin";
   const isSignup = mode === "signup";
+  if (mode === "reset") return AccountReset(state);
+  if (mode === "new-password") return AccountNewPassword(state);
+
   return `
     <section class="account-wrap account-login-wrap">
       <form class="account-login" data-account-auth>
@@ -24,6 +27,40 @@ function AccountAuth(state) {
         <button class="account-ghost" data-account-mode="${isSignup ? "signin" : "signup"}" type="button">
           ${isSignup ? "I already have an account" : "Create an account"}
         </button>
+        ${isSignup ? "" : `<button class="account-link" data-account-mode="reset" type="button">Forgot password?</button>`}
+      </form>
+    </section>
+  `;
+}
+
+function AccountReset(state) {
+  return `
+    <section class="account-wrap account-login-wrap">
+      <form class="account-login" data-account-reset>
+        <span class="featured-kicker">Customer room</span>
+        <h1>Reset Password</h1>
+        <p>Enter your account email and Supabase will send a secure reset link.</p>
+        ${state.accountMessage ? `<div class="account-message">${text(state.accountMessage)}</div>` : ""}
+        <label>Email<input name="email" type="email" autocomplete="email" required placeholder="you@example.com" /></label>
+        <button class="account-submit" type="submit">Send reset link</button>
+        <button class="account-ghost" data-account-mode="signin" type="button">Back to sign in</button>
+      </form>
+    </section>
+  `;
+}
+
+function AccountNewPassword(state) {
+  return `
+    <section class="account-wrap account-login-wrap">
+      <form class="account-login" data-account-new-password>
+        <span class="featured-kicker">Customer room</span>
+        <h1>New Password</h1>
+        <p>Choose a new password for your BOOM BAP CHOP SHOP account.</p>
+        ${state.accountMessage ? `<div class="account-message">${text(state.accountMessage)}</div>` : ""}
+        <label>New password<input name="password" type="password" autocomplete="new-password" required minlength="6" placeholder="Minimum 6 characters" /></label>
+        <label>Confirm password<input name="passwordConfirm" type="password" autocomplete="new-password" required minlength="6" placeholder="Repeat password" /></label>
+        <button class="account-submit" type="submit">Update password</button>
+        <button class="account-ghost" data-account-mode="signin" type="button">Back to sign in</button>
       </form>
     </section>
   `;
