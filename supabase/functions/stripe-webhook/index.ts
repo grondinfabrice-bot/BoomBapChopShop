@@ -10,6 +10,10 @@ const corsHeaders = {
 
 type OrderItem = {
   name?: string;
+  coverUrl?: string;
+  bpm?: number;
+  key?: string;
+  duration?: string;
   license?: string;
   price?: number;
   includes?: string[];
@@ -178,7 +182,9 @@ Deno.serve(async (request) => {
 
     await markOrderEmailSent({ supabaseUrl, serviceRoleKey, orderNumber: orderId });
 
-    return json({ sent: true, orderId, providerId: resendData.id || "" }, 200);
+    const collectorCard = await triggerCollectorCard({ supabaseUrl, serviceRoleKey, orderNumber: orderId });
+
+    return json({ sent: true, orderId, providerId: resendData.id || "", collectorCard }, 200);
   } catch (error) {
     return json({ sent: false, error: String(error?.message || error) }, 500);
   }
@@ -206,6 +212,20 @@ async function getOrderByNumber({
   if (!response.ok) throw new Error(`Order fetch failed: ${await response.text()}`);
   const rows = await response.json();
   return Array.isArray(rows) && rows.length ? rows[0] as OrderRow : null;
+}
+
+async function triggerCollectorCard({ supabaseUrl, serviceRoleKey, orderNumber }: { supabaseUrl: string; serviceRoleKey: string; orderNumber: string }) {
+  if (!supabaseUrl || !serviceRoleKey) return { sent: false, mode: "missing_service_credentials" };
+  try {
+    const response = await fetch(`${supabaseUrl}/functions/v1/send-collector-card`, {
+      method: "POST",
+      headers: { apikey: serviceRoleKey, Authorization: `Bearer ${serviceRoleKey}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ orderNumber }),
+    });
+    return await response.json().catch(() => ({ sent: false, status: response.status }));
+  } catch (error) {
+    return { sent: false, error: String(error?.message || error) };
+  }
 }
 
 async function markOrderPaid({
@@ -379,7 +399,8 @@ function buildEmailHtml({ orderId, email, items, total, currency, siteUrl }: {
             </tr>
             </table>
             ${hasService ? buildStudioServiceProcessHtml() : ""}
-            <p style="margin:18px 0 0;line-height:1.7;color:#1e1e1e;">Keep this email and contract with your release records. Download links may expire for security reasons, but your order remains logged.</p>
+            <p style="margin:18px 0 0;line-height:1.7;color:#1e1e1e;">Your confirmation and delivery are ready. A separate <strong>Officially Licensed collector card</strong> will follow by email once it has been generated.</p>
+            <p style="margin:10px 0 0;line-height:1.7;color:#1e1e1e;">Keep this email and contract with your release records. Download links may expire for security reasons, but your order remains logged.</p>
             <p style="margin:16px 0 0;line-height:1.7;color:#8e3b2e;font-weight:800;">Make the record. Let the drums talk.</p>
           </div>
         </div>

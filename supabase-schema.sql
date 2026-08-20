@@ -66,6 +66,10 @@ create table if not exists public.orders (
   payment_reference text,
   license_acceptance jsonb not null default '{}'::jsonb,
   email_sent_at timestamptz,
+  collector_card_status text not null default 'pending',
+  collector_card_path text,
+  collector_card_sent_at timestamptz,
+  collector_card_error text,
   notes text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
@@ -79,7 +83,11 @@ create table if not exists public.orders (
 
 alter table public.orders
 add column if not exists subtotal numeric(10, 2) not null default 0,
-add column if not exists discount jsonb not null default '{}'::jsonb;
+add column if not exists discount jsonb not null default '{}'::jsonb,
+add column if not exists collector_card_status text not null default 'pending',
+add column if not exists collector_card_path text,
+add column if not exists collector_card_sent_at timestamptz,
+add column if not exists collector_card_error text;
 
 create table if not exists public.promo_codes (
   id uuid primary key default gen_random_uuid(),

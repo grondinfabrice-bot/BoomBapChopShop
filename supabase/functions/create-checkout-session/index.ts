@@ -9,6 +9,10 @@ const corsHeaders = {
 type OrderItem = {
   beatId?: string | number;
   name?: string;
+  coverUrl?: string;
+  bpm?: number;
+  key?: string;
+  duration?: string;
   license?: string;
   licenseId?: string;
   price?: number;
@@ -403,9 +407,13 @@ async function buildTrustedOrderItems({
     const deliveryFiles = filterDeliveryFiles(beat.delivery_files, license.id);
     const missingFormats = getMissingRequiredFormats(deliveryFiles, license.id);
 
-    trustedItems.push({
-      beatId: beat.id,
-      name: beat.name,
+      trustedItems.push({
+        beatId: beat.id,
+        name: beat.name,
+        coverUrl: beat.cover_url || "",
+        bpm: beat.bpm,
+        key: beat.key || "",
+        duration: beat.duration || "",
       license: license.name,
       licenseId: license.id,
       price: license.price,
@@ -433,10 +441,10 @@ async function getBeatsById({
   serviceRoleKey: string;
   beatIds: string[];
 }) {
-  const beatsById = new Map<string, { id: number; name: string; delivery_files?: unknown[] }>();
+  const beatsById = new Map<string, { id: number; name: string; cover_url?: string; bpm?: number; key?: string; duration?: string; delivery_files?: unknown[] }>();
   if (!supabaseUrl || !serviceRoleKey || !beatIds.length) return beatsById;
   const response = await fetch(
-    `${supabaseUrl}/rest/v1/beats?id=in.(${beatIds.map(encodeURIComponent).join(",")})&published=eq.true&select=id,name,delivery_files`,
+    `${supabaseUrl}/rest/v1/beats?id=in.(${beatIds.map(encodeURIComponent).join(",")})&published=eq.true&select=id,name,cover_url,bpm,key,duration,delivery_files`,
     {
       headers: {
         apikey: serviceRoleKey,

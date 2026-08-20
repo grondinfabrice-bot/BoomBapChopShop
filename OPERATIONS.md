@@ -28,10 +28,19 @@ Deploy Edge Functions after editing files in `supabase/functions/...`:
 supabase functions deploy create-checkout-session
 supabase functions deploy validate-promo-code
 supabase functions deploy stripe-webhook
+supabase functions deploy send-collector-card
 supabase functions deploy send-contact-email
 supabase functions deploy download-file
 supabase functions deploy chatbot
 ```
+
+Apply the collector card order fields and private storage bucket once:
+
+```bash
+supabase db query --linked --file supabase-collector-card-migration.sql
+```
+
+After a successful payment, `stripe-webhook` sends the normal confirmation first, then calls `send-collector-card`. That function builds one PDF per purchased beat, attaches it to a separate email, and records the result in `orders.collector_card_status`.
 
 Apply one-off SQL files:
 

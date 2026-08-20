@@ -18,3 +18,6 @@ verify_jwt = false
 
 [functions.chatbot]
 verify_jwt = false
+
+[functions.send-collector-card]
+verify_jwt = true
