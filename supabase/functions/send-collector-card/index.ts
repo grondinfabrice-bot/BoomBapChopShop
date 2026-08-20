@@ -32,13 +32,14 @@ Deno.serve(async (request) => {
   try {
     const payload = await request.json();
     const orderNumber = String(payload?.orderNumber || "").trim();
+    const force = Boolean(payload?.force);
     if (!orderNumber) return json({ error: "Order number required" }, 400);
     if (!supabaseUrl || !serviceRoleKey) return json({ error: "Supabase service credentials are not configured." }, 500);
     if (!resendApiKey) return json({ error: "RESEND_API_KEY is not configured." }, 500);
 
     const order = await getOrder({ supabaseUrl, serviceRoleKey, orderNumber });
     if (!order) return json({ error: `Order not found: ${orderNumber}` }, 404);
-    if (order.collector_card_sent_at) return json({ sent: true, alreadySent: true, orderNumber });
+    if (order.collector_card_sent_at && !force) return json({ sent: true, alreadySent: true, orderNumber });
 
     const items = (Array.isArray(order.items) ? order.items : []).filter((item: CardItem) => item.type !== "service");
     const cards = [];
@@ -54,6 +55,7 @@ Deno.serve(async (request) => {
         customerName: [order.customer_first_name, order.customer_last_name].filter(Boolean).join(" ") || order.customer_email,
         item,
         coverBytes,
+        siteUrl,
       });
       const path = `${orderNumber}/${slugify(item.name || "beat")}.pdf`;
       await uploadCollectorCard({ supabaseUrl, serviceRoleKey, path, pdfBytes });
@@ -126,29 +128,43 @@ async function resolveCoverUrl({ supabaseUrl, serviceRoleKey, item }: { supabase
   return rows?.[0]?.cover_url ? absoluteUrl(rows[0].cover_url, supabaseUrl) : "";
 }
 
-async function buildCollectorCard({ orderNumber, cardNumber, customerName, item, coverBytes }: { orderNumber: string; cardNumber: string; customerName: string; item: CardItem; coverBytes: Uint8Array }) {
+async function buildCollectorCard({ orderNumber, cardNumber, customerName, item, coverBytes, siteUrl }: { orderNumber: string; cardNumber: string; customerName: string; item: CardItem; coverBytes: Uint8Array; siteUrl: string }) {
   const pdf = await PDFDocument.create();
-  const page = pdf.addPage([842, 595]);
+  const width = 768;
+  const height = 512;
+  const page = pdf.addPage([width, height]);
   const regular = await pdf.embedFont(StandardFonts.Helvetica);
   const bold = await pdf.embedFont(StandardFonts.HelveticaBold);
-  const ink = rgb(0.06, 0.06, 0.055);
   const cream = rgb(0.95, 0.91, 0.83);
-  const parchment = rgb(0.89, 0.84, 0.74);
   const brick = rgb(0.72, 0.12, 0.07);
   const gold = rgb(0.83, 0.57, 0.09);
   const olive = rgb(0.29, 0.31, 0.15);
-  const margin = 12;
 
-  page.drawRectangle({ x: 0, y: 0, width: 842, height: 595, color: ink });
-  page.drawRectangle({ x: margin, y: margin, width: 818, height: 571, borderColor: brick, borderWidth: 1.2 });
-  page.drawText("BOOM BAP CHOP SHOP", { x: 28, y: 538, size: 34, font: bold, color: cream });
-  page.drawText("OFFICIAL BEAT COLLECTOR SERIES", { x: 224, y: 508, size: 12, font: bold, color: gold });
-  page.drawText("MPC", { x: 785, y: 535, size: 11, font: bold, color: cream });
+  const templateResponse = await fetch(`${siteUrl.replace(/\/$/, "")}/images/collector-card-template.png`);
+  if (!templateResponse.ok) throw new Error("Collector card template is not available on the site yet.");
+  const template = await pdf.embedPng(new Uint8Array(await templateResponse.arrayBuffer()));
+  page.drawImage(template, { x: 0, y: 0, width, height });
+
+  // The background is intentionally decorative, but the MPC pad count is product data:
+  // redraw it here so every card has an exact 4 by 4 (16-pad) grid.
+  const samplerX = 658;
+  const samplerY = 410;
+  page.drawRectangle({ x: samplerX, y: samplerY, width: 82, height: 86, color: rgb(0.06, 0.06, 0.055) });
+  page.drawRectangle({ x: samplerX + 3, y: samplerY + 3, width: 76, height: 80, borderColor: brick, borderWidth: 1.4 });
+  page.drawRectangle({ x: samplerX + 11, y: samplerY + 65, width: 22, height: 7, borderColor: cream, borderWidth: 0.8 });
+  page.drawCircle({ x: samplerX + 51, y: samplerY + 68, size: 4, borderColor: cream, borderWidth: 0.8 });
+  page.drawCircle({ x: samplerX + 65, y: samplerY + 68, size: 4, borderColor: cream, borderWidth: 0.8 });
   for (let row = 0; row < 4; row += 1) for (let col = 0; col < 4; col += 1) {
-    page.drawRectangle({ x: 782 + col * 10, y: 493 - row * 10, width: 7, height: 7, color: row === 2 && col === 3 ? brick : parchment });
+    page.drawRectangle({
+      x: samplerX + 11 + col * 15,
+      y: samplerY + 14 + (3 - row) * 12,
+      width: 10,
+      height: 9,
+      color: row === 2 && col === 3 ? brick : cream,
+    });
   }
 
-  const coverX = 26; const coverY = 112; const coverSize = 356;
+  const coverX = 39; const coverY = 81; const coverSize = 310;
   let cover;
   try {
     const signature = String.fromCharCode(...coverBytes.slice(0, 8));
@@ -156,33 +172,42 @@ async function buildCollectorCard({ orderNumber, cardNumber, customerName, item,
   } catch {
     throw new Error(`Unsupported cover image for ${item.name || "beat"}. Use JPG or PNG.`);
   }
-  page.drawRectangle({ x: coverX - 4, y: coverY - 4, width: coverSize + 8, height: coverSize + 8, color: parchment });
   page.drawImage(cover, { x: coverX, y: coverY, width: coverSize, height: coverSize });
 
-  page.drawRectangle({ x: 398, y: 112, width: 418, height: 356, color: cream });
-  page.drawText((item.name || "UNTITLED BEAT").toUpperCase().slice(0, 28), { x: 420, y: 425, size: 26, font: bold, color: brick });
-  page.drawRectangle({ x: 448, y: 370, width: 210, height: 27, color: ink });
-  page.drawText("BEAT LICENSE CARD", { x: 460, y: 382, size: 16, font: bold, color: cream });
-  page.drawText("LICENSED TO", { x: 455, y: 327, size: 11, font: bold, color: brick });
-  page.drawText(customerName.toUpperCase().slice(0, 30), { x: 455, y: 302, size: 18, font: bold, color: ink });
-  page.drawText((item.license || "LICENSE").toUpperCase(), { x: 455, y: 258, size: 12, font: bold, color: brick });
-  page.drawText(`${item.bpm || "--"} BPM  /  ${item.key || "KEY --"}  /  ${item.duration || "--:--"}`, { x: 455, y: 236, size: 13, font: bold, color: ink });
-  page.drawCircle({ x: 438, y: 178, size: 20, color: olive });
-  page.drawText("OFFICIALLY LICENSED", { x: 470, y: 185, size: 13, font: bold, color: brick });
-  page.drawText("This beat is officially part of your record collection.", { x: 470, y: 163, size: 10.5, font: regular, color: ink });
-
-  page.drawText(`CRATE CARD  /  ${cardNumber}`, { x: 30, y: 58, size: 12, font: bold, color: cream });
-  page.drawText(`ORDER  /  ${orderNumber}`, { x: 220, y: 58, size: 12, font: bold, color: cream });
-  page.drawText("CUT BY BOOM BAP CHOP SHOP", { x: 520, y: 58, size: 12, font: bold, color: cream });
-  const waveStart = 520; const waveEnd = 790; const cutStart = 579; const cutEnd = 730;
-  for (let x = waveStart; x <= waveEnd; x += 4) {
-    const height = 3 + ((x * 17) % 19);
-    page.drawRectangle({ x, y: 29 - height / 2, width: 2, height, color: x >= cutStart && x <= cutEnd ? brick : rgb(0.38, 0.12, 0.1) });
-  }
-  page.drawLine({ start: { x: cutStart, y: 15 }, end: { x: cutStart, y: 46 }, thickness: 1.4, color: cream });
-  page.drawLine({ start: { x: cutEnd, y: 15 }, end: { x: cutEnd, y: 46 }, thickness: 1.4, color: cream });
-  page.drawText("2026", { x: 764, y: 30, size: 15, font: bold, color: gold });
+  page.drawText("BOOM BAP CHOP SHOP", { x: 116, y: 462, size: 22, font: bold, color: cream });
+  page.drawText("OFFICIAL BEAT COLLECTOR SERIES", { x: 200, y: 444, size: 8, font: bold, color: gold });
+  const title = (item.name || "UNTITLED BEAT").toUpperCase();
+  page.drawText(trimToFit(title, bold, 20, 340), { x: 390, y: 365, size: fitTextSize(title, bold, 20, 340, 14), font: bold, color: brick });
+  page.drawRectangle({ x: 414, y: 275, width: 155, height: 22, color: rgb(0.06, 0.06, 0.055) });
+  page.drawText("BEAT LICENSE CARD", { x: 425, y: 283, size: 12, font: bold, color: cream });
+  page.drawText("LICENSED TO", { x: 405, y: 235, size: 8, font: bold, color: brick });
+  const buyer = customerName.toUpperCase();
+  page.drawText(trimToFit(buyer, bold, 14, 320), { x: 405, y: 216, size: fitTextSize(buyer, bold, 14, 320, 10), font: bold, color: rgb(0.06, 0.06, 0.055) });
+  page.drawText((item.license || "LICENSE").toUpperCase(), { x: 405, y: 186, size: 8, font: bold, color: brick });
+  page.drawText(`${item.bpm || "--"} BPM  /  ${item.key || "KEY --"}  /  ${item.duration || "--:--"}`, { x: 405, y: 169, size: 10, font: bold, color: rgb(0.06, 0.06, 0.055) });
+  page.drawCircle({ x: 394, y: 113, size: 14, color: olive });
+  page.drawText("+", { x: 390, y: 108, size: 10, font: bold, color: cream });
+  page.drawText("OFFICIALLY LICENSED", { x: 420, y: 119, size: 11, font: bold, color: brick });
+  page.drawText("This beat is officially part of your record collection.", { x: 420, y: 102, size: 8, font: regular, color: rgb(0.06, 0.06, 0.055) });
+  page.drawText(`CRATE CARD  /  ${cardNumber}`, { x: 94, y: 61, size: 7, font: bold, color: cream });
+  page.drawText(`ORDER  /  ${orderNumber}`, { x: 245, y: 61, size: 6.4, font: bold, color: cream });
+  page.drawText("CUT BY BOOM BAP CHOP SHOP", { x: 425, y: 61, size: 7, font: bold, color: cream });
+  page.drawText("2026", { x: 691, y: 61, size: 12, font: bold, color: gold });
   return await pdf.save();
+}
+
+function fitTextSize(text: string, font: any, preferred: number, maxWidth: number, minimum: number) {
+  let size = preferred;
+  while (size > minimum && font.widthOfTextAtSize(text, size) > maxWidth) size -= 0.5;
+  return size;
+}
+
+function trimToFit(text: string, font: any, preferred: number, maxWidth: number) {
+  const ellipsis = "...";
+  if (font.widthOfTextAtSize(text, preferred) <= maxWidth) return text;
+  let value = text;
+  while (value.length && font.widthOfTextAtSize(`${value}${ellipsis}`, preferred) > maxWidth) value = value.slice(0, -1);
+  return `${value}${ellipsis}`;
 }
 
 async function updateCardStatus({ supabaseUrl, serviceRoleKey, orderNumber, status, path = null, error = null }: { supabaseUrl: string; serviceRoleKey: string; orderNumber: string; status: string; path?: string | null; error?: string | null }) {
