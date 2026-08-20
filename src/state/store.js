@@ -22,6 +22,7 @@ const state = {
   contactStatus: "",
   contactMessage: "",
   adminEditingBeatId: null,
+  adminEditingPostId: null,
   adminBeats: [],
   adminPosts: [],
   adminSettings: {},

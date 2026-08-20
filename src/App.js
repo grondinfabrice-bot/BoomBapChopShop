@@ -48,6 +48,7 @@ import { buildCatalogSearchReply, buildChatReply } from "./services/chatbot.js?v
 import { askAiChatbot } from "./services/aiChat.js?v=1";
 import { serviceOffers } from "./data/content.js?v=5";
 import { time } from "./utils/format.js";
+import { initAnalytics, trackEvent, trackPage } from "./services/analytics.js";
 
 let rootNode;
 let featuredTimer;
@@ -78,6 +79,8 @@ const pages = {
 
 export function App(root) {
   rootNode = root;
+  initAnalytics();
+  trackPage("home");
   hydrateCheckoutReturn();
   hydratePasswordRecoveryRoute();
   hydrateHashRoute();
@@ -368,6 +371,7 @@ function bindGlobalActions() {
   rootNode.querySelector("[data-checkout]")?.addEventListener("click", () => {
     const state = getState();
     if (!state.cart.length) return toast("Your cart is empty");
+    trackEvent("checkout_started", { items: state.cart.length });
     const shouldOfferStudioService = state.cart.some((item) => item.type !== "service") && !state.cart.some((item) => item.type === "service");
     setState({
       cartOpen: false,
@@ -414,6 +418,7 @@ function bindGlobalActions() {
         newsletterMessage: result.duplicate ? "You are already on the Chop List." : "Welcome to the Chop List.",
       });
       toast(result.duplicate ? "Already on the Chop List" : "Welcome to the Chop List");
+      trackEvent("newsletter_subscribed", { duplicate: result.duplicate });
     } catch (error) {
       console.error(error);
       setState({
@@ -476,12 +481,14 @@ function bindPageActions() {
       price: Number(addButton.dataset.price),
     });
     if (added) setState({ cartOpen: true });
+    if (added) trackEvent("cart_item_added", { type: "service" });
   });
 
   rootNode.querySelectorAll("[data-license-open]").forEach((button) => {
     button.addEventListener("click", (event) => {
       event.stopPropagation();
       setState({ licensePickerBeatId: button.dataset.licenseOpen });
+      trackEvent("license_picker_opened", { beat_id: button.dataset.licenseOpen });
     });
   });
 
@@ -494,6 +501,7 @@ function bindPageActions() {
         licenseId: button.dataset.licenseId,
       });
       if (added) setState({ cartOpen: true, licensePickerBeatId: null });
+      if (added) trackEvent("license_added_to_cart", { license: button.dataset.licenseId });
     });
   });
 
@@ -532,6 +540,7 @@ function bindPageActions() {
         price: Number(button.dataset.price),
       });
       if (added) setState({ cartOpen: true });
+      if (added) trackEvent("cart_item_added", { type: "beat", license: button.dataset.license || "" });
     });
   });
 
@@ -623,6 +632,7 @@ function bindPageActions() {
     const hasService = cart.some((item) => item.type === "service");
     try {
       const checkout = await createCheckoutSession({ email, firstName, lastName, items: cart, total, promoCode });
+      trackEvent("checkout_redirected", { items: cart.length, has_service: hasService });
       saveCheckoutReturn(checkout.orderNumber, email, hasService);
       window.location.href = checkout.checkoutUrl;
       return;
@@ -662,6 +672,7 @@ function bindPageActions() {
       form.reset();
       setState({ contactStatus: "sent", contactMessage: "Message sent. Reply within 24-48 business hours." });
       toast("Message sent.");
+      trackEvent("contact_submitted");
     } catch (error) {
       console.error(error);
       setState({ contactStatus: "error", contactMessage: "Message unavailable right now. Email contact@boombapchopshop.art directly." });
@@ -796,7 +807,7 @@ function bindPageActions() {
 
   rootNode.querySelector("[data-admin-logout]")?.addEventListener("click", async () => {
     await signOutAdmin();
-    setState({ adminSession: null, customerSession: null, customerOrders: [], adminEditingBeatId: null, cmsMessage: "Signed out." });
+    setState({ adminSession: null, customerSession: null, customerOrders: [], adminEditingBeatId: null, adminEditingPostId: null, cmsMessage: "Signed out." });
   });
 
   rootNode.querySelectorAll("[data-admin-edit-beat]").forEach((button) => {
@@ -808,6 +819,17 @@ function bindPageActions() {
 
   rootNode.querySelector("[data-admin-edit-cancel]")?.addEventListener("click", () => {
     setState({ adminEditingBeatId: null, cmsMessage: "" });
+  });
+
+  rootNode.querySelectorAll("[data-admin-edit-post]").forEach((button) => {
+    button.addEventListener("click", () => {
+      setState({ adminEditingPostId: button.dataset.adminEditPost, cmsMessage: "" });
+      setTimeout(() => rootNode.querySelector("[data-admin-post-form]")?.scrollIntoView({ behavior: "smooth" }), 40);
+    });
+  });
+
+  rootNode.querySelector("[data-admin-post-edit-cancel]")?.addEventListener("click", () => {
+    setState({ adminEditingPostId: null, cmsMessage: "" });
   });
 
   rootNode.querySelector("[data-admin-beat-form]")?.addEventListener("submit", async (event) => {
@@ -826,10 +848,11 @@ function bindPageActions() {
 
   rootNode.querySelector("[data-admin-post-form]")?.addEventListener("submit", async (event) => {
     event.preventDefault();
+    const editing = Boolean(getState().adminEditingPostId);
     try {
       await savePost(new FormData(event.currentTarget));
       event.currentTarget.reset();
-      setState({ cmsMessage: "Note saved." });
+      setState({ adminEditingPostId: null, cmsMessage: editing ? "Note updated." : "Note saved." });
       await refreshAdminContent();
       await hydrateCms();
     } catch (error) {
@@ -997,6 +1020,7 @@ function route(page) {
     blogTag: "",
     licensePickerBeatId: null,
   });
+  if (!['admin', 'feedback', 'account'].includes(page)) trackPage(page);
   resetPageScroll();
   if (page === "account" && getState().customerSession) {
     refreshCustomerOrders().catch((error) => {
@@ -1202,6 +1226,7 @@ function requestTrack(trackId, options = {}) {
   const state = getState();
   const track = state.beats.find((beat) => beat.id === trackId);
   if (!track) return;
+  trackEvent("beat_preview_started", { beat_id: String(track.id), beat_name: track.name });
 
   if (!track.previewUrl) {
     toast("Preview audio not added yet");

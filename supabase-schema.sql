@@ -35,6 +35,9 @@ create table if not exists public.posts (
   created_at timestamptz default now()
 );
 
+alter table public.posts
+add column if not exists image_url text;
+
 create table if not exists public.admin_users (
   user_id uuid primary key references auth.users(id) on delete cascade,
   created_at timestamptz default now()
@@ -388,7 +391,7 @@ with check (
 );
 
 insert into storage.buckets (id, name, public)
-values ('covers', 'covers', true), ('previews', 'previews', true), ('contracts', 'contracts', false), ('deliverables', 'deliverables', false)
+values ('covers', 'covers', true), ('previews', 'previews', true), ('blog-images', 'blog-images', true), ('contracts', 'contracts', false), ('deliverables', 'deliverables', false)
 on conflict (id) do nothing;
 
 drop policy if exists "Public covers are readable" on storage.objects;
@@ -400,6 +403,11 @@ drop policy if exists "Public previews are readable" on storage.objects;
 create policy "Public previews are readable"
 on storage.objects for select
 using (bucket_id = 'previews');
+
+drop policy if exists "Public blog images are readable" on storage.objects;
+create policy "Public blog images are readable"
+on storage.objects for select
+using (bucket_id = 'blog-images');
 
 drop policy if exists "Admin can upload covers" on storage.objects;
 create policy "Admin can upload covers"
@@ -417,6 +425,17 @@ create policy "Admin can upload previews"
 on storage.objects for insert
 with check (
   bucket_id = 'previews'
+  and exists (
+    select 1 from public.admin_users
+    where admin_users.user_id = auth.uid()
+  )
+);
+
+drop policy if exists "Admin can upload blog images" on storage.objects;
+create policy "Admin can upload blog images"
+on storage.objects for insert
+with check (
+  bucket_id = 'blog-images'
   and exists (
     select 1 from public.admin_users
     where admin_users.user_id = auth.uid()

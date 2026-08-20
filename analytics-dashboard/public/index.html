@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <title>BOOM BAP CHOP SHOP · STATS</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="grain"></div>
+    <header class="masthead">
+      <a class="brand" href="https://boombapchopshop.art/" aria-label="Retour au site"><span>BOOM BAP</span><b>CHOP SHOP</b></a>
+      <div><span class="eyebrow">PRIVATE LISTENING ROOM · ANALYTICS</span><h1>Know what <em>knocks.</em></h1></div>
+      <div class="live"><i></i><strong id="liveVisitors">—</strong><span>live in the room</span></div>
+    </header>
+    <main class="shell">
+      <section class="toolbar"><div><span class="eyebrow">CRATE REPORT</span><h2>Site performance</h2><p id="updated">Connecting to the numbers…</p></div><div class="periods" role="group" aria-label="Période"><button data-days="7">7D</button><button class="active" data-days="30">30D</button><button data-days="90">90D</button></div></section>
+      <div id="error" class="error" hidden></div>
+      <section id="stats" class="stat-grid"></section>
+      <section class="main-grid"><article class="panel chart-panel"><div class="panel-head"><div><span class="eyebrow">TRAFFIC</span><h3>Page views</h3></div><strong id="pageviewsTotal">—</strong></div><div id="chart" class="chart"></div><div class="chart-axis"><span>Start of period</span><span>Today</span></div></article><article class="panel"><div class="panel-head"><div><span class="eyebrow">RIGHT NOW</span><h3>Live audience</h3></div></div><div id="liveList" class="rank-list"></div></article></section>
+      <section class="three-grid"><article class="panel"><div class="panel-head"><div><span class="eyebrow">ACQUISITION</span><h3>Where they came from</h3></div></div><div id="referrers" class="rank-list"></div></article><article class="panel"><div class="panel-head"><div><span class="eyebrow">CATALOGUE</span><h3>What they explored</h3></div></div><div id="paths" class="rank-list"></div></article><article class="panel"><div class="panel-head"><div><span class="eyebrow">DEVICES</span><h3>How they listen</h3></div></div><div id="devices" class="rank-list"></div></article></section>
+      <section class="panel conversion"><div class="panel-head"><div><span class="eyebrow">THE RELEASE FUNNEL</span><h3>Actions that matter</h3></div><small id="periodLabel">30 days</small></div><div id="events" class="event-grid"></div></section>
+    </main>
+    <footer>BOOM BAP CHOP SHOP · PRIVATE STATS · DATA POWERED BY UMAMI</footer>
+    <script src="/app.js"></script>
+  </body>
+</html>

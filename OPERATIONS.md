@@ -39,6 +39,12 @@ Apply one-off SQL files:
 supabase db query --linked --file FILE_NAME.sql
 ```
 
+## Umami analytics
+
+The public site loads Umami only when `umamiWebsiteId` is configured in `src/config.js`. The private custom dashboard lives in `analytics-dashboard/` and must run server-side on the VPS so Umami API credentials never reach the browser.
+
+Recommended production host: `stats.boombapchopshop.art`, proxied by Nginx to `127.0.0.1:3021` and protected with a dedicated Basic Auth file. See `analytics-dashboard/README.md` for the environment variables and setup sequence.
+
 ## Launch Check
 
 After each prod deploy, test:

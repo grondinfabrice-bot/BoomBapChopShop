@@ -5,6 +5,7 @@ export function AdminPage(state) {
   if (!state.adminSession) return AdminLogin(state);
 
   const editingBeat = state.adminBeats.find((beat) => String(beat.id) === String(state.adminEditingBeatId));
+  const editingPost = state.adminPosts.find((post) => String(post.dbId || post.id) === String(state.adminEditingPostId));
   const tickerText = state.adminSettings?.tickerText || state.siteSettings?.tickerText || "";
 
   return `
@@ -65,29 +66,32 @@ export function AdminPage(state) {
 
         <form class="admin-panel" data-admin-post-form>
           <div class="admin-panel-head">
-            <span>New note</span>
+            <span>${editingPost ? "Edit note" : "New note"}</span>
             <strong>${state.adminPosts.length} saved</strong>
           </div>
-          <label>Title<input name="title" required placeholder="Drums that knock" /></label>
-          <label>Category<input name="category" placeholder="Production" /></label>
-          <label>Excerpt<textarea name="excerpt" rows="3" placeholder="Short intro for the blog list"></textarea></label>
-          <label>Body<textarea name="body" rows="8" placeholder="Paragraph one&#10;&#10;Paragraph two"></textarea></label>
-          <label>Tags<input name="tags" placeholder="drums, vocal space, arrangement" /></label>
+          ${editingPost ? `<input name="id" type="hidden" value="${attr(editingPost.dbId || editingPost.id)}" />` : ""}
+          <label>Title<input name="title" required placeholder="Drums that knock" value="${attr(editingPost?.title)}" /></label>
+          <label>Category<input name="category" placeholder="Production" value="${attr(editingPost?.category)}" /></label>
+          <label>Excerpt<textarea name="excerpt" rows="3" placeholder="Short intro for the blog list">${text(editingPost?.excerpt)}</textarea></label>
+          <label>Body<textarea name="body" rows="8" placeholder="Paragraph one&#10;&#10;Paragraph two">${text((editingPost?.body || []).join("\n\n"))}</textarea></label>
+          <label>Cover image<input name="image" type="file" accept="image/*" />${editingPost?.imageUrl ? `<small>Current image kept unless you choose a new one.</small>` : `<small>Recommended: landscape image, at least 1200 px wide.</small>`}</label>
+          <label>Tags<input name="tags" placeholder="drums, vocal space, arrangement" value="${attr((editingPost?.tags || []).join(", "))}" /></label>
           <div class="admin-two">
-            <label>Art<input name="art" placeholder="DRUMS" /></label>
-            <label>Read time<input name="readTime" placeholder="5 MIN" /></label>
+            <label>Art<input name="art" placeholder="DRUMS" value="${attr(editingPost?.art)}" /></label>
+            <label>Read time<input name="readTime" placeholder="5 MIN" value="${attr(editingPost?.readTime)}" /></label>
           </div>
           <label>Tone
             <select name="tone">
-              <option value="yellow">Yellow</option>
-              <option value="red">Red</option>
-              <option value="orange">Orange</option>
-              <option value="green">Green</option>
+              <option value="yellow" ${editingPost?.tone === "yellow" || !editingPost ? "selected" : ""}>Yellow</option>
+              <option value="red" ${editingPost?.tone === "red" ? "selected" : ""}>Red</option>
+              <option value="orange" ${editingPost?.tone === "orange" ? "selected" : ""}>Orange</option>
+              <option value="green" ${editingPost?.tone === "green" ? "selected" : ""}>Green</option>
             </select>
           </label>
-          <label class="admin-check"><input name="featured" type="checkbox" /> Featured</label>
-          <label class="admin-check"><input name="published" type="checkbox" checked /> Published</label>
-          <button class="admin-submit" type="submit">Save note</button>
+          <label class="admin-check"><input name="featured" type="checkbox" ${editingPost?.featured ? "checked" : ""} /> Featured</label>
+          <label class="admin-check"><input name="published" type="checkbox" ${editingPost?.published === false ? "" : "checked"} /> Published</label>
+          <button class="admin-submit" type="submit">${editingPost ? "Update note" : "Save note"}</button>
+          ${editingPost ? `<button class="admin-ghost" data-admin-post-edit-cancel type="button">Cancel edit</button>` : ""}
         </form>
       </div>
       <div class="admin-list">
@@ -100,6 +104,17 @@ export function AdminPage(state) {
             <button class="admin-ghost" data-admin-edit-beat="${beat.id}" type="button">Edit</button>
           </article>
         `).join("") || `<p>No beats saved yet.</p>`}
+      </div>
+      <div class="admin-list">
+        <h2>Recent Crate Notes</h2>
+        ${state.adminPosts.slice(0, 12).map((post) => `
+          <article>
+            <span>${post.published ? "Live" : "Draft"}</span>
+            <strong>${text(post.title)}</strong>
+            <small>${text(post.category)} · ${text(post.date)} · ${(post.tags || []).map(text).join(", ")}</small>
+            <button class="admin-ghost" data-admin-edit-post="${attr(post.dbId || post.id)}" type="button">Edit</button>
+          </article>
+        `).join("") || `<p>No notes saved yet.</p>`}
       </div>
     </section>
   `;

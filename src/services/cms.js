@@ -131,22 +131,35 @@ export async function savePost(form) {
   if (!supabase) throw new Error("Supabase is not configured yet.");
 
   const title = form.get("title");
+  const postId = form.get("id");
+  const slug = slugify(title);
+  const newImageUrl = await uploadFile("blog-images", form.get("image"), `${slug}-cover`);
+  let existingPost = null;
+  if (postId) {
+    const { data, error } = await supabase.from("posts").select("image_url,published_at").eq("id", postId).single();
+    if (error) throw error;
+    existingPost = data;
+  }
   const payload = {
-    slug: slugify(title),
+    slug,
     title,
     category: form.get("category"),
     excerpt: form.get("excerpt"),
     body: String(form.get("body") || "").split(/\n{2,}/).map((item) => item.trim()).filter(Boolean),
     tags: splitTags(form.get("tags")),
+    image_url: newImageUrl || existingPost?.image_url || "",
     art: form.get("art"),
     tone: form.get("tone"),
     read_time: form.get("readTime"),
     featured: form.get("featured") === "on",
     published: form.get("published") === "on",
-    published_at: new Date().toISOString(),
+    published_at: existingPost?.published_at || new Date().toISOString(),
   };
 
-  const { error } = await supabase.from("posts").insert(payload);
+  const query = postId
+    ? supabase.from("posts").update(payload).eq("id", postId)
+    : supabase.from("posts").insert(payload);
+  const { error } = await query;
   if (error) throw error;
 }
 
@@ -291,7 +304,10 @@ async function uploadFile(bucket, file, baseName) {
   const supabase = await getSupabase();
   const extension = file.name.split(".").pop();
   const path = `${baseName}-${Date.now()}.${extension}`;
-  const { error } = await supabase.storage.from(bucket).upload(path, file, { upsert: false });
+  const { error } = await supabase.storage.from(bucket).upload(path, file, {
+    contentType: file.type || undefined,
+    upsert: false,
+  });
   if (error) throw error;
   const { data } = supabase.storage.from(bucket).getPublicUrl(path);
   return data.publicUrl;
@@ -359,6 +375,7 @@ function mapBeat(beat) {
 function mapPost(post) {
   return {
     id: post.slug || post.id,
+    dbId: post.id,
     featured: post.featured,
     category: post.category || "Notes",
     tags: post.tags || [],
