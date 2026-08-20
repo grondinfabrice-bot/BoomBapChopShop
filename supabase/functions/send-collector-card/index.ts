@@ -79,7 +79,7 @@ Deno.serve(async (request) => {
         subject: "Your BOOM BAP CHOP SHOP collector card",
         html: buildEmailHtml({ customerName, orderNumber, siteUrl }),
         text: `Your BOOM BAP CHOP SHOP collector card for order ${orderNumber} is attached. Officially licensed.`,
-        attachments: cards,
+        attachments: cards.map(({ filename, content }) => ({ filename, content })),
         ...(replyTo ? { reply_to: replyTo } : {}),
       }),
     });
