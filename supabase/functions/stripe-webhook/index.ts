@@ -576,7 +576,7 @@ async function attachPersonalizedContracts({
     const path = `${orderNumber}/${slugify(item.name || "license")}-${slugify(item.license || "contract")}.pdf`;
     const uploaded = await uploadContractPdf({ supabaseUrl, serviceRoleKey, path, pdfBytes });
     const signedUrl = uploaded
-      ? await createSignedContractUrl({ supabaseUrl, serviceRoleKey, path, expiresIn: 60 * 60 * 24 * 7 })
+      ? await createContractDownloadUrl({ supabaseUrl, serviceRoleKey, path, orderNumber, expiresIn: 60 * 60 * 24 * 7 })
       : "";
 
     deliveryItems.push({
@@ -844,32 +844,28 @@ async function uploadContractPdf({
   return response.ok;
 }
 
-async function createSignedContractUrl({
+async function createContractDownloadUrl({
   supabaseUrl,
   serviceRoleKey,
   path,
+  orderNumber,
   expiresIn,
 }: {
   supabaseUrl: string;
   serviceRoleKey: string;
   path: string;
+  orderNumber: string;
   expiresIn: number;
 }) {
-  const response = await fetch(`${supabaseUrl}/storage/v1/object/sign/contracts/${path}`, {
-    method: "POST",
-    headers: {
-      apikey: serviceRoleKey,
-      Authorization: `Bearer ${serviceRoleKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({ expiresIn }),
+  const token = await createDownloadToken({
+    bucket: "contracts",
+    path,
+    filename: path.split("/").pop() || "boombapchopshop-contract.pdf",
+    orderNumber,
+    expiresIn,
+    secret: getDownloadSecret(serviceRoleKey),
   });
-  if (!response.ok) return "";
-  const data = await response.json();
-  if (!data.signedURL) return "";
-  if (data.signedURL.startsWith("http")) return data.signedURL;
-  if (data.signedURL.startsWith("/storage/")) return `${supabaseUrl}${data.signedURL}`;
-  return `${supabaseUrl}/storage/v1${data.signedURL.startsWith("/") ? "" : "/"}${data.signedURL}`;
+  return token ? `${supabaseUrl}/functions/v1/download-file?token=${encodeURIComponent(token)}` : "";
 }
 
 function getContractTemplate(item: OrderItem) {
