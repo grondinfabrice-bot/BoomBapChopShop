@@ -140,31 +140,17 @@ async function buildCollectorCard({ orderNumber, cardNumber, customerName, item,
   const gold = rgb(0.83, 0.57, 0.09);
   const olive = rgb(0.29, 0.31, 0.15);
 
-  const templateResponse = await fetch(`${siteUrl.replace(/\/$/, "")}/images/collector-card-template.png`);
-  if (!templateResponse.ok) throw new Error("Collector card template is not available on the site yet.");
+  // This is the approved visual master. It already contains the exact masthead,
+  // crate, 16-pad MPC and bottom waveform treatment; only order-specific areas
+  // are replaced below.
+  const templateResponse = await fetch(`${siteUrl.replace(/\/$/, "")}/images/collector-card-reference-base.png`);
+  if (!templateResponse.ok) throw new Error("Approved collector card reference is not available on the site yet.");
   const template = await pdf.embedPng(new Uint8Array(await templateResponse.arrayBuffer()));
   page.drawImage(template, { x: 0, y: 0, width, height });
 
-  // The background is intentionally decorative, but the MPC pad count is product data:
-  // redraw it here so every card has an exact 4 by 4 (16-pad) grid.
-  const samplerX = 658;
-  const samplerY = 410;
-  page.drawRectangle({ x: samplerX, y: samplerY, width: 82, height: 86, color: rgb(0.06, 0.06, 0.055) });
-  page.drawRectangle({ x: samplerX + 3, y: samplerY + 3, width: 76, height: 80, borderColor: brick, borderWidth: 1.4 });
-  page.drawRectangle({ x: samplerX + 11, y: samplerY + 65, width: 22, height: 7, borderColor: cream, borderWidth: 0.8 });
-  page.drawCircle({ x: samplerX + 51, y: samplerY + 68, size: 4, borderColor: cream, borderWidth: 0.8 });
-  page.drawCircle({ x: samplerX + 65, y: samplerY + 68, size: 4, borderColor: cream, borderWidth: 0.8 });
-  for (let row = 0; row < 4; row += 1) for (let col = 0; col < 4; col += 1) {
-    page.drawRectangle({
-      x: samplerX + 11 + col * 15,
-      y: samplerY + 14 + (3 - row) * 12,
-      width: 10,
-      height: 9,
-      color: row === 2 && col === 3 ? brick : cream,
-    });
-  }
-
-  const coverX = 39; const coverY = 81; const coverSize = 310;
+  // Preserve the reference card's large left-hand cover treatment. Covers are
+  // normally square, while this frame is only slightly rectangular.
+  const coverX = 20; const coverY = 65; const coverWidth = 345; const coverHeight = 330;
   let cover;
   try {
     const signature = String.fromCharCode(...coverBytes.slice(0, 8));
@@ -172,27 +158,48 @@ async function buildCollectorCard({ orderNumber, cardNumber, customerName, item,
   } catch {
     throw new Error(`Unsupported cover image for ${item.name || "beat"}. Use JPG or PNG.`);
   }
-  page.drawImage(cover, { x: coverX, y: coverY, width: coverSize, height: coverSize });
+  page.drawRectangle({ x: 18, y: 63, width: 349, height: 334, color: rgb(0.05, 0.05, 0.045) });
+  page.drawImage(cover, { x: coverX, y: coverY, width: coverWidth, height: coverHeight });
 
-  page.drawText("BOOM BAP CHOP SHOP", { x: 116, y: 462, size: 22, font: bold, color: cream });
-  page.drawText("OFFICIAL BEAT COLLECTOR SERIES", { x: 200, y: 444, size: 8, font: bold, color: gold });
+  // Mask the fictional order data baked into the approved reference, retaining
+  // its outer frame, masthead and footer artwork exactly as approved.
+  page.drawRectangle({ x: 370, y: 64, width: 371, height: 332, color: cream });
   const title = (item.name || "UNTITLED BEAT").toUpperCase();
-  page.drawText(trimToFit(title, bold, 20, 340), { x: 390, y: 365, size: fitTextSize(title, bold, 20, 340, 14), font: bold, color: brick });
-  page.drawRectangle({ x: 414, y: 275, width: 155, height: 22, color: rgb(0.06, 0.06, 0.055) });
-  page.drawText("BEAT LICENSE CARD", { x: 425, y: 283, size: 12, font: bold, color: cream });
-  page.drawText("LICENSED TO", { x: 405, y: 235, size: 8, font: bold, color: brick });
+  const titleSize = fitTextSize(title, bold, 34, 335, 18);
+  page.drawText(trimToFit(title, bold, titleSize, 335), { x: 389, y: 337, size: titleSize, font: bold, color: brick });
+  page.drawLine({ start: { x: 384, y: 316 }, end: { x: 728, y: 316 }, thickness: 1.2, color: brick });
+  page.drawCircle({ x: 384, y: 316, size: 3.2, color: brick });
+  page.drawCircle({ x: 728, y: 316, size: 3.2, color: brick });
+  page.drawRectangle({ x: 438, y: 277, width: 205, height: 25, color: rgb(0.055, 0.055, 0.05) });
+  page.drawText("BEAT LICENSE CARD", { x: 450, y: 285, size: 13, font: bold, color: cream });
+
+  page.drawCircle({ x: 403, y: 240, size: 19, color: brick });
+  page.drawText("ID", { x: 395, y: 236, size: 9, font: bold, color: cream });
+  page.drawText("LICENSED TO", { x: 431, y: 249, size: 10, font: bold, color: brick });
   const buyer = customerName.toUpperCase();
-  page.drawText(trimToFit(buyer, bold, 14, 320), { x: 405, y: 216, size: fitTextSize(buyer, bold, 14, 320, 10), font: bold, color: rgb(0.06, 0.06, 0.055) });
-  page.drawText((item.license || "LICENSE").toUpperCase(), { x: 405, y: 186, size: 8, font: bold, color: brick });
-  page.drawText(`${item.bpm || "--"} BPM  /  ${item.key || "KEY --"}  /  ${item.duration || "--:--"}`, { x: 405, y: 169, size: 10, font: bold, color: rgb(0.06, 0.06, 0.055) });
-  page.drawCircle({ x: 394, y: 113, size: 14, color: olive });
-  page.drawText("+", { x: 390, y: 108, size: 10, font: bold, color: cream });
-  page.drawText("OFFICIALLY LICENSED", { x: 420, y: 119, size: 11, font: bold, color: brick });
-  page.drawText("This beat is officially part of your record collection.", { x: 420, y: 102, size: 8, font: regular, color: rgb(0.06, 0.06, 0.055) });
-  page.drawText(`CRATE CARD  /  ${cardNumber}`, { x: 94, y: 61, size: 7, font: bold, color: cream });
-  page.drawText(`ORDER  /  ${orderNumber}`, { x: 245, y: 61, size: 6.4, font: bold, color: cream });
-  page.drawText("CUT BY BOOM BAP CHOP SHOP", { x: 425, y: 61, size: 7, font: bold, color: cream });
-  page.drawText("2026", { x: 691, y: 61, size: 12, font: bold, color: gold });
+  const buyerSize = fitTextSize(buyer, bold, 18, 285, 10);
+  page.drawText(trimToFit(buyer, bold, buyerSize, 285), { x: 431, y: 221, size: buyerSize, font: bold, color: rgb(0.055, 0.055, 0.05) });
+  page.drawLine({ start: { x: 384, y: 204 }, end: { x: 728, y: 204 }, thickness: 0.9, color: rgb(0.055, 0.055, 0.05) });
+
+  page.drawCircle({ x: 403, y: 164, size: 19, color: brick });
+  page.drawText("M", { x: 398, y: 158, size: 11, font: bold, color: cream });
+  page.drawText((item.license || "LICENSE").toUpperCase(), { x: 431, y: 173, size: 10, font: bold, color: brick });
+  const specs = `${item.bpm || "--"} BPM  •  ${item.key || "KEY --"}  •  ${item.duration || "--:--"}`;
+  page.drawText(trimToFit(specs, bold, 14, 285), { x: 431, y: 149, size: fitTextSize(specs, bold, 14, 285, 9), font: bold, color: rgb(0.055, 0.055, 0.05) });
+  page.drawLine({ start: { x: 384, y: 126 }, end: { x: 728, y: 126 }, thickness: 0.9, color: rgb(0.055, 0.055, 0.05) });
+
+  page.drawCircle({ x: 403, y: 92, size: 19, color: olive });
+  page.drawText("C", { x: 399, y: 87, size: 10, font: bold, color: cream });
+  page.drawText("OFFICIALLY LICENSED", { x: 431, y: 99, size: 12, font: bold, color: brick });
+  page.drawText("This beat is officially part of your record collection.", { x: 431, y: 80, size: 8.2, font: regular, color: rgb(0.055, 0.055, 0.05) });
+  for (let x = 385; x < 730; x += 7) page.drawCircle({ x, y: 70, size: 0.8, color: brick });
+
+  // Reprint the two variable footer fields over the reference's example data.
+  page.drawRectangle({ x: 78, y: 38, width: 142, height: 21, color: rgb(0.045, 0.045, 0.04) });
+  page.drawRectangle({ x: 224, y: 38, width: 160, height: 21, color: rgb(0.045, 0.045, 0.04) });
+  page.drawText(`CRATE CARD  •  ${cardNumber}`, { x: 84, y: 48, size: 7.4, font: bold, color: cream });
+  const orderText = `ORDER #${orderNumber}`;
+  page.drawText(trimToFit(orderText, bold, 7.2, 150), { x: 231, y: 48, size: fitTextSize(orderText, bold, 7.2, 150, 5.5), font: bold, color: cream });
   return await pdf.save();
 }
 
