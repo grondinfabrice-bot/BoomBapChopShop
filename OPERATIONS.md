@@ -40,7 +40,37 @@ Apply the collector card order fields and private storage bucket once:
 supabase db query --linked --file supabase-collector-card-migration.sql
 ```
 
-After a successful payment, `stripe-webhook` sends the normal confirmation first, then calls `send-collector-card`. That function builds one PDF per purchased beat, attaches it to a separate email, and records the result in `orders.collector_card_status`.
+After a successful payment, `stripe-webhook` sends the normal confirmation first, then calls `send-collector-card`. That function requests one high-resolution PNG collector card per purchased beat from the private VPS renderer, attaches it to a separate email, and records the result in `orders.collector_card_status`.
+
+## Collector card renderer
+
+The collector card is a visual bonus, not the legal licence contract. It is rendered as a 1536 x 1024 PNG by `collector-card-renderer/` on the VPS, so the approved design is composited with the real cover at full quality.
+
+After pulling the repository on the VPS:
+
+```bash
+cd /var/www/sites/boombapchopshop/collector-card-renderer
+npm ci --omit=dev
+sudo cp boombap-collector-card-renderer.service /etc/systemd/system/
+sudo cp collector-card-renderer.nginx.conf /etc/nginx/snippets/
+sudo nano /etc/boombap-collector-card-renderer.env
+sudo systemctl daemon-reload
+sudo systemctl enable --now boombap-collector-card-renderer
+```
+
+Set a long, random `COLLECTOR_CARD_RENDERER_SECRET` in `/etc/boombap-collector-card-renderer.env`, then configure the same value in Supabase along with:
+
+```text
+COLLECTOR_CARD_RENDERER_URL=https://boombapchopshop.art/internal/collector-card/render
+```
+
+Include `/etc/nginx/snippets/collector-card-renderer.nginx.conf` inside the HTTPS server block for `boombapchopshop.art`, then test and reload Nginx:
+
+```bash
+sudo nginx -t
+sudo systemctl reload nginx
+curl http://127.0.0.1:3032/health
+```
 
 Apply one-off SQL files:
 

@@ -1,0 +1,16 @@
+{
+  "name": "boombap-collector-card-renderer",
+  "private": true,
+  "type": "module",
+  "version": "1.0.0",
+  "description": "Private high-resolution BOOM BAP CHOP SHOP collector card renderer.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "node server.mjs"
+  },
+  "dependencies": {
+    "sharp": "^0.35.3"
+  }
+}
